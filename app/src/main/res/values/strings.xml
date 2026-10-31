@@ -20,4 +20,6 @@
     <string name="paste_from_clipboard">Paste from Clipboard</string>
     <string name="processing">Processing…</string>
     <string name="selected_text">Selected text</string>
+    <string name="explain_with_eli5">Explain with ELI5</string>
+    <string name="proofread_eli5">Proofread (ELI5)</string>
 </resources>

@@ -40,12 +40,17 @@
             android:name=".ProcessTextActivity"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:label="Explain with ELI5"
-            android:taskAffinity=""
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/explain_with_eli5"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:windowSoftInputMode="stateUnchanged">
-            <intent-filter android:priority="99999">
+            <intent-filter>
                 <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
@@ -55,12 +60,17 @@
             android:name=".ProofreadTextActivity"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:label="Proofread (ELI5)"
-            android:taskAffinity=""
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/proofread_eli5"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:windowSoftInputMode="adjustResize|stateUnchanged">
-            <intent-filter android:priority="99999">
+            <intent-filter>
                 <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>

@@ -21,7 +21,12 @@ class ProcessTextActivity : Activity() {
             return
         }
 
-        val text = intent?.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
+        val text = when (intent?.action) {
+            Intent.ACTION_PROCESS_TEXT -> intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
+            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT) ?: intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+            else -> intent?.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
+                ?: intent?.getStringExtra(Intent.EXTRA_TEXT)
+        }
         if (!text.isNullOrBlank()) {
             val overlayIntent = Intent(this, ExplainOverlayActivity::class.java).apply {
                 putExtra(ExplainOverlayActivity.EXTRA_TEXT, text)

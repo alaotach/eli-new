@@ -125,8 +125,11 @@ class ProofreadTextActivity : Activity() {
             WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        isReadOnly = intent.getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false)
-        originalText = intent?.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() ?: ""
+        val isSendAction = intent?.action == Intent.ACTION_SEND
+        isReadOnly = isSendAction || intent.getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false)
+        val textFromProcess = intent?.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
+        val textFromSend = intent?.getStringExtra(Intent.EXTRA_TEXT) ?: intent?.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+        originalText = textFromProcess ?: textFromSend ?: ""
 
         if (originalText.isBlank()) {
             Toast.makeText(this, "No text selected", Toast.LENGTH_SHORT).show()
