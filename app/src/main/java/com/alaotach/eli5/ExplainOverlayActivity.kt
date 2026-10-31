@@ -234,31 +234,16 @@ class ExplainOverlayActivity : Activity() {
         onChunk: suspend (String) -> Unit
     ): String = withContext(Dispatchers.IO) {
         try {
-            val url = URL("https://ai.hackclub.com/proxy/v1/chat/completions")
+            val endpoint = "${BuildConfig.BACKEND_URL}/api/explain"
+            val url = URL(endpoint)
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json")
-            conn.setRequestProperty("Authorization", "Bearer ${BuildConfig.API_KEY}")
             conn.doOutput = true
 
-            val modePrompt = when (mode) {
-                "Detailed" -> "Give a very detailed, thorough analysis with deep context about this."
-                "Straightforward" -> "Give a direct, clear, no-fluff summary of this."
-                "ELI5" -> "Explain this like I am 5 years old. Use simple words and fun analogies."
-                else -> "Explain this casually."
-            }
-
-            val fullPrompt = "$modePrompt\n\nText to explain:\n$text\n\nExplanation:"
-
             val payload = JSONObject().apply {
-                put("model", "google/gemini-3-flash-preview")
-                put("stream", true)
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", fullPrompt)
-                    })
-                })
+                put("text", text)
+                put("mode", mode)
             }
 
             OutputStreamWriter(conn.outputStream).use { writer ->

@@ -31,7 +31,8 @@ android {
     if (localPropertiesFile.exists()) {
         localProperties.load(FileInputStream(localPropertiesFile))
     }
-    val apiKey = (localProperties.getProperty("API_KEY") ?: System.getenv("API_KEY") ?: "").trim().trim('"')
+    val defaultBackendUrl = "https://eli5-api.vpm111964.workers.dev"
+    val backendUrl = (localProperties.getProperty("BACKEND_URL") ?: System.getenv("BACKEND_URL") ?: defaultBackendUrl).trim().trim('"')
 
     val releaseKeystore = file("release.jks")
     if (releaseKeystore.exists()) {
@@ -58,10 +59,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+            buildConfigField("String", "BACKEND_URL", "\"$backendUrl\"")
         }
         debug {
-            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+            buildConfigField("String", "BACKEND_URL", "\"$backendUrl\"")
         }
     }
     compileOptions {

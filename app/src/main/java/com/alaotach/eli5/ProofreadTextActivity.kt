@@ -689,28 +689,16 @@ class ProofreadTextActivity : Activity() {
         onChunk: suspend (String) -> Unit
     ): String = withContext(Dispatchers.IO) {
         try {
-            val url = URL("https://ai.hackclub.com/proxy/v1/chat/completions")
+            val endpoint = "${BuildConfig.BACKEND_URL}/api/proofread"
+            val url = URL(endpoint)
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json")
-            conn.setRequestProperty("Authorization", "Bearer ${BuildConfig.API_KEY}")
             conn.doOutput = true
 
-            val prompt = if (customInstructions.isBlank()) {
-                "Proofread and correct the following text. Do not use any em dashes (—). Keep the tone natural and human-like. Just provide the corrected text without any preamble or explanation:\n\n$baseText"
-            } else {
-                "Modify the following text based strictly on this instruction: \"$customInstructions\". Do not use any em dashes (—). Keep the tone natural and human-like. Just provide the corrected text without any preamble or explanation:\n\n$baseText"
-            }
-
             val payload = JSONObject().apply {
-                put("model", "google/gemini-3-flash-preview")
-                put("stream", true)
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", prompt)
-                    })
-                })
+                put("text", baseText)
+                put("instructions", customInstructions)
             }
 
             OutputStreamWriter(conn.outputStream).use { writer ->
