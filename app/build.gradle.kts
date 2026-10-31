@@ -33,8 +33,26 @@ android {
     }
     val apiKey = (localProperties.getProperty("API_KEY") ?: System.getenv("API_KEY") ?: "").trim().trim('"')
 
+    val releaseKeystore = file("release.jks")
+    if (releaseKeystore.exists()) {
+        signingConfigs {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = "eli5android"
+                keyAlias = "eli5"
+                keyPassword = "eli5android"
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (releaseKeystore.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
