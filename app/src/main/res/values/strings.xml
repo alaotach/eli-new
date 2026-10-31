@@ -1,3 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ELI5</string>
+    <string name="action_explain">Explain</string>
+    <string name="action_explain_desc">Get a detailed explanation</string>
+    <string name="action_key_points">Key Points</string>
+    <string name="action_key_points_desc">Extract main points</string>
+    <string name="action_simplify">Simplify</string>
+    <string name="action_simplify_desc">Convert to plain language</string>
+    <string name="action_summarize">Summarize</string>
+    <string name="action_summarize_desc">Get a brief summary</string>
+    <string name="action_translate">Translate</string>
+    <string name="action_translate_desc">Translate to another language</string>
+    <string name="characters_total">%d characters total</string>
+    <string name="choose_action">Choose an action</string>
+    <string name="close">Close</string>
+    <string name="empty_state_message">Select text in any app and choose ELI5 from the menu, or paste text below</string>
+    <string name="error">Error</string>
+    <string name="no_text_selected">No text selected</string>
+    <string name="paste_from_clipboard">Paste from Clipboard</string>
+    <string name="processing">Processing…</string>
+    <string name="selected_text">Selected text</string>
 </resources>

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.Eli5" parent="@android:style/Theme.Material.Light.NoActionBar" />
 
-    <style name="Theme.ELI5" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Eli5.Dialog" parent="@style/Theme.Eli5">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimAmount">0.5</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 </resources>

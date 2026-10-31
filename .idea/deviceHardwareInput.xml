@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="HardwareInputStateStorage">
+    <option name="enabledDevices">
+      <map>
+        <entry key="$USER_HOME$/.android/avd/Medium_Phone.avd" value="1793456639743" />
+        <entry key="$USER_HOME$/.android/avd/Nexus_6P.avd" value="1793458215950" />
+      </map>
+    </option>
+  </component>
+</project>
