@@ -7,6 +7,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -20,6 +21,8 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -30,6 +33,8 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,8 +48,11 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.math.max
+import kotlin.math.min
 
 class ProofreadTextActivity : Activity() {
+    private lateinit var rootView: FrameLayout
+    private lateinit var outerContainer: LinearLayout
     private lateinit var actionLayout: LinearLayout
     private lateinit var fullTextScrollView: ScrollView
     private lateinit var fullTextView: TextView
@@ -58,6 +66,9 @@ class ProofreadTextActivity : Activity() {
     private val activityScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var originalText: String = ""
     private var currentText: String = ""
+    private var globalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+    private var lastImeHeight: Int = 0
+    private var lastNavHeight: Int = 0
 
     private val isDark: Boolean
         get() = SettingsManager.isDarkTheme(this)
@@ -109,7 +120,11 @@ class ProofreadTextActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.addFlags(131080)
+        window.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED or
+            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        )
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         isReadOnly = intent.getBooleanExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, false)
         originalText = intent?.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString() ?: ""
 
@@ -123,13 +138,34 @@ class ProofreadTextActivity : Activity() {
     }
 
     private fun setupUI() {
-        val root = FrameLayout(this).apply {
+        rootView = FrameLayout(this).apply {
             setBackgroundColor(Color.TRANSPARENT)
             setOnClickListener {
                 setResult(RESULT_CANCELED)
                 finish()
             }
         }
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, insets ->
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            updateKeyboardPosition(imeInsets.bottom, navInsets.bottom)
+            insets
+        }
+
+        val listener = ViewTreeObserver.OnGlobalLayoutListener {
+            val r = Rect()
+            rootView.getWindowVisibleDisplayFrame(r)
+            val screenHeight = rootView.rootView.height
+            val keypadHeight = screenHeight - r.bottom
+            if (keypadHeight > screenHeight * 0.15) {
+                updateKeyboardPosition(keypadHeight, lastNavHeight)
+            } else if (keypadHeight < (dp * 60).toInt()) {
+                updateKeyboardPosition(0, lastNavHeight)
+            }
+        }
+        rootView.viewTreeObserver.addOnGlobalLayoutListener(listener)
+        globalLayoutListener = listener
 
         popupContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -210,7 +246,6 @@ class ProofreadTextActivity : Activity() {
         }
 
         val adjustBtn = createButton(text = "Adjust", bgColor = 0, isPrimary = false) {
-            window.clearFlags(131080)
             actionLayout.visibility = View.GONE
             promptLayout.visibility = View.VISIBLE
             previewContainer.visibility = View.GONE
@@ -314,6 +349,8 @@ class ProofreadTextActivity : Activity() {
             promptLayout.visibility = View.GONE
             input.text.clear()
             actionLayout.visibility = View.VISIBLE
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(input.windowToken, 0)
         }
 
         promptLayout.addView(inputRow)
@@ -323,7 +360,13 @@ class ProofreadTextActivity : Activity() {
 
         fullTextScrollView = object : ScrollView(this) {
             override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-                val maxHeight = (resources.displayMetrics.heightPixels * 0.4).toInt()
+                val screenHeight = resources.displayMetrics.heightPixels
+                val availableAboveKeyboard = if (lastImeHeight > (dp * 80).toInt()) {
+                    screenHeight - lastImeHeight - (dp * 160).toInt()
+                } else {
+                    (screenHeight * 0.4).toInt()
+                }
+                val maxHeight = max((dp * 120).toInt(), min((screenHeight * 0.4).toInt(), availableAboveKeyboard))
                 val size = MeasureSpec.getSize(heightMeasureSpec)
                 val newSpec = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.UNSPECIFIED || size > maxHeight) {
                     MeasureSpec.makeMeasureSpec(maxHeight, MeasureSpec.AT_MOST)
@@ -364,7 +407,7 @@ class ProofreadTextActivity : Activity() {
         popupContainer.addView(actionLayout)
         popupContainer.addView(promptLayout)
 
-        val outerContainer = LinearLayout(this).apply {
+        outerContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             val lp = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL).apply {
                 bottomMargin = (dp * 80).toInt()
@@ -377,8 +420,57 @@ class ProofreadTextActivity : Activity() {
             addView(popupContainer)
         }
 
-        root.addView(outerContainer)
-        setContentView(root)
+        rootView.addView(outerContainer)
+        setContentView(rootView)
+    }
+
+    private fun updateKeyboardPosition(imeHeight: Int, navHeight: Int) {
+        if (imeHeight > 0) {
+            lastImeHeight = imeHeight
+        } else if (imeHeight == 0) {
+            lastImeHeight = 0
+        }
+        if (navHeight > 0) {
+            lastNavHeight = navHeight
+        }
+
+        if (!::outerContainer.isInitialized) return
+        val lp = outerContainer.layoutParams as? FrameLayout.LayoutParams ?: return
+        val baseBottomMargin = (dp * 80).toInt()
+        val minNavMargin = lastNavHeight + (dp * 16).toInt()
+
+        val targetBottomMargin = if (lastImeHeight > (dp * 80).toInt()) {
+            lastImeHeight + (dp * 16).toInt()
+        } else {
+            max(baseBottomMargin, minNavMargin)
+        }
+
+        if (lp.bottomMargin != targetBottomMargin) {
+            lp.bottomMargin = targetBottomMargin
+            outerContainer.layoutParams = lp
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        globalLayoutListener?.let {
+            if (::rootView.isInitialized) {
+                rootView.viewTreeObserver.removeOnGlobalLayoutListener(it)
+            }
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (::promptLayout.isInitialized && promptLayout.visibility == View.VISIBLE) {
+            promptLayout.visibility = View.GONE
+            input.text.clear()
+            actionLayout.visibility = View.VISIBLE
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(input.windowToken, 0)
+        } else {
+            super.onBackPressed()
+        }
     }
 
     private fun createButton(text: String, bgColor: Int, isPrimary: Boolean, onClick: () -> Unit): TextView {
