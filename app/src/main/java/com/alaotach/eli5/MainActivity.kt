@@ -30,7 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
@@ -99,16 +99,21 @@ class MainActivity : ComponentActivity() {
 
             var isViewingTutorial by remember { mutableStateOf(false) }
 
-            Eli5Theme(darkTheme = isDark) {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Eli5Theme(darkTheme = isDark, dynamicColor = false) {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = if (isDark) Color(0xFF121212) else Color(0xFFF9FAFB)
+                ) { innerPadding ->
                     if (isViewingTutorial) {
                         HowToUseScreen(
+                            isDark = isDark,
                             onBack = { isViewingTutorial = false },
                             modifier = Modifier.padding(innerPadding)
                         )
                     } else {
                         MainScreen(
                             themePref = themePreference,
+                            isDark = isDark,
                             onThemeChange = {
                                 SettingsManager.setTheme(this@MainActivity, it)
                                 themePreference = it
@@ -128,6 +133,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     themePref: String,
+    isDark: Boolean,
     onThemeChange: (String) -> Unit,
     onShowTutorial: () -> Unit,
     modifier: Modifier = Modifier
@@ -137,8 +143,13 @@ fun MainScreen(
     var itemsToShow by remember { mutableStateOf(10) }
     var selectedItem by remember { mutableStateOf<HistoryItem?>(null) }
 
-    val isSystemDark = isSystemInDarkTheme()
-    val androidTextColor = if (themePref == "dark" || (themePref == "system" && isSystemDark)) {
+    val cardBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
+    val cardBorder = if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB)
+    val primaryTextColor = if (isDark) Color.White else Color(0xFF111827)
+    val secondaryTextColor = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280)
+    val mutedTextColor = if (isDark) Color(0xFF888888) else Color(0xFF6B7280)
+
+    val androidTextColor = if (isDark) {
         android.graphics.Color.parseColor("#E0E0E0")
     } else {
         android.graphics.Color.parseColor("#212121")
@@ -168,12 +179,13 @@ fun MainScreen(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .background(if (isDark) Color(0xFF2C2C2C) else Color(0xFFE8F5E9))
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "ELI5",
                     fontWeight = FontWeight.Bold,
+                    color = primaryTextColor,
                     style = MaterialTheme.typography.titleLarge
                 )
             }
@@ -181,7 +193,11 @@ fun MainScreen(
             var expanded by remember { mutableStateOf(false) }
             Box {
                 IconButton(onClick = { expanded = true }) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = primaryTextColor
+                    )
                 }
                 DropdownMenu(
                     expanded = expanded,
@@ -247,8 +263,8 @@ fun MainScreen(
                     .weight(1f)
                     .height(80.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = Color(0xFF1E1E1E),
-                border = BorderStroke(1.dp, Color(0xFF2B2B2A))
+                color = cardBg,
+                border = BorderStroke(1.dp, cardBorder)
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),
@@ -257,13 +273,13 @@ fun MainScreen(
                 ) {
                     Text(
                         text = wordsToday.toString(),
-                        color = Color.White,
+                        color = primaryTextColor,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.headlineMedium
                     )
                     Text(
                         text = "Words Explained Today",
-                        color = Color(0xFF888888),
+                        color = mutedTextColor,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
@@ -303,6 +319,7 @@ fun MainScreen(
             text = "Your Recent Activity",
             modifier = Modifier.padding(start = 16.dp),
             fontWeight = FontWeight.Bold,
+            color = primaryTextColor,
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -316,12 +333,13 @@ fun MainScreen(
                 Text(
                     text = "No history yet!",
                     fontWeight = FontWeight.Bold,
+                    color = primaryTextColor,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Highlight some text anywhere and select Eli5 to get started.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = secondaryTextColor,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(24.dp))
@@ -336,6 +354,7 @@ fun MainScreen(
             history.take(itemsToShow).forEach { item ->
                 HistoryCard(
                     item = item,
+                    isDark = isDark,
                     onClick = { selectedItem = item },
                     onDelete = {
                         HistoryManager.deleteItem(context, item)
@@ -377,7 +396,7 @@ fun MainScreen(
                 Text(
                     text = item.mode,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = primaryTextColor
                 )
             },
             text = {
@@ -389,19 +408,19 @@ fun MainScreen(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                        color = if (isDark) Color(0xFF262626) else Color(0xFFF3F4F6)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
                                 text = "Original Text",
-                                color = MaterialTheme.colorScheme.primary,
+                                color = if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = item.originalText,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = if (isDark) Color(0xFFD1D5DB) else Color(0xFF374151),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -412,12 +431,12 @@ fun MainScreen(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+                        color = if (isDark) Color(0xFF1E2820) else Color(0xFFE8F5E9).copy(alpha = 0.5f)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
                                 text = "Result",
-                                color = MaterialTheme.colorScheme.tertiary,
+                                color = if (isDark) Color(0xFF4CAF50) else Color(0xFF1B5E20),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -447,24 +466,30 @@ fun MainScreen(
 @Composable
 fun HistoryCard(
     item: HistoryItem,
+    isDark: Boolean = isSystemInDarkTheme(),
     onClick: () -> Unit,
     onDelete: (() -> Unit)? = null
 ) {
     val dateStr = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(item.timestamp))
     val badgeColor = when {
-        item.mode.contains("ELI5", ignoreCase = true) -> Color(0xFF00C853)
-        item.mode.contains("Proofread", ignoreCase = true) -> Color(0xFFC04000)
-        else -> Color(0xFF4CA640)
+        item.mode.contains("ELI5", ignoreCase = true) -> if (isDark) Color(0xFF00C853) else Color(0xFF008933)
+        item.mode.contains("Proofread", ignoreCase = true) -> if (isDark) Color(0xFFFF7043) else Color(0xFFC04000)
+        else -> if (isDark) Color(0xFF4CA640) else Color(0xFF2E7D32)
     }
+
+    val cardBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
+    val cardBorder = if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB)
+    val primaryTextColor = if (isDark) Color.White else Color(0xFF111827)
+    val secondaryTextColor = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280)
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        color = Color(0xFF1E1E1E),
-        border = BorderStroke(1.dp, Color(0xFF2B2B2A))
+        color = cardBg,
+        border = BorderStroke(1.dp, cardBorder)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -473,25 +498,33 @@ fun HistoryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
+                    modifier = Modifier.weight(1f, fill = false),
                     shape = RoundedCornerShape(4.dp),
-                    color = badgeColor.copy(alpha = 0.2f),
-                    border = BorderStroke(0.5.dp, badgeColor.copy(alpha = 0.5f))
+                    color = badgeColor.copy(alpha = if (isDark) 0.2f else 0.12f),
+                    border = BorderStroke(0.5.dp, badgeColor.copy(alpha = if (isDark) 0.5f else 0.4f))
                 ) {
                     Text(
                         text = item.mode,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         color = badgeColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = dateStr,
-                        color = Color(0xFFAAAAAA),
+                        color = secondaryTextColor,
                         style = MaterialTheme.typography.labelSmall
                     )
                     if (onDelete != null) {
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         IconButton(
                             onClick = onDelete,
                             modifier = Modifier.size(24.dp)
@@ -509,7 +542,7 @@ fun HistoryCard(
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = item.originalText,
-                color = Color.White,
+                color = primaryTextColor,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyMedium
@@ -520,9 +553,15 @@ fun HistoryCard(
 
 @Composable
 fun HowToUseScreen(
+    isDark: Boolean = isSystemInDarkTheme(),
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val primaryTextColor = if (isDark) Color.White else Color(0xFF111827)
+    val secondaryTextColor = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280)
+    val tagBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
+    val tagBorder = if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB)
+
     Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -531,12 +570,17 @@ fun HowToUseScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = primaryTextColor
+                )
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "How to Use ELI5",
                 fontWeight = FontWeight.Bold,
+                color = primaryTextColor,
                 style = MaterialTheme.typography.titleLarge
             )
         }
@@ -554,13 +598,13 @@ fun HowToUseScreen(
                         .padding(end = 8.dp)
                         .clickable { },
                     shape = RoundedCornerShape(20.dp),
-                    color = Color(0xFF1E1E1E),
-                    border = BorderStroke(1.dp, Color(0xFF2B2B2A))
+                    color = tagBg,
+                    border = BorderStroke(1.dp, tagBorder)
                 ) {
                     Text(
                         text = tag,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = Color(0xFF888888),
+                        color = secondaryTextColor,
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -575,10 +619,10 @@ fun HowToUseScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
-            StepCard("1", "Highlight Any Text", "Find text you want explained in any app (Chrome, WhatsApp, Twitter, etc.) and long-press to highlight it.")
-            StepCard("2", "Open Context Menu", "Wait for the native Android pop-up menu. If you don't see 'Explain with ELI5', tap the three dots.")
-            StepCard("3", "Tap 'Explain with ELI5'", "Select ELI5 from the menu. The app will instantly process your request.")
-            StepCard("4", "Get the Magic", "A tiny elegant card will overlay directly on your screen without ever forcing you to switch apps!")
+            StepCard("1", "Highlight Any Text", "Find text you want explained in any app (Chrome, WhatsApp, Twitter, etc.) and long-press to highlight it.", isDark)
+            StepCard("2", "Open Context Menu", "Wait for the native Android pop-up menu. If you don't see 'Explain with ELI5', tap the three dots.", isDark)
+            StepCard("3", "Tap 'Explain with ELI5'", "Select ELI5 from the menu. The app will instantly process your request.", isDark)
+            StepCard("4", "Get the Magic", "A tiny elegant card will overlay directly on your screen without ever forcing you to switch apps!", isDark)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -619,18 +663,19 @@ fun HowToUseScreen(
                     Surface(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFF1E1E1E)
+                        color = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF),
+                        border = BorderStroke(1.dp, if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB))
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 text = label,
-                                color = Color.White,
+                                color = primaryTextColor,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "This step shows how to interact seamlessly outside the main app.",
-                                color = Color(0xFFAAAAAA),
+                                color = secondaryTextColor,
                                 fontSize = 12.sp,
                                 lineHeight = 18.sp
                             )
@@ -645,7 +690,7 @@ fun HowToUseScreen(
 }
 
 @Composable
-fun StepCard(stepNum: String, title: String, desc: String) {
+fun StepCard(stepNum: String, title: String, desc: String, isDark: Boolean = isSystemInDarkTheme()) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -669,14 +714,14 @@ fun StepCard(stepNum: String, title: String, desc: String) {
         Column {
             Text(
                 text = title,
-                color = Color.White,
+                color = if (isDark) Color.White else Color(0xFF111827),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = desc,
-                color = Color(0xFFAAAAAA),
+                color = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280),
                 fontSize = 15.sp,
                 lineHeight = 22.sp
             )
