@@ -68,6 +68,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.DialogProperties
 import com.alaotach.eli5.ui.theme.Eli5Theme
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.InstallStateUpdatedListener
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
 import io.noties.markwon.Markwon
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -75,9 +83,18 @@ import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var appUpdateManager: AppUpdateManager
+    private val installListener = InstallStateUpdatedListener { state ->
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            appUpdateManager.completeUpdate()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        checkForAppUpdates()
 
         setContent {
             val context = LocalContext.current
@@ -118,6 +135,9 @@ class MainActivity : ComponentActivity() {
                                 SettingsManager.setTheme(this@MainActivity, it)
                                 themePreference = it
                             },
+                            onCheckUpdates = {
+                                triggerManualUpdateCheck()
+                            },
                             onShowTutorial = {
                                 startActivity(Intent(this@MainActivity, HowToUseActivity::class.java))
                             },
@@ -128,6 +148,71 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun checkForAppUpdates() {
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        appUpdateManager.registerListener(installListener)
+
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+            ) {
+                try {
+                    appUpdateManager.startUpdateFlow(
+                        appUpdateInfo,
+                        this,
+                        AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
+                    )
+                } catch (_: Exception) {
+                }
+            } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                appUpdateManager.completeUpdate()
+            }
+        }
+    }
+
+    private fun triggerManualUpdateCheck() {
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                val updateType = if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                    AppUpdateType.FLEXIBLE
+                } else {
+                    AppUpdateType.IMMEDIATE
+                }
+                try {
+                    appUpdateManager.startUpdateFlow(
+                        appUpdateInfo,
+                        this,
+                        AppUpdateOptions.newBuilder(updateType).build()
+                    )
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(this, "Could not start update: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                android.widget.Toast.makeText(this, "ELI5 is up to date!", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener {
+            android.widget.Toast.makeText(this, "Check failed: Play Store not available", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::appUpdateManager.isInitialized) {
+            appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                    appUpdateManager.completeUpdate()
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::appUpdateManager.isInitialized) {
+            appUpdateManager.unregisterListener(installListener)
+        }
+    }
 }
 
 @Composable
@@ -135,6 +220,7 @@ fun MainScreen(
     themePref: String,
     isDark: Boolean,
     onThemeChange: (String) -> Unit,
+    onCheckUpdates: () -> Unit,
     onShowTutorial: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -221,6 +307,13 @@ fun MainScreen(
                         text = { Text("Dark Mode") },
                         onClick = {
                             onThemeChange("dark")
+                            expanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Check for Updates") },
+                        onClick = {
+                            onCheckUpdates()
                             expanded = false
                         }
                     )
