@@ -4,6 +4,9 @@
 *.apk
 *.jks
 *.keystore
+*.pem
+*.zip
+KEYSTORE_CREDENTIALS.txt
 .kotlin/
 /.idea/caches
 /.idea/libraries
@@ -20,4 +23,7 @@ local.properties
 *.apk
 *.jks
 *.keystore
+*.pem
+*.zip
+KEYSTORE_CREDENTIALS.txt
 .kotlin/
