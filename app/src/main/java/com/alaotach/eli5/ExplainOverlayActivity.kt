@@ -116,7 +116,7 @@ class ExplainOverlayActivity : Activity() {
             finish()
         } else {
             showBottomSheet()
-            requestExplanation("ELI5")
+            requestExplanation("Straightforward")
         }
     }
 
@@ -170,12 +170,20 @@ class ExplainOverlayActivity : Activity() {
                         val nextLen = Math.min(targetExplanationText.length, displayedExplanationText.length + step)
                         displayedExplanationText = targetExplanationText.substring(0, nextLen)
                         bodyTextView?.let { tv ->
+                            (tv.tag as? ObjectAnimator)?.cancel()
+                            tv.tag = null
+                            tv.alpha = 1.0f
+                            tv.setTextColor(Color.parseColor(textMainStr))
                             markwon.setMarkdown(tv, "$displayedExplanationText▎")
                         }
                         delay(16L)
                     } else {
                         if (!isExplanationStreaming) {
                             bodyTextView?.let { tv ->
+                                (tv.tag as? ObjectAnimator)?.cancel()
+                                tv.tag = null
+                                tv.alpha = 1.0f
+                                tv.setTextColor(Color.parseColor(textMainStr))
                                 markwon.setMarkdown(tv, displayedExplanationText)
                             }
                             return@launch
@@ -186,25 +194,37 @@ class ExplainOverlayActivity : Activity() {
             }
 
             val explanation = fetchExplanation(originalSelectedText, mode) { partialText ->
-                if (firstChunk) {
-                    firstChunk = false
-                    bodyTextView?.let { tv ->
-                        (tv.tag as? ObjectAnimator)?.cancel()
-                        tv.alpha = 1.0f
-                        tv.setTextColor(Color.parseColor(textMainStr))
-                        tv.text = ""
+                withContext(Dispatchers.Main) {
+                    if (firstChunk) {
+                        firstChunk = false
+                        bodyTextView?.let { tv ->
+                            (tv.tag as? ObjectAnimator)?.cancel()
+                            tv.tag = null
+                            tv.alpha = 1.0f
+                            tv.setTextColor(Color.parseColor(textMainStr))
+                            tv.text = ""
+                        }
                     }
+                    targetExplanationText = partialText
                 }
-                targetExplanationText = partialText
             }
 
-            isExplanationStreaming = false
-            currentExplanationText = explanation
-            cachedExplanations[mode] = explanation
-            HistoryManager.saveItem(
-                this@ExplainOverlayActivity,
-                HistoryItem(System.currentTimeMillis(), originalSelectedText, explanation, mode)
-            )
+            withContext(Dispatchers.Main) {
+                isExplanationStreaming = false
+                currentExplanationText = explanation
+                cachedExplanations[mode] = explanation
+                bodyTextView?.let { tv ->
+                    (tv.tag as? ObjectAnimator)?.cancel()
+                    tv.tag = null
+                    tv.alpha = 1.0f
+                    tv.setTextColor(Color.parseColor(textMainStr))
+                }
+                val savedMode = if (mode == "Straightforward") "Direct" else mode
+                HistoryManager.saveItem(
+                    this@ExplainOverlayActivity,
+                    HistoryItem(System.currentTimeMillis(), originalSelectedText, explanation, savedMode)
+                )
+            }
         }
     }
 
@@ -408,8 +428,9 @@ class ExplainOverlayActivity : Activity() {
             }
         }
 
-        modeViews[0].setTextColor(textTitleColor)
-        (modeViews[0].background as? GradientDrawable)?.setColor(Color.parseColor(modeActiveBgStr))
+        val defaultIndex = modes.indexOf("Direct").coerceAtLeast(0)
+        modeViews[defaultIndex].setTextColor(textTitleColor)
+        (modeViews[defaultIndex].background as? GradientDrawable)?.setColor(Color.parseColor(modeActiveBgStr))
 
         val contentBox = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL

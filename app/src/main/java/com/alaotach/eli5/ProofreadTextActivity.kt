@@ -433,42 +433,44 @@ class ProofreadTextActivity : Activity() {
             val baseText = if (isFirstTime) originalText else currentText
 
             val newText = fetchRefinement(baseText, instruction) { partialText ->
-                if (firstChunk) {
-                    firstChunk = false
-                    shimmerAnim.cancel()
-                    titleText.alpha = 1.0f
-                    titleText.setTextColor(textMainPrimary)
-                }
-                val preview = partialText.take(25).replace("\n", " ") + (if (partialText.length > 25) "..." else "")
-                titleText.text = "✨ \"$preview\""
+                withContext(Dispatchers.Main) {
+                    if (firstChunk) {
+                        firstChunk = false
+                        shimmerAnim.cancel()
+                        titleText.alpha = 1.0f
+                        titleText.setTextColor(textMainPrimary)
+                    }
+                    val preview = partialText.take(25).replace("\n", " ") + (if (partialText.length > 25) "..." else "")
+                    titleText.text = "✨ \"$preview\""
 
-                if (previewContainer.visibility == View.VISIBLE) {
-                    val span = generateDiffSpannable(originalText, partialText)
-                    fullTextView.text = span
+                    if (previewContainer.visibility == View.VISIBLE) {
+                        val span = generateDiffSpannable(originalText, partialText)
+                        fullTextView.text = span
+                    }
                 }
             }
 
-            currentText = newText
-            if (!isFirstTime) {
-                input.isEnabled = true
-                submitBtn.text = "Submit"
-                input.text.clear()
-            }
+            withContext(Dispatchers.Main) {
+                currentText = newText
+                if (!isFirstTime) {
+                    input.isEnabled = true
+                    submitBtn.text = "Submit"
+                    input.text.clear()
+                }
 
-            if (firstChunk) {
                 shimmerAnim.cancel()
                 titleText.alpha = 1.0f
                 titleText.setTextColor(textMainPrimary)
+
+                val finalPreview = currentText.take(25).replace("\n", " ") + (if (currentText.length > 25) "..." else "")
+                titleText.text = "✨ \"$finalPreview\""
+
+                val tag = if (isFirstTime) "Proofread" else "Proofread ($instruction)"
+                HistoryManager.saveItem(
+                    this@ProofreadTextActivity,
+                    HistoryItem(System.currentTimeMillis(), if (isFirstTime) originalText else currentText, newText, tag)
+                )
             }
-
-            val finalPreview = currentText.take(25).replace("\n", " ") + (if (currentText.length > 25) "..." else "")
-            titleText.text = "✨ \"$finalPreview\""
-
-            val tag = if (isFirstTime) "Proofread" else "Proofread ($instruction)"
-            HistoryManager.saveItem(
-                this@ProofreadTextActivity,
-                HistoryItem(System.currentTimeMillis(), if (isFirstTime) originalText else currentText, newText, tag)
-            )
 
             (actionLayout.getChildAt(2) as? TextView)?.isEnabled = true
             (actionLayout.getChildAt(3) as? TextView)?.isEnabled = true
