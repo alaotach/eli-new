@@ -201,8 +201,12 @@ class ELI5DesktopWindow(Gtk.Window):
         self.setup_window()
         self.build_ui()
 
-        # Start default mode automatically (Direct / Straightforward), matching Android
-        self.request_explanation("Direct")
+        # Start default mode automatically if text selected, else invite input
+        if self.selected_text:
+            self.request_explanation("Direct")
+        else:
+            self.text_buffer.set_text("💡 No text highlighted.\n\nType or paste any text into the bar below and press Enter (➜) to explain it!")
+            GLib.idle_add(self.refine_entry.grab_focus)
 
     def setup_window(self):
         GtkLayerShell.init_for_window(self)
@@ -266,11 +270,11 @@ class ELI5DesktopWindow(Gtk.Window):
         if not title_str:
             title_str = "ELI5 Assistant"
 
-        title_lbl = Gtk.Label(label=title_str)
-        title_lbl.get_style_context().add_class("header-title")
-        title_lbl.set_xalign(0)
-        title_lbl.set_ellipsize(Pango.EllipsizeMode.END)
-        header.pack_start(title_lbl, True, True, 0)
+        self.title_lbl = Gtk.Label(label=title_str)
+        self.title_lbl.get_style_context().add_class("header-title")
+        self.title_lbl.set_xalign(0)
+        self.title_lbl.set_ellipsize(Pango.EllipsizeMode.END)
+        header.pack_start(self.title_lbl, True, True, 0)
 
         self.copy_btn = Gtk.Button(label="📋 Copy")
         self.copy_btn.get_style_context().add_class("copy-btn")
@@ -505,7 +509,16 @@ class ELI5DesktopWindow(Gtk.Window):
         if not prompt:
             return
         self.refine_entry.set_text("")
-        self.request_explanation("Proofread", custom_prompt=prompt)
+        if not self.selected_text:
+            self.selected_text = prompt
+            title_str = prompt.replace('\n', ' ')
+            if len(title_str) > 28:
+                title_str = title_str[:26] + "..."
+            if hasattr(self, 'title_lbl'):
+                self.title_lbl.set_text(title_str)
+            self.request_explanation(self.current_mode)
+        else:
+            self.request_explanation("Proofread", custom_prompt=prompt)
 
     def on_copy_clicked(self, btn):
         if self.current_text_content:
@@ -535,12 +548,6 @@ class ELI5DesktopWindow(Gtk.Window):
 
 def main():
     selected_text = get_selected_text()
-    if not selected_text:
-        try:
-            subprocess.run(['notify-send', '-a', 'ELI5', '-t', '1500', 'ELI5', 'Please highlight text first'], timeout=0.5)
-        except Exception:
-            pass
-        return
 
     cx, cy = 960, 540
     try:
