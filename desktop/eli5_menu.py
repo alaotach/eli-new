@@ -158,6 +158,7 @@ window {
 """
 
 def get_selected_text():
+    # Only capture active mouse text selection (primary buffer)
     try:
         res = subprocess.run(['wl-paste', '-p'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=0.5)
         text = res.stdout.decode('utf-8', errors='replace').strip()
@@ -165,15 +166,6 @@ def get_selected_text():
             return text
     except Exception:
         pass
-
-    try:
-        res = subprocess.run(['wl-paste'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=0.5)
-        text = res.stdout.decode('utf-8', errors='replace').strip()
-        if text:
-            return text
-    except Exception:
-        pass
-
     return ""
 
 def copy_to_clipboard(text):
@@ -546,6 +538,8 @@ class ELI5DesktopWindow(Gtk.Window):
 
 def main():
     selected_text = get_selected_text()
+    if not selected_text:
+        return
 
     cx, cy = 960, 540
     try:
