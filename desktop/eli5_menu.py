@@ -201,9 +201,13 @@ class ELI5DesktopWindow(Gtk.Window):
         self.setup_window()
         self.build_ui()
 
-        # Start default mode automatically if text selected, else invite input
+        # Do NOT auto-call API; wait for user selection to save tokens
+        self.current_mode = None
         if self.selected_text:
-            self.request_explanation("Direct")
+            preview = self.selected_text.strip().replace('\n', ' ')
+            if len(preview) > 180:
+                preview = preview[:175] + "..."
+            self.text_buffer.set_text(f"Selected:\n\"{preview}\"\n\n👉 Pick an action above (1-5) or type custom instructions below.")
         else:
             self.text_buffer.set_text("💡 No text highlighted.\n\nType or paste any text into the bar below and press Enter (➜) to explain it!")
             GLib.idle_add(self.refine_entry.grab_focus)
@@ -252,8 +256,6 @@ class ELI5DesktopWindow(Gtk.Window):
         GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, pos_y)
 
         self.connect("key-press-event", self.on_key_press)
-        self.connect("focus-out-event", self.on_focus_out)
-        self.add_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
 
     def build_ui(self):
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -294,11 +296,11 @@ class ELI5DesktopWindow(Gtk.Window):
 
         self.mode_buttons = {}
         modes = [
-            ("Direct", "Direct"),
-            ("ELI5", "ELI5"),
-            ("Detailed", "Detailed"),
-            ("Proofread", "Proofread"),
-            ("Translate", "Translate"),
+            ("ELI5", "💡 ELI5"),
+            ("Direct", "⚡ Direct"),
+            ("Detailed", "🔍 Detailed"),
+            ("Proofread", "✍️ Proofread"),
+            ("Translate", "🌐 Translate"),
         ]
 
         for mode_key, label in modes:
@@ -525,10 +527,6 @@ class ELI5DesktopWindow(Gtk.Window):
             copy_to_clipboard(self.current_text_content)
             self.copy_btn.set_label("✓ Copied")
 
-    def on_focus_out(self, widget, event):
-        self.close()
-        return False
-
     def on_key_press(self, widget, event):
         keyval = event.keyval
         if keyval == Gdk.KEY_Escape:
@@ -537,7 +535,7 @@ class ELI5DesktopWindow(Gtk.Window):
 
         # Quick tab shortcuts: 1-5
         if not self.refine_entry.is_focus():
-            modes = ["Direct", "ELI5", "Detailed", "Proofread", "Translate"]
+            modes = ["ELI5", "Direct", "Detailed", "Proofread", "Translate"]
             if Gdk.KEY_1 <= keyval <= Gdk.KEY_5:
                 idx = keyval - Gdk.KEY_1
                 if idx < len(modes):
