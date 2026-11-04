@@ -120,7 +120,6 @@ window {
     background-color: transparent;
     color: #e2e2e6;
     font-size: 13.5px;
-    line-height: 1.35;
 }
 
 .refine-bar {
@@ -321,6 +320,9 @@ class ELI5DesktopWindow(Gtk.Window):
         self.text_view.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         self.text_view.set_left_margin(4)
         self.text_view.set_right_margin(4)
+        self.text_view.set_pixels_above_lines(2)
+        self.text_view.set_pixels_below_lines(2)
+        self.text_view.set_pixels_inside_wrap(3)
         self.text_view.get_style_context().add_class("result-text")
 
         self.text_buffer = self.text_view.get_buffer()
