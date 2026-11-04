@@ -163,6 +163,8 @@ def get_selected_text():
         res = subprocess.run(['wl-paste', '-p'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=0.5)
         text = res.stdout.decode('utf-8', errors='replace').strip()
         if text:
+            # Clear primary buffer so the selection is consumed and won't reappear on idle triggers
+            subprocess.run(['wl-copy', '-c', '-p'], stderr=subprocess.DEVNULL)
             return text
     except Exception:
         pass
