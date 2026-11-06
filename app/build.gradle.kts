@@ -15,8 +15,8 @@ android {
         applicationId = "com.alaotach.eli5"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "2.2"
+        versionCode = 5
+        versionName = "2.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -54,7 +54,8 @@ android {
             if (releaseKeystore.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
