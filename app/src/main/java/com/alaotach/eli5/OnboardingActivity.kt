@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -55,6 +56,7 @@ class OnboardingStep1Fragment : Fragment() {
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
+            setBackgroundColor(ONBOARDING_BG)
             setPadding(context.dpToPx(24f), context.dpToPx(32f), context.dpToPx(24f), context.dpToPx(24f))
         }
 
@@ -207,6 +209,7 @@ class OnboardingStep2Fragment : Fragment() {
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
+            setBackgroundColor(ONBOARDING_BG)
             setPadding(context.dpToPx(24f), context.dpToPx(32f), context.dpToPx(24f), context.dpToPx(24f))
         }
 
@@ -379,6 +382,7 @@ class OnboardingStep3Fragment : Fragment() {
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
+            setBackgroundColor(ONBOARDING_BG)
             setPadding(context.dpToPx(24f), context.dpToPx(36f), context.dpToPx(24f), context.dpToPx(28f))
         }
 
@@ -401,6 +405,7 @@ class OnboardingStep3Fragment : Fragment() {
 
         val scrollArea = ScrollView(context).apply {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
+            isVerticalScrollBarEnabled = false
         }
         val samplesBox = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -409,7 +414,7 @@ class OnboardingStep3Fragment : Fragment() {
 
         // Sample 1: Lease clause
         val sample1Card = createSampleCard(
-            badge = "LEGAL LEASE CLAUSE",
+            badge = "⚖️  LEGAL LEASE CLAUSE",
             text = "The Lessee shall indemnify and hold harmless the Lessor from and against any subrogation liabilities and liquidated damages.",
             onTest = { testText ->
                 onUserTestedSample(testText)
@@ -419,7 +424,7 @@ class OnboardingStep3Fragment : Fragment() {
 
         // Sample 2: Medical line
         val sample2Card = createSampleCard(
-            badge = "MEDICAL DIAGNOSIS",
+            badge = "🩺  MEDICAL DIAGNOSIS",
             text = "The patient presents with idiopathic benign paroxysmal positional vertigo secondary to canalithiasis.",
             onTest = { testText ->
                 onUserTestedSample(testText)
@@ -433,27 +438,29 @@ class OnboardingStep3Fragment : Fragment() {
             gravity = Gravity.CENTER_VERTICAL
             background = GradientDrawable().apply {
                 setColor(Color.parseColor("#142E1F"))
-                cornerRadius = context.dpToPx(12f).toFloat()
-                setStroke(context.dpToPx(1f), Color.parseColor("#2E7D32"))
+                cornerRadius = context.dpToPx(14f).toFloat()
+                setStroke(context.dpToPx(1.5f), Color.parseColor("#22C55E"))
             }
-            setPadding(context.dpToPx(16f), context.dpToPx(12f), context.dpToPx(16f), context.dpToPx(12f))
+            setPadding(context.dpToPx(16f), context.dpToPx(14f), context.dpToPx(16f), context.dpToPx(14f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                topMargin = context.dpToPx(14f)
+                topMargin = context.dpToPx(8f)
+                bottomMargin = context.dpToPx(12f)
             }
             visibility = View.GONE
         }
         val checkIcon = TextView(context).apply {
             text = "✓"
-            setTextColor(Color.parseColor("#4CAF50"))
-            textSize = 18f
+            setTextColor(Color.parseColor("#22C55E"))
+            textSize = 20f
             typeface = Typeface.DEFAULT_BOLD
-            setPadding(0, 0, context.dpToPx(10f), 0)
+            setPadding(0, 0, context.dpToPx(12f), 0)
         }
         val checkText = TextView(context).apply {
-            text = "Great job! You're ready to use ELI5 anywhere."
+            text = "Awesome! Explanation works. You're ready to use ELI5 anywhere."
             setTextColor(Color.WHITE)
             textSize = 13.5f
             typeface = Typeface.DEFAULT_BOLD
+            setLineSpacing(0f, 1.2f)
         }
         greenCheckContainer?.addView(checkIcon)
         greenCheckContainer?.addView(checkText)
@@ -462,7 +469,7 @@ class OnboardingStep3Fragment : Fragment() {
         root.addView(scrollArea)
 
         finishBtn = Button(context).apply {
-            text = "Get Started"
+            text = "Get Started →"
             setTextColor(Color.WHITE)
             textSize = 16f
             typeface = Typeface.DEFAULT_BOLD
@@ -488,45 +495,61 @@ class OnboardingStep3Fragment : Fragment() {
             orientation = LinearLayout.VERTICAL
             background = GradientDrawable().apply {
                 setColor(ONBOARDING_CARD_BG)
-                cornerRadius = context.dpToPx(16f).toFloat()
-                setStroke(context.dpToPx(1f), Color.argb(90, 139, 92, 246))
+                cornerRadius = context.dpToPx(18f).toFloat()
+                setStroke(context.dpToPx(1.5f), Color.argb(120, 139, 92, 246))
             }
-            setPadding(context.dpToPx(16f), context.dpToPx(14f), context.dpToPx(16f), context.dpToPx(14f))
+            setPadding(context.dpToPx(18f), context.dpToPx(16f), context.dpToPx(18f), context.dpToPx(16f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                bottomMargin = context.dpToPx(14f)
+                bottomMargin = context.dpToPx(16f)
             }
-        }
-
-        val badgeTv = TextView(context).apply {
-            this.text = badge
-            setTextColor(ONBOARDING_PURPLE_LIGHT)
-            textSize = 11f
-            typeface = Typeface.DEFAULT_BOLD
-            setPadding(0, 0, 0, context.dpToPx(6f))
-        }
-        val bodyTv = TextView(context).apply {
-            this.text = text
-            setTextColor(Color.WHITE)
-            textSize = 14f
-            setLineSpacing(0f, 1.2f)
-            setPadding(0, 0, 0, context.dpToPx(12f))
-        }
-        val btn = Button(context).apply {
-            this.text = "Explain with ELI5 ✨"
-            setTextColor(Color.WHITE)
-            textSize = 13f
-            typeface = Typeface.DEFAULT_BOLD
-            isAllCaps = false
-            background = GradientDrawable().apply {
-                setColor(ONBOARDING_PURPLE)
-                cornerRadius = context.dpToPx(10f).toFloat()
-            }
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, context.dpToPx(38f))
+            isClickable = true
+            isFocusable = true
             setOnClickListener {
                 onTest(text)
             }
         }
-        card.addView(badgeTv)
+
+        val badgePill = TextView(context).apply {
+            this.text = badge
+            setTextColor(Color.parseColor("#DDD6FE"))
+            textSize = 11.5f
+            typeface = Typeface.DEFAULT_BOLD
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#2A2040"))
+                cornerRadius = context.dpToPx(6f).toFloat()
+                setStroke(context.dpToPx(1f), Color.parseColor("#6D28D9"))
+            }
+            setPadding(context.dpToPx(10f), context.dpToPx(4f), context.dpToPx(10f), context.dpToPx(4f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = context.dpToPx(12f)
+            }
+        }
+
+        val bodyTv = TextView(context).apply {
+            this.text = text
+            setTextColor(Color.parseColor("#F9FAFB"))
+            textSize = 15f
+            setLineSpacing(0f, 1.3f)
+            setPadding(0, 0, 0, context.dpToPx(14f))
+        }
+
+        val btn = TextView(context).apply {
+            this.text = "Explain with ELI5 ✨"
+            setTextColor(Color.WHITE)
+            textSize = 14f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            background = GradientDrawable().apply {
+                setColor(ONBOARDING_PURPLE)
+                cornerRadius = context.dpToPx(12f).toFloat()
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(44f))
+            setOnClickListener {
+                onTest(text)
+            }
+        }
+
+        card.addView(badgePill)
         card.addView(bodyTv)
         card.addView(btn)
         return card
@@ -535,6 +558,7 @@ class OnboardingStep3Fragment : Fragment() {
     private fun onUserTestedSample(sampleText: String) {
         hasTested = true
         greenCheckContainer?.visibility = View.VISIBLE
+        finishBtn?.text = "Let's Go! →"
         val intent = Intent(requireContext(), ExplainOverlayActivity::class.java).apply {
             putExtra(ExplainOverlayActivity.EXTRA_TEXT, sampleText)
         }
@@ -569,6 +593,7 @@ class OnboardingActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
+        window.setBackgroundDrawable(ColorDrawable(ONBOARDING_BG))
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(ONBOARDING_BG)

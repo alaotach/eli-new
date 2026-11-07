@@ -132,10 +132,14 @@ class ExplainOverlayActivity : Activity() {
     }
 
     private fun isNetworkAvailable(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
-        val activeNetwork = cm.activeNetwork ?: return false
-        val caps = cm.getNetworkCapabilities(activeNetwork) ?: return false
-        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        return try {
+            val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return true
+            val activeNetwork = cm.activeNetwork ?: return true
+            val caps = cm.getNetworkCapabilities(activeNetwork) ?: return true
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } catch (e: Exception) {
+            true // If permission check fails or is restricted, proceed gracefully
+        }
     }
 
     private fun showLoadingState() {
@@ -336,17 +340,21 @@ class ExplainOverlayActivity : Activity() {
 
     private fun showBottomSheet() {
         // Haptic feedback
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
-            vm?.defaultVibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
-        } else {
-            val v = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                v?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                vm?.defaultVibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
             } else {
-                @Suppress("DEPRECATION")
-                v?.vibrate(40L)
+                val v = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    v?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+                } else {
+                    @Suppress("DEPRECATION")
+                    v?.vibrate(40L)
+                }
             }
+        } catch (e: Exception) {
+            // Ignore vibration errors if restricted on device
         }
 
         bottomSheetDialog = BottomSheetDialog(this)
@@ -624,19 +632,20 @@ class ExplainOverlayActivity : Activity() {
         bottomSheetDialog.setOnDismissListener { finish() }
 
         bottomSheetDialog.setOnShowListener { dialog ->
-            val sheetDialog = dialog as BottomSheetDialog
+            val sheetDialog = dialog as? BottomSheetDialog ?: return@setOnShowListener
             val sheet = sheetDialog.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             sheet?.let {
-                it.setBackgroundColor(Color.TRANSPARENT)
-                val behavior = BottomSheetBehavior.from(it)
-                behavior.isFitToContents = true
-                behavior.skipCollapsed = true
-                val maxAllowedHeight = (resources.displayMetrics.heightPixels * 0.55).toInt()
-                it.layoutParams = it.layoutParams.apply {
-                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                try {
+                    it.setBackgroundColor(Color.TRANSPARENT)
+                    val behavior = BottomSheetBehavior.from(it)
+                    behavior.isFitToContents = true
+                    behavior.skipCollapsed = true
+                    val maxAllowedHeight = (resources.displayMetrics.heightPixels * 0.55).toInt()
+                    behavior.maxHeight = maxAllowedHeight
+                    behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                } catch (e: Exception) {
+                    // Fallback safely
                 }
-                behavior.maxHeight = maxAllowedHeight
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
             }
         }
         bottomSheetDialog.show()
