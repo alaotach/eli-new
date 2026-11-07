@@ -66,7 +66,7 @@ class ExplainOverlayActivity : Activity() {
     private var currentExplanationText: String = ""
     private var targetExplanationText: String = ""
     private var displayedExplanationText: String = ""
-    private var currentActiveMode: String = "ELI5"
+    private var currentActiveMode: String = "Direct"
 
     private val activityScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -124,7 +124,7 @@ class ExplainOverlayActivity : Activity() {
         // Remember last used mode
         currentActiveMode = SettingsManager.getLastMode(this)
         if (currentActiveMode !in listOf("ELI5", "Direct", "Detailed")) {
-            currentActiveMode = "ELI5"
+            currentActiveMode = "Direct"
         }
 
         showBottomSheet()

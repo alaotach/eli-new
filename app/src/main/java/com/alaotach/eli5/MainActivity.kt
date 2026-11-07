@@ -2,6 +2,7 @@ package com.alaotach.eli5
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -35,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
@@ -101,6 +103,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val themePref = SettingsManager.getTheme(this)
+        val initialDark = when (themePref) {
+            "dark" -> true
+            "light" -> false
+            else -> {
+                val nightMask = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
+                nightMask == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            }
+        }
+        window.setBackgroundDrawable(ColorDrawable(if (initialDark) 0xFF13101C.toInt() else 0xFFF9FAFB.toInt()))
+
         enableEdgeToEdge()
 
         checkForAppUpdates()
@@ -233,6 +247,8 @@ fun MainScreen(
 
     var hasOverlayPermission by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
     var tryItText by remember { mutableStateOf("") }
+    var isStatusDismissed by remember { mutableStateOf(SettingsManager.isStatusBannerDismissed(context)) }
+    var isTryItDismissed by remember { mutableStateOf(SettingsManager.isTryItDismissed(context)) }
 
     LaunchedEffect(Unit) {
         history = HistoryManager.getHistory(context)
@@ -279,148 +295,193 @@ fun MainScreen(
         }
 
         // 2. Status Banner: "ELI5 is on" or "Permission needed"
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clickable {
-                    if (!hasOverlayPermission) {
-                        val intent = Intent(
-                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:${context.packageName}")
-                        )
-                        context.startActivity(intent)
-                    }
-                },
-            shape = RoundedCornerShape(16.dp),
-            color = if (hasOverlayPermission) {
-                if (isDark) Color(0xFF13271B) else Color(0xFFE8F5E9)
-            } else {
-                if (isDark) Color(0xFF332014) else Color(0xFFFFF3E0)
-            },
-            border = BorderStroke(
-                1.dp,
-                if (hasOverlayPermission) {
-                    if (isDark) Color(0xFF1E462B) else Color(0xFFA5D6A7)
-                } else {
-                    if (isDark) Color(0xFF593318) else Color(0xFFFFCC80)
-                }
-            )
-        ) {
-            Row(
+        if (!isStatusDismissed) {
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 20.dp)
+                    .clickable {
+                        if (!hasOverlayPermission) {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${context.packageName}")
+                            )
+                            context.startActivity(intent)
+                        }
+                    },
+                shape = RoundedCornerShape(16.dp),
+                color = if (hasOverlayPermission) {
+                    if (isDark) Color(0xFF13271B) else Color(0xFFE8F5E9)
+                } else {
+                    if (isDark) Color(0xFF332014) else Color(0xFFFFF3E0)
+                },
+                border = BorderStroke(
+                    1.dp,
+                    if (hasOverlayPermission) {
+                        if (isDark) Color(0xFF1E462B) else Color(0xFFA5D6A7)
+                    } else {
+                        if (isDark) Color(0xFF593318) else Color(0xFFFFCC80)
+                    }
+                )
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = if (hasOverlayPermission) Icons.Default.CheckCircle else Icons.Default.Warning,
-                        contentDescription = null,
-                        tint = if (hasOverlayPermission) Color(0xFF2E7D32) else Color(0xFFEF6C00),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column {
-                        Text(
-                            text = if (hasOverlayPermission) "ELI5 is on" else "Permission needed",
-                            fontWeight = FontWeight.Bold,
-                            color = primaryTextColor,
-                            fontSize = 14.sp
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (hasOverlayPermission) Icons.Default.CheckCircle else Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = if (hasOverlayPermission) Color(0xFF2E7D32) else Color(0xFFEF6C00),
+                            modifier = Modifier.size(20.dp)
                         )
-                        Text(
-                            text = if (hasOverlayPermission) "Ready in any app" else "Tap here to allow overlay card",
-                            color = secondaryTextColor,
-                            fontSize = 12.sp
-                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = if (hasOverlayPermission) "ELI5 is on" else "Permission needed",
+                                fontWeight = FontWeight.Bold,
+                                color = primaryTextColor,
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = if (hasOverlayPermission) "Ready in any app" else "Tap here to allow overlay card",
+                                color = secondaryTextColor,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (!hasOverlayPermission) {
+                            Text(
+                                text = "Fix →",
+                                color = Color(0xFFEF6C00),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                isStatusDismissed = true
+                                SettingsManager.setStatusBannerDismissed(context, true)
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Dismiss",
+                                tint = if (hasOverlayPermission) (if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)) else Color(0xFFEF6C00),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
-                if (!hasOverlayPermission) {
-                    Text(
-                        text = "Fix →",
-                        color = Color(0xFFEF6C00),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    )
-                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // 3. Try-It Text Box
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            shape = RoundedCornerShape(18.dp),
-            color = cardBg,
-            border = BorderStroke(1.dp, cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Try ELI5 directly",
-                    fontWeight = FontWeight.Bold,
-                    color = primaryTextColor,
-                    fontSize = 15.sp
-                )
-                Text(
-                    text = "Paste or type any complex text to test the explanation card:",
-                    color = secondaryTextColor,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
-                )
-
-                OutlinedTextField(
-                    value = tryItText,
-                    onValueChange = { tryItText = it },
-                    placeholder = { Text("e.g. Quantum entanglement occurs when particles...", fontSize = 13.sp, color = secondaryTextColor) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = accent,
-                        unfocusedBorderColor = cardBorder,
-                        focusedTextColor = primaryTextColor,
-                        unfocusedTextColor = primaryTextColor
-                    ),
-                    maxLines = 4
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(onClick = {
-                        tryItText = "A blockchain is a decentralized distributed ledger that records transactions across a network of computers."
-                    }) {
-                        Text("Insert sample", color = accent, fontSize = 12.sp)
-                    }
-
-                    Button(
-                        onClick = {
-                            if (tryItText.isNotBlank()) {
-                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
-                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, tryItText.trim())
-                                }
-                                context.startActivity(intent)
-                            } else {
-                                Toast.makeText(context, "Please enter some text first", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = accent),
-                        shape = RoundedCornerShape(10.dp)
+        if (!isTryItDismissed) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                shape = RoundedCornerShape(18.dp),
+                color = cardBg,
+                border = BorderStroke(1.dp, cardBorder)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Explain ✨", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = "Try ELI5 directly",
+                            fontWeight = FontWeight.Bold,
+                            color = primaryTextColor,
+                            fontSize = 15.sp
+                        )
+                        IconButton(
+                            onClick = {
+                                isTryItDismissed = true
+                                SettingsManager.setTryItDismissed(context, true)
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Dismiss",
+                                tint = secondaryTextColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = "Paste or type any complex text to test the explanation card:",
+                        color = secondaryTextColor,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
+                    )
+
+                    OutlinedTextField(
+                        value = tryItText,
+                        onValueChange = { tryItText = it },
+                        placeholder = { Text("e.g. Quantum entanglement occurs when particles...", fontSize = 13.sp, color = secondaryTextColor) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = accent,
+                            unfocusedBorderColor = cardBorder,
+                            focusedTextColor = primaryTextColor,
+                            unfocusedTextColor = primaryTextColor
+                        ),
+                        maxLines = 4
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = {
+                            tryItText = "A blockchain is a decentralized distributed ledger that records transactions across a network of computers."
+                        }) {
+                            Text("Insert sample", color = accent, fontSize = 12.sp)
+                        }
+
+                        Button(
+                            onClick = {
+                                if (tryItText.isNotBlank()) {
+                                    val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
+                                        putExtra(ExplainOverlayActivity.EXTRA_TEXT, tryItText.trim())
+                                    }
+                                    context.startActivity(intent)
+                                } else {
+                                    Toast.makeText(context, "Please enter some text first", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = accent),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Explain ✨", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
         // 4. Recent Activity Header
         Row(
@@ -799,6 +860,21 @@ fun MainScreen(
 
                     // Updates & Privacy
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (isStatusDismissed || isTryItDismissed) {
+                            TextButton(
+                                onClick = {
+                                    SettingsManager.setStatusBannerDismissed(context, false)
+                                    SettingsManager.setTryItDismissed(context, false)
+                                    isStatusDismissed = false
+                                    isTryItDismissed = false
+                                    Toast.makeText(context, "Home cards restored", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Restore dismissed home cards", color = accent, fontSize = 13.sp)
+                            }
+                        }
+
                         TextButton(
                             onClick = onCheckUpdates,
                             modifier = Modifier.fillMaxWidth()

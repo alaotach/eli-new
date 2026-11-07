@@ -10,6 +10,8 @@ object SettingsManager {
     private const val KEY_LANGUAGE = "explanation_language"
     private const val KEY_PROOFREAD_TONE = "proofread_default_tone"
     private const val KEY_HISTORY_ENABLED = "history_enabled"
+    private const val KEY_STATUS_BANNER_DISMISSED = "status_banner_dismissed"
+    private const val KEY_TRY_IT_DISMISSED = "try_it_dismissed"
 
     const val PRIVACY_URL = "https://github.com/alaotach/eli-new/blob/main/PRIVACY.md"
 
@@ -35,20 +37,29 @@ object SettingsManager {
 
     fun getDefaultMode(context: Context): String {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_DEFAULT_MODE, "ELI5") ?: "ELI5"
+            .getString(KEY_DEFAULT_MODE, "Direct") ?: "Direct"
     }
 
     fun setDefaultMode(context: Context, mode: String) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putString(KEY_DEFAULT_MODE, mode)
+            .putString(KEY_LAST_MODE, mode)
             .apply()
     }
 
     fun getLastMode(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("default_direct_migrated", false)) {
+            prefs.edit()
+                .putString(KEY_DEFAULT_MODE, "Direct")
+                .putString(KEY_LAST_MODE, "Direct")
+                .putBoolean("default_direct_migrated", true)
+                .apply()
+            return "Direct"
+        }
         val defaultM = getDefaultMode(context)
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_LAST_MODE, defaultM) ?: defaultM
+        return prefs.getString(KEY_LAST_MODE, defaultM) ?: defaultM
     }
 
     fun setLastMode(context: Context, mode: String) {
@@ -91,6 +102,30 @@ object SettingsManager {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putBoolean(KEY_HISTORY_ENABLED, enabled)
+            .apply()
+    }
+
+    fun isStatusBannerDismissed(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_STATUS_BANNER_DISMISSED, false)
+    }
+
+    fun setStatusBannerDismissed(context: Context, dismissed: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_STATUS_BANNER_DISMISSED, dismissed)
+            .apply()
+    }
+
+    fun isTryItDismissed(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_TRY_IT_DISMISSED, false)
+    }
+
+    fun setTryItDismissed(context: Context, dismissed: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_TRY_IT_DISMISSED, dismissed)
             .apply()
     }
 }
