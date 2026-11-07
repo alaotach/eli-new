@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -110,7 +111,7 @@ class ProofreadTextActivity : Activity() {
         get() = if (isDark) "#888888" else "#666666"
 
     private val modeActiveBgStr: String
-        get() = if (isDark) "#007ACC" else "#005A9E"
+        get() = if (isDark) "#8B5CF6" else "#7C3AED"
 
     private val handleColorStr: String
         get() = if (isDark) "#444444" else "#CCCCCC"
@@ -231,7 +232,7 @@ class ProofreadTextActivity : Activity() {
 
         val acceptBtn = createButton(
             text = if (isReadOnly) "Copy ↗" else "Accept ✓",
-            bgColor = Color.parseColor(if (isReadOnly) "#F5A623" else modeActiveBgStr),
+            bgColor = Color.parseColor(modeActiveBgStr),
             isPrimary = true
         ) {
             if (isReadOnly) {
@@ -325,24 +326,32 @@ class ProofreadTextActivity : Activity() {
         }
         suggestionsScroll.addView(suggestionsRow)
 
-        val samplePrompts = listOf("make it more formal", "shorter", "translate to Hindi", "sound urgent", "fix grammar")
-        for (chip in samplePrompts) {
+        val toneChips = listOf("Formal", "Casual", "Urgent", "Translate")
+        for (chip in toneChips) {
             val chipView = TextView(this).apply {
                 text = chip
-                setTextColor(textMainFaded)
+                setTextColor(if (isDark) Color.parseColor("#DDD6FE") else Color.parseColor("#6D28D9"))
                 textSize = 13.0f
-                setPadding((dp * 12).toInt(), (dp * 6).toInt(), (dp * 12).toInt(), (dp * 6).toInt())
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding((dp * 14).toInt(), (dp * 6).toInt(), (dp * 14).toInt(), (dp * 6).toInt())
                 background = GradientDrawable().apply {
-                    setColor(Color.TRANSPARENT)
-                    cornerRadius = dp * 16f
-                    setStroke((dp * 1.0f).toInt(), Color.parseColor(hintColor))
+                    setColor(if (isDark) Color.parseColor("#261F36") else Color.parseColor("#EDE9FE"))
+                    cornerRadius = dp * 14f
+                    setStroke((dp * 1.0f).toInt(), Color.argb((255 * 0.35f).toInt(), 139, 92, 246))
                 }
                 layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                     rightMargin = (dp * 8).toInt()
                 }
                 setOnClickListener {
-                    input.setText(chip)
-                    submitPrompt(chip)
+                    val prompt = when (chip) {
+                        "Formal" -> "make it formal and professional"
+                        "Casual" -> "make it casual and natural"
+                        "Urgent" -> "make it sound urgent"
+                        "Translate" -> "translate to English"
+                        else -> chip
+                    }
+                    input.setText(prompt)
+                    submitPrompt(prompt)
                 }
             }
             suggestionsRow.addView(chipView)

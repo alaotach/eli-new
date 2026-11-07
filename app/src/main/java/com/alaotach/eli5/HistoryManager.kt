@@ -11,6 +11,7 @@ object HistoryManager {
 
     @Throws(JSONException::class)
     fun saveItem(context: Context, item: HistoryItem) {
+        if (!SettingsManager.isHistoryEnabled(context)) return
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val string = sharedPreferences.getString(KEY_HISTORY, "[]")
         val jSONArray = JSONArray(string ?: "[]")

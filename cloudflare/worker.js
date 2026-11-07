@@ -10,6 +10,7 @@ const PROMPTS = {
   explain: {
     Detailed: "Give a very detailed, thorough analysis with deep context about this.",
     Straightforward: "Give a direct, clear, no-fluff summary of this.",
+    Direct: "Give a direct, clear, no-fluff summary of this.",
     ELI5: "Explain this like I am 5 years old. Use simple words and fun analogies.",
     default: "Explain this casually."
   },
@@ -51,15 +52,27 @@ export default {
 
       // 1. Handle /explain endpoint
       if (url.pathname === "/explain" || url.pathname === "/api/explain") {
-        const text = body.text || "";
-        const mode = body.mode || "Straightforward";
-        const modeInstruction = PROMPTS.explain[mode] || PROMPTS.explain.default;
-        prompt = `${modeInstruction}\n\nText to explain:\n${text}\n\nExplanation:`;
+        let text = body.text || body.prompt || body.content || "";
+        if (!text && Array.isArray(body.messages) && body.messages.length > 0) {
+          text = body.messages[body.messages.length - 1]?.content || "";
+        }
+        const rawMode = body.mode || "Straightforward";
+        // Case-insensitive lookup with fallback
+        const modeKey = Object.keys(PROMPTS.explain).find(
+          k => k.toLowerCase() === rawMode.toLowerCase()
+        ) || "default";
+
+        // Optional language parameter: defaults to English (no additional prompt modifier)
+        // Only active if explicitly requested as Hindi to preserve 100% legacy behavior
+        const language = (body.language || "English").toLowerCase();
+        const langInstruction = language.includes("hindi") ? " Explain in clear, natural, and friendly Hindi." : "";
+        const modeInstruction = PROMPTS.explain[modeKey] || PROMPTS.explain.default;
+        prompt = `${modeInstruction}${langInstruction}\n\nText to explain:\n${text}\n\nExplanation:`;
       }
       // 2. Handle /proofread endpoint
       else if (url.pathname === "/proofread" || url.pathname === "/api/proofread") {
-        const text = body.text || "";
-        const instructions = body.instructions || "";
+        const text = body.text || body.baseText || body.content || "";
+        const instructions = body.instructions || body.customInstructions || "";
         if (!instructions.trim()) {
           prompt = `${PROMPTS.proofread.base}${text}`;
         } else {

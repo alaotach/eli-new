@@ -2,9 +2,10 @@ package com.alaotach.eli5
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -30,9 +31,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,9 +43,14 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -56,8 +63,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,10 +70,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.DialogProperties
 import com.alaotach.eli5.ui.theme.Eli5Theme
-import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
@@ -76,10 +78,14 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import io.noties.markwon.Markwon
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+val PurpleAccent = Color(0xFF7C3AED)
+val PurpleAccentDark = Color(0xFF8B5CF6)
+val PurpleLightBg = Color(0xFFF5F3FF)
+val CardDarkBg = Color(0xFF1C1826)
 
 class MainActivity : ComponentActivity() {
 
@@ -108,42 +114,30 @@ class MainActivity : ComponentActivity() {
             }
 
             val prefs = context.getSharedPreferences("eli5_prefs", Context.MODE_PRIVATE)
-            if (!prefs.getBoolean("onboarding_done", false) || !Settings.canDrawOverlays(this@MainActivity)) {
+            if (!prefs.getBoolean("onboarding_done", false)) {
                 startActivity(Intent(this@MainActivity, OnboardingActivity::class.java))
                 finish()
                 return@setContent
             }
 
-            var isViewingTutorial by remember { mutableStateOf(false) }
-
             Eli5Theme(darkTheme = isDark, dynamicColor = false) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    containerColor = if (isDark) Color(0xFF121212) else Color(0xFFF9FAFB)
+                    containerColor = if (isDark) Color(0xFF13101C) else Color(0xFFF9FAFB)
                 ) { innerPadding ->
-                    if (isViewingTutorial) {
-                        HowToUseScreen(
-                            isDark = isDark,
-                            onBack = { isViewingTutorial = false },
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    } else {
-                        MainScreen(
-                            themePref = themePreference,
-                            isDark = isDark,
-                            onThemeChange = {
-                                SettingsManager.setTheme(this@MainActivity, it)
-                                themePreference = it
-                            },
-                            onCheckUpdates = {
-                                triggerManualUpdateCheck()
-                            },
-                            onShowTutorial = {
-                                startActivity(Intent(this@MainActivity, HowToUseActivity::class.java))
-                            },
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }
+                    MainScreen(
+                        themePref = themePreference,
+                        isDark = isDark,
+                        onThemeChange = {
+                            SettingsManager.setTheme(this@MainActivity, it)
+                            themePreference = it
+                        },
+                        onCheckUpdates = { triggerManualUpdateCheck() },
+                        onShowTutorial = {
+                            startActivity(Intent(this@MainActivity, HowToUseActivity::class.java))
+                        },
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }
@@ -163,8 +157,7 @@ class MainActivity : ComponentActivity() {
                         this,
                         AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
                     )
-                } catch (_: Exception) {
-                }
+                } catch (_: Exception) {}
             } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                 appUpdateManager.completeUpdate()
             }
@@ -186,13 +179,13 @@ class MainActivity : ComponentActivity() {
                         AppUpdateOptions.newBuilder(updateType).build()
                     )
                 } catch (e: Exception) {
-                    android.widget.Toast.makeText(this, "Could not start update: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Could not start update: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                android.widget.Toast.makeText(this, "ELI5 is up to date!", android.widget.Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "ELI5 is up to date!", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener {
-            android.widget.Toast.makeText(this, "Check failed: Play Store not available", android.widget.Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Check failed: Play Store not available", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -227,19 +220,16 @@ fun MainScreen(
     val context = LocalContext.current
     var history by remember { mutableStateOf<List<HistoryItem>>(emptyList()) }
     var itemsToShow by remember { mutableStateOf(10) }
-    var selectedItem by remember { mutableStateOf<HistoryItem?>(null) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
-    val cardBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
-    val cardBorder = if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB)
-    val primaryTextColor = if (isDark) Color.White else Color(0xFF111827)
-    val secondaryTextColor = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280)
-    val mutedTextColor = if (isDark) Color(0xFF888888) else Color(0xFF6B7280)
+    val accent = if (isDark) PurpleAccentDark else PurpleAccent
+    val cardBg = if (isDark) CardDarkBg else Color(0xFFFFFFFF)
+    val cardBorder = if (isDark) Color(0xFF2C243B) else Color(0xFFE9E5F2)
+    val primaryTextColor = if (isDark) Color.White else Color(0xFF1C1826)
+    val secondaryTextColor = if (isDark) Color(0xFF9E9AA8) else Color(0xFF6B6678)
 
-    val androidTextColor = if (isDark) {
-        android.graphics.Color.parseColor("#E0E0E0")
-    } else {
-        android.graphics.Color.parseColor("#212121")
-    }
+    var hasOverlayPermission by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    var tryItText by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         history = HistoryManager.getHistory(context)
@@ -250,11 +240,11 @@ fun MainScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        // Header Row
+        // 1. Header Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -263,11 +253,11 @@ fun MainScreen(
                     painter = painterResource(R.drawable.ic_launcher_foreground),
                     contentDescription = "ELI5 Logo",
                     modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isDark) Color(0xFF2C2C2C) else Color(0xFFE8F5E9))
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (isDark) Color(0xFF261F36) else PurpleLightBg)
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "ELI5",
                     fontWeight = FontWeight.Bold,
@@ -276,145 +266,183 @@ fun MainScreen(
                 )
             }
 
-            var expanded by remember { mutableStateOf(false) }
-            Box {
-                IconButton(onClick = { expanded = true }) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = primaryTextColor
-                    )
+            IconButton(onClick = { showSettingsDialog = true }) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = primaryTextColor
+                )
+            }
+        }
+
+        // 2. Status Banner: "ELI5 is on" or "Permission needed"
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .clickable {
+                    if (!hasOverlayPermission) {
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:${context.packageName}")
+                        )
+                        context.startActivity(intent)
+                    }
+                },
+            shape = RoundedCornerShape(16.dp),
+            color = if (hasOverlayPermission) {
+                if (isDark) Color(0xFF13271B) else Color(0xFFE8F5E9)
+            } else {
+                if (isDark) Color(0xFF332014) else Color(0xFFFFF3E0)
+            },
+            border = BorderStroke(
+                1.dp,
+                if (hasOverlayPermission) {
+                    if (isDark) Color(0xFF1E462B) else Color(0xFFA5D6A7)
+                } else {
+                    if (isDark) Color(0xFF593318) else Color(0xFFFFCC80)
                 }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("System Theme") },
-                        onClick = {
-                            onThemeChange("system")
-                            expanded = false
-                        }
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (hasOverlayPermission) Icons.Default.CheckCircle else Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = if (hasOverlayPermission) Color(0xFF2E7D32) else Color(0xFFEF6C00),
+                        modifier = Modifier.size(20.dp)
                     )
-                    DropdownMenuItem(
-                        text = { Text("Light Mode") },
-                        onClick = {
-                            onThemeChange("light")
-                            expanded = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Dark Mode") },
-                        onClick = {
-                            onThemeChange("dark")
-                            expanded = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Check for Updates") },
-                        onClick = {
-                            onCheckUpdates()
-                            expanded = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                "Clear All History",
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        onClick = {
-                            HistoryManager.clearHistory(context)
-                            history = emptyList()
-                            expanded = false
-                        }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = if (hasOverlayPermission) "ELI5 is on" else "Permission needed",
+                            fontWeight = FontWeight.Bold,
+                            color = primaryTextColor,
+                            fontSize = 14.sp
+                        )
+                        Text(
+                            text = if (hasOverlayPermission) "Ready in any app" else "Tap here to allow overlay card",
+                            color = secondaryTextColor,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                if (!hasOverlayPermission) {
+                    Text(
+                        text = "Fix →",
+                        color = Color(0xFFEF6C00),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Stats Row
+        // 3. Try-It Text Box
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            shape = RoundedCornerShape(18.dp),
+            color = cardBg,
+            border = BorderStroke(1.dp, cardBorder)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Try ELI5 directly",
+                    fontWeight = FontWeight.Bold,
+                    color = primaryTextColor,
+                    fontSize = 15.sp
+                )
+                Text(
+                    text = "Paste or type any complex text to test the explanation card:",
+                    color = secondaryTextColor,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
+                )
+
+                OutlinedTextField(
+                    value = tryItText,
+                    onValueChange = { tryItText = it },
+                    placeholder = { Text("e.g. Quantum entanglement occurs when particles...", fontSize = 13.sp, color = secondaryTextColor) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = accent,
+                        unfocusedBorderColor = cardBorder,
+                        focusedTextColor = primaryTextColor,
+                        unfocusedTextColor = primaryTextColor
+                    ),
+                    maxLines = 4
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = {
+                        tryItText = "A blockchain is a decentralized distributed ledger that records transactions across a network of computers."
+                    }) {
+                        Text("Insert sample", color = accent, fontSize = 12.sp)
+                    }
+
+                    Button(
+                        onClick = {
+                            if (tryItText.isNotBlank()) {
+                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
+                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, tryItText.trim())
+                                }
+                                context.startActivity(intent)
+                            } else {
+                                Toast.makeText(context, "Please enter some text first", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = accent),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Explain ✨", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // 4. Recent Activity Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-            val todayStr = dateFormat.format(Date())
-            val todayItems = history.filter { dateFormat.format(Date(it.timestamp)) == todayStr }
-            val wordsToday = todayItems.sumOf { item ->
-                Regex("\\s+").split(item.originalText).count { it.isNotEmpty() }
-            }
+            Text(
+                text = "Recent Activity",
+                fontWeight = FontWeight.Bold,
+                color = primaryTextColor,
+                style = MaterialTheme.typography.titleMedium
+            )
 
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(80.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = cardBg,
-                border = BorderStroke(1.dp, cardBorder)
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = wordsToday.toString(),
-                        color = primaryTextColor,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                    Text(
-                        text = "Words Explained Today",
-                        color = mutedTextColor,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-            }
-
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(80.dp)
-                    .clickable(onClick = onShowTutorial),
-                shape = RoundedCornerShape(12.dp),
-                color = Color(0xFF00C853)
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "How to Use",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Interactive Guide",
-                        color = Color(0xFFE0FFE0),
-                        style = MaterialTheme.typography.labelSmall
-                    )
+            if (history.isNotEmpty()) {
+                TextButton(onClick = {
+                    HistoryManager.clearHistory(context)
+                    history = emptyList()
+                }) {
+                    Text("Clear All", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Your Recent Activity",
-            modifier = Modifier.padding(start = 16.dp),
-            fontWeight = FontWeight.Bold,
-            color = primaryTextColor,
-            style = MaterialTheme.typography.titleMedium
-        )
 
         if (history.isEmpty()) {
             Column(
@@ -424,46 +452,109 @@ fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "No history yet!",
+                    text = "No recent explanations",
                     fontWeight = FontWeight.Bold,
                     color = primaryTextColor,
                     style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Highlight some text anywhere and select Eli5 to get started.",
+                    text = "Highlight text in any app and select ELI5 to start.",
                     color = secondaryTextColor,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    fontSize = 13.sp
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = onShowTutorial,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853))
+                    colors = ButtonDefaults.buttonColors(containerColor = accent),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("How to Use ELI5", color = Color.White)
+                    Text("Interactive Guide", color = Color.White)
                 }
             }
         } else {
-            history.take(itemsToShow).forEach { item ->
-                HistoryCard(
-                    item = item,
-                    isDark = isDark,
-                    onClick = { selectedItem = item },
-                    onDelete = {
-                        HistoryManager.deleteItem(context, item)
-                        history = HistoryManager.getHistory(context)
-                    }
-                )
-            }
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                history.take(itemsToShow).forEach { item ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                            .clickable {
+                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
+                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, item.originalText)
+                                }
+                                context.startActivity(intent)
+                            },
+                        shape = RoundedCornerShape(14.dp),
+                        color = cardBg,
+                        border = BorderStroke(1.dp, cardBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isDark) Color(0xFF261F36) else PurpleLightBg
+                                ) {
+                                    Text(
+                                        text = item.mode,
+                                        color = accent,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
 
-            if (history.size > itemsToShow) {
-                TextButton(
-                    onClick = { itemsToShow += 10 },
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(16.dp)
-                ) {
-                    Text("Load More")
+                                IconButton(
+                                    onClick = {
+                                        HistoryManager.deleteItem(context, item)
+                                        history = HistoryManager.getHistory(context)
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = secondaryTextColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = item.originalText.replace('\n', ' '),
+                                fontWeight = FontWeight.SemiBold,
+                                color = primaryTextColor,
+                                fontSize = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = item.resultText.replace('\n', ' '),
+                                color = secondaryTextColor,
+                                fontSize = 13.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+
+                if (history.size > itemsToShow) {
+                    TextButton(
+                        onClick = { itemsToShow += 10 },
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Text("Load More", color = accent)
+                    }
                 }
             }
         }
@@ -471,353 +562,188 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(32.dp))
     }
 
-    // Detail Dialog
-    selectedItem?.let { item ->
-        val configuration = LocalConfiguration.current
-        val screenHeight = configuration.screenHeightDp.dp
+    // 5. Settings Dialog
+    if (showSettingsDialog) {
+        var defaultMode by remember { mutableStateOf(SettingsManager.getDefaultMode(context)) }
+        var language by remember { mutableStateOf(SettingsManager.getLanguage(context)) }
+        var proofreadTone by remember { mutableStateOf(SettingsManager.getProofreadDefaultTone(context)) }
+        var historyEnabled by remember { mutableStateOf(SettingsManager.isHistoryEnabled(context)) }
+        var currentTheme by remember { mutableStateOf(SettingsManager.getTheme(context)) }
+
         AlertDialog(
-            onDismissRequest = { selectedItem = null },
+            onDismissRequest = { showSettingsDialog = false },
             confirmButton = {
-                TextButton(onClick = { selectedItem = null }) {
-                    Text("Close", fontWeight = FontWeight.Bold)
+                TextButton(onClick = { showSettingsDialog = false }) {
+                    Text("Done", color = accent, fontWeight = FontWeight.Bold)
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .heightIn(max = screenHeight * 0.75f),
             title = {
-                Text(
-                    text = item.mode,
-                    fontWeight = FontWeight.Bold,
-                    color = primaryTextColor
-                )
+                Text("Settings", fontWeight = FontWeight.Bold, color = primaryTextColor)
             },
             text = {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isDark) Color(0xFF262626) else Color(0xFFF3F4F6)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "Original Text",
-                                color = if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = item.originalText,
-                                color = if (isDark) Color(0xFFD1D5DB) else Color(0xFF374151),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isDark) Color(0xFF1E2820) else Color(0xFFE8F5E9).copy(alpha = 0.5f)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "Result",
-                                color = if (isDark) Color(0xFF4CAF50) else Color(0xFF1B5E20),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            AndroidView(
-                                factory = { ctx ->
-                                    TextView(ctx).apply {
-                                        textSize = 15f
-                                        setLineSpacing(0f, 1.2f)
-                                    }
-                                },
-                                update = { tv ->
-                                    tv.setTextColor(androidTextColor)
-                                    Markwon.create(tv.context).setMarkdown(tv, item.resultText)
+                    // Default Mode
+                    Column {
+                        Text("Default Explanation Mode", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("ELI5", "Direct", "Detailed").forEach { mode ->
+                                val isSelected = defaultMode == mode
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable {
+                                            defaultMode = mode
+                                            SettingsManager.setDefaultMode(context, mode)
+                                        },
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                                ) {
+                                    Text(
+                                        text = mode,
+                                        color = if (isSelected) Color.White else primaryTextColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
                                 }
-                            )
+                            }
                         }
                     }
-                }
-            },
-            shape = RoundedCornerShape(20.dp),
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        )
-    }
-}
 
-@Composable
-fun HistoryCard(
-    item: HistoryItem,
-    isDark: Boolean = isSystemInDarkTheme(),
-    onClick: () -> Unit,
-    onDelete: (() -> Unit)? = null
-) {
-    val dateStr = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date(item.timestamp))
-    val badgeColor = when {
-        item.mode.contains("ELI5", ignoreCase = true) -> if (isDark) Color(0xFF00C853) else Color(0xFF008933)
-        item.mode.contains("Proofread", ignoreCase = true) -> if (isDark) Color(0xFFFF7043) else Color(0xFFC04000)
-        else -> if (isDark) Color(0xFF4CA640) else Color(0xFF2E7D32)
-    }
-
-    val cardBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
-    val cardBorder = if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB)
-    val primaryTextColor = if (isDark) Color.White else Color(0xFF111827)
-    val secondaryTextColor = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280)
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = cardBg,
-        border = BorderStroke(1.dp, cardBorder)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    modifier = Modifier.weight(1f, fill = false),
-                    shape = RoundedCornerShape(4.dp),
-                    color = badgeColor.copy(alpha = if (isDark) 0.2f else 0.12f),
-                    border = BorderStroke(0.5.dp, badgeColor.copy(alpha = if (isDark) 0.5f else 0.4f))
-                ) {
-                    Text(
-                        text = item.mode,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        color = badgeColor,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = dateStr,
-                        color = secondaryTextColor,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                    if (onDelete != null) {
-                        Spacer(modifier = Modifier.width(6.dp))
-                        IconButton(
-                            onClick = onDelete,
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                modifier = Modifier.size(16.dp),
-                                tint = Color(0xFFFF5252)
-                            )
+                    // Explanation Language
+                    Column {
+                        Text("Explanation Language", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("English", "Hindi").forEach { lang ->
+                                val isSelected = language == lang
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable {
+                                            language = lang
+                                            SettingsManager.setLanguage(context, lang)
+                                        },
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                                ) {
+                                    Text(
+                                        text = lang,
+                                        color = if (isSelected) Color.White else primaryTextColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
                         }
                     }
-                }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = item.originalText,
-                color = primaryTextColor,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
 
-@Composable
-fun HowToUseScreen(
-    isDark: Boolean = isSystemInDarkTheme(),
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val primaryTextColor = if (isDark) Color.White else Color(0xFF111827)
-    val secondaryTextColor = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280)
-    val tagBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF)
-    val tagBorder = if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB)
+                    // Proofread Tone
+                    Column {
+                        Text("Proofread Tone Default", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            listOf("Casual", "Formal", "Urgent", "Translate").forEach { tone ->
+                                val isSelected = proofreadTone == tone
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable {
+                                            proofreadTone = tone
+                                            SettingsManager.setProofreadDefaultTone(context, tone)
+                                        },
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                                ) {
+                                    Text(
+                                        text = tone,
+                                        color = if (isSelected) Color.White else primaryTextColor,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(vertical = 6.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = primaryTextColor
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "How to Use ELI5",
-                fontWeight = FontWeight.Bold,
-                color = primaryTextColor,
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
+                    // Theme
+                    Column {
+                        Text("Theme", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("System" to "system", "Light" to "light", "Dark" to "dark").forEach { (label, valStr) ->
+                                val isSelected = currentTheme == valStr
+                                Surface(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable {
+                                            currentTheme = valStr
+                                            onThemeChange(valStr)
+                                        },
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                                ) {
+                                    Text(
+                                        text = label,
+                                        color = if (isSelected) Color.White else primaryTextColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
-        ScrollableTabRow(
-            selectedTabIndex = 0,
-            edgePadding = 16.dp,
-            indicator = {},
-            divider = {},
-            containerColor = Color.Transparent
-        ) {
-            listOf("Setup", "Explain", "Proofread", "Tips").forEach { tag ->
-                Surface(
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .clickable { },
-                    shape = RoundedCornerShape(20.dp),
-                    color = tagBg,
-                    border = BorderStroke(1.dp, tagBorder)
-                ) {
-                    Text(
-                        text = tag,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = secondaryTextColor,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
-        ) {
-            StepCard("1", "Highlight Any Text", "Find text you want explained in any app (Chrome, WhatsApp, Twitter, etc.) and long-press to highlight it.", isDark)
-            StepCard("2", "Open Context Menu", "Wait for the native Android pop-up menu. If you don't see 'Explain with ELI5', tap the three dots.", isDark)
-            StepCard("3", "Tap 'Explain with ELI5'", "Select ELI5 from the menu. The app will instantly process your request.", isDark)
-            StepCard("4", "Get the Magic", "A tiny elegant card will overlay directly on your screen without ever forcing you to switch apps!", isDark)
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = "Visual Guide",
-                modifier = Modifier.padding(bottom = 16.dp),
-                color = Color(0xFF00C853),
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            val guides = listOf(
-                R.drawable.tutorial_img_6 to "Highlight Text",
-                R.drawable.tutorial_img_7 to "Tap Explain",
-                R.drawable.tutorial_img_8 to "Review Proofread",
-                R.drawable.tutorial_img_9 to "Adjust Response",
-                R.drawable.tutorial_img_4 to "Read Result",
-                R.drawable.tutorial_img_5 to "Learn Meaning"
-            )
-
-            guides.forEach { (imgRes, label) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(imgRes),
-                        contentDescription = label,
-                        modifier = Modifier
-                            .weight(1f)
-                            .heightIn(max = 250.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Fit
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Surface(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFFFFF),
-                        border = BorderStroke(1.dp, if (isDark) Color(0xFF2B2B2A) else Color(0xFFE5E7EB))
+                    // History Privacy Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = label,
-                                color = primaryTextColor,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "This step shows how to interact seamlessly outside the main app.",
-                                color = secondaryTextColor,
-                                fontSize = 12.sp,
-                                lineHeight = 18.sp
-                            )
+                        Column {
+                            Text("Save History", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
+                            Text("Keep recent explanations for quick access", fontSize = 11.sp, color = secondaryTextColor)
+                        }
+                        Switch(
+                            checked = historyEnabled,
+                            onCheckedChange = {
+                                historyEnabled = it
+                                SettingsManager.setHistoryEnabled(context, it)
+                            },
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accent)
+                        )
+                    }
+
+                    // Updates & Privacy
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextButton(
+                            onClick = onCheckUpdates,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Check for Updates", color = accent, fontSize = 13.sp)
+                        }
+
+                        TextButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(SettingsManager.PRIVACY_URL))
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Privacy Policy ↗", color = secondaryTextColor, fontSize = 13.sp)
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-    }
-}
-
-@Composable
-fun StepCard(stepNum: String, title: String, desc: String, isDark: Boolean = isSystemInDarkTheme()) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 12.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Surface(
-            modifier = Modifier.size(32.dp),
-            shape = CircleShape,
-            color = Color(0xFF00C853)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = stepNum,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Column {
-            Text(
-                text = title,
-                color = if (isDark) Color.White else Color(0xFF111827),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = desc,
-                color = if (isDark) Color(0xFFAAAAAA) else Color(0xFF6B7280),
-                fontSize = 15.sp,
-                lineHeight = 22.sp
-            )
-        }
+        )
     }
 }
