@@ -52,7 +52,7 @@ class DotsView(context: Context) : View(context) {
 
         for (i in 0 until dotCount) {
             val r = if (i == activeIndex) activeRadius else inactiveRadius
-            paint.color = Color.parseColor(if (i == activeIndex) "#007ACC" else "#2A2A2A")
+            paint.color = Color.parseColor(if (i == activeIndex) "#7C3AED" else "#2A2A2A")
             canvas.drawCircle(startX + r, centerY, r, paint)
             startX += (r * f) + spacing
         }
@@ -64,14 +64,14 @@ class DotsView(context: Context) : View(context) {
 }
 
 class HowToUseActivity : AppCompatActivity() {
-    private val colorBg = Color.parseColor("#0D0D0D")
-    private val colorCard = Color.parseColor("#1E1E1E")
-    private val colorCard2 = Color.parseColor("#252525")
-    private val colorBlue = Color.parseColor("#007ACC")
-    private val colorBlueL = Color.parseColor("#7EC8FF")
+    private val colorBg = Color.parseColor("#120F1D")
+    private val colorCard = Color.parseColor("#1C172B")
+    private val colorCard2 = Color.parseColor("#251F38")
+    private val colorBlue = Color.parseColor("#7C3AED")
+    private val colorBlueL = Color.parseColor("#A78BFA")
     private val colorWhite = Color.parseColor("#FFFFFF")
-    private val colorMuted = Color.parseColor("#888888")
-    private val colorBorder = Color.parseColor("#2A2A2A")
+    private val colorMuted = Color.parseColor("#9E9AA8")
+    private val colorBorder = Color.parseColor("#2C243B")
     private val colorRed = Color.parseColor("#FF5555")
 
     private lateinit var viewFlipper: ViewFlipper
