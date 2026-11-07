@@ -463,11 +463,13 @@ class ExplainOverlayActivity : Activity() {
             setPadding((dp * 8).toInt(), (dp * 6).toInt(), (dp * 8).toInt(), (dp * 6).toInt())
             setOnClickListener {
                 if (currentExplanationText.isNotBlank()) {
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, currentExplanationText)
-                    }
-                    startActivity(Intent.createChooser(shareIntent, "Share ELI5 Explanation"))
+                    ShareImageGenerator.shareExplanation(
+                        this@ExplainOverlayActivity,
+                        originalSelectedText,
+                        currentExplanationText,
+                        currentActiveMode,
+                        activityScope
+                    )
                 }
             }
         }
