@@ -295,6 +295,7 @@ class ExplainOverlayActivity : Activity() {
             val payload = JSONObject().apply {
                 put("text", promptText)
                 put("mode", resolvedMode)
+                put("language", language)
             }
 
             OutputStreamWriter(conn.outputStream).use { writer ->

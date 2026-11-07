@@ -53,8 +53,10 @@ export default {
       if (url.pathname === "/explain" || url.pathname === "/api/explain") {
         const text = body.text || "";
         const mode = body.mode || "Straightforward";
+        const language = (body.language || "English").toLowerCase();
+        const langInstruction = language.includes("hindi") ? " Explain in clear, natural, and friendly Hindi." : "";
         const modeInstruction = PROMPTS.explain[mode] || PROMPTS.explain.default;
-        prompt = `${modeInstruction}\n\nText to explain:\n${text}\n\nExplanation:`;
+        prompt = `${modeInstruction}${langInstruction}\n\nText to explain:\n${text}\n\nExplanation:`;
       }
       // 2. Handle /proofread endpoint
       else if (url.pathname === "/proofread" || url.pathname === "/api/proofread") {
