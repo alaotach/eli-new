@@ -45,6 +45,8 @@ import java.net.URL
 class ExplainOverlayActivity : Activity() {
     companion object {
         const val EXTRA_TEXT = "extra_text"
+        const val EXTRA_RESULT = "extra_result"
+        const val EXTRA_MODE = "extra_mode"
     }
 
     private lateinit var bottomSheetDialog: BottomSheetDialog
@@ -114,6 +116,9 @@ class ExplainOverlayActivity : Activity() {
             return
         }
 
+        val cachedResult = intent?.getStringExtra(EXTRA_RESULT)
+        val initialMode = intent?.getStringExtra(EXTRA_MODE)
+
         // Too-long text handling (>600 chars): explain first part to stay responsive
         if (originalSelectedText.length > 600) {
             processedText = originalSelectedText.take(600)
@@ -121,10 +126,28 @@ class ExplainOverlayActivity : Activity() {
             processedText = originalSelectedText
         }
 
-        // Remember last used mode
-        currentActiveMode = SettingsManager.getLastMode(this)
-        if (currentActiveMode !in listOf("ELI5", "Direct", "Detailed")) {
-            currentActiveMode = "Direct"
+        if (!initialMode.isNullOrEmpty() && initialMode in listOf("ELI5", "Direct", "Detailed")) {
+            currentActiveMode = initialMode
+        } else {
+            // Remember last used mode
+            currentActiveMode = SettingsManager.getLastMode(this)
+            if (currentActiveMode !in listOf("ELI5", "Direct", "Detailed")) {
+                currentActiveMode = "Direct"
+            }
+        }
+
+        // Preload any saved history results for this exact text so tab switching and reopening never re-fetch
+        try {
+            val matchingHistory = HistoryManager.getHistory(this).filter { it.originalText == originalSelectedText }
+            for (hist in matchingHistory) {
+                if (hist.mode in listOf("ELI5", "Direct", "Detailed") && hist.resultText.isNotBlank()) {
+                    cachedExplanations[hist.mode] = hist.resultText
+                }
+            }
+        } catch (_: Exception) {}
+
+        if (!cachedResult.isNullOrEmpty()) {
+            cachedExplanations[currentActiveMode] = cachedResult
         }
 
         showBottomSheet()

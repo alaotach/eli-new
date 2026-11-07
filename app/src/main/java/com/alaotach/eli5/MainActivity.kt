@@ -552,6 +552,8 @@ fun MainScreen(
                             .clickable {
                                 val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
                                     putExtra(ExplainOverlayActivity.EXTRA_TEXT, item.originalText)
+                                    putExtra(ExplainOverlayActivity.EXTRA_RESULT, item.resultText)
+                                    putExtra(ExplainOverlayActivity.EXTRA_MODE, item.mode)
                                 }
                                 context.startActivity(intent)
                             },
