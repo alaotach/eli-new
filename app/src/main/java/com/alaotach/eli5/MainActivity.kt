@@ -14,6 +14,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -554,6 +557,77 @@ fun MainScreen(
                             .padding(vertical = 12.dp)
                     ) {
                         Text("Load More", color = accent)
+                    }
+                }
+            }
+        }
+
+        // 4b. Visual Tutorial Guide Section
+        Spacer(modifier = Modifier.height(24.dp))
+        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Visual Guide",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = primaryTextColor
+                )
+                TextButton(onClick = onShowTutorial) {
+                    Text("Interactive Tour →", color = accent, fontSize = 12.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val guideSteps = listOf(
+                Triple(R.drawable.tutorial_img_6, "Highlight Text", "Select text in any app (Chrome, WhatsApp) & tap ⋮"),
+                Triple(R.drawable.tutorial_img_7, "Choose ELI5", "Select 'Explain with ELI5' from the popup"),
+                Triple(R.drawable.tutorial_img_4, "Instant Card", "Read concise explanation without leaving your app"),
+                Triple(R.drawable.tutorial_img_8, "Proofread", "Auto-correct mistakes and adjust tone in 1 tap")
+            )
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(guideSteps) { (imageRes, titleText, descText) ->
+                    Surface(
+                        modifier = Modifier
+                            .width(200.dp)
+                            .clickable { onShowTutorial() },
+                        shape = RoundedCornerShape(14.dp),
+                        color = cardBg,
+                        border = BorderStroke(1.dp, cardBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Image(
+                                painter = painterResource(imageRes),
+                                contentDescription = titleText,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(230.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = titleText,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.5.sp,
+                                color = primaryTextColor
+                            )
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(
+                                text = descText,
+                                fontSize = 11.5.sp,
+                                color = secondaryTextColor,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }
