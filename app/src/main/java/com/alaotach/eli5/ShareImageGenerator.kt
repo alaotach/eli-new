@@ -331,7 +331,7 @@ object ShareImageGenerator {
                     imageFile
                 )
 
-                val caption = "$explanationText\n\nExplained by ELI5: $PLAY_STORE_URL"
+                val caption = "Explained with ELI5: $PLAY_STORE_URL"
 
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "image/png"
@@ -344,10 +344,10 @@ object ShareImageGenerator {
                 context.startActivity(Intent.createChooser(shareIntent, "Share ELI5 Explanation"))
             } catch (e: Exception) {
                 // Fallback to text if image generation encounters any issue
-                val caption = "$explanationText\n\nExplained by ELI5: $PLAY_STORE_URL"
+                val textFallback = "$explanationText\n\nExplained with ELI5: $PLAY_STORE_URL"
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, caption)
+                    putExtra(Intent.EXTRA_TEXT, textFallback)
                 }
                 context.startActivity(Intent.createChooser(shareIntent, "Share ELI5 Explanation"))
             }
