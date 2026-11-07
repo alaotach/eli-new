@@ -45,9 +45,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
@@ -58,6 +61,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -225,6 +229,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     themePref: String,
@@ -697,203 +702,339 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(32.dp))
     }
 
-    // 5. Settings Dialog
+    // 5. Settings Bottom Sheet
     if (showSettingsDialog) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         var defaultMode by remember { mutableStateOf(SettingsManager.getDefaultMode(context)) }
         var language by remember { mutableStateOf(SettingsManager.getLanguage(context)) }
         var proofreadTone by remember { mutableStateOf(SettingsManager.getProofreadDefaultTone(context)) }
         var historyEnabled by remember { mutableStateOf(SettingsManager.isHistoryEnabled(context)) }
         var currentTheme by remember { mutableStateOf(SettingsManager.getTheme(context)) }
 
-        AlertDialog(
+        ModalBottomSheet(
             onDismissRequest = { showSettingsDialog = false },
-            confirmButton = {
-                TextButton(onClick = { showSettingsDialog = false }) {
-                    Text("Done", color = accent, fontWeight = FontWeight.Bold)
-                }
-            },
-            title = {
-                Text("Settings", fontWeight = FontWeight.Bold, color = primaryTextColor)
-            },
-            text = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+            sheetState = sheetState,
+            containerColor = if (isDark) CardDarkBg else Color.White,
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Header Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Default Mode
-                    Column {
-                        Text("Default Explanation Mode", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("ELI5", "Direct", "Detailed").forEach { mode ->
-                                val isSelected = defaultMode == mode
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            defaultMode = mode
-                                            SettingsManager.setDefaultMode(context, mode)
-                                        },
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                                ) {
-                                    Text(
-                                        text = mode,
-                                        color = if (isSelected) Color.White else primaryTextColor,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Explanation Language
-                    Column {
-                        Text("Explanation Language", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("English", "Hindi").forEach { lang ->
-                                val isSelected = language == lang
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            language = lang
-                                            SettingsManager.setLanguage(context, lang)
-                                        },
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                                ) {
-                                    Text(
-                                        text = lang,
-                                        color = if (isSelected) Color.White else primaryTextColor,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Proofread Tone
-                    Column {
-                        Text("Proofread Tone Default", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            listOf("Casual", "Formal", "Urgent", "Translate").forEach { tone ->
-                                val isSelected = proofreadTone == tone
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            proofreadTone = tone
-                                            SettingsManager.setProofreadDefaultTone(context, tone)
-                                        },
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                                ) {
-                                    Text(
-                                        text = tone,
-                                        color = if (isSelected) Color.White else primaryTextColor,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(vertical = 6.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Theme
-                    Column {
-                        Text("Theme", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("System" to "system", "Light" to "light", "Dark" to "dark").forEach { (label, valStr) ->
-                                val isSelected = currentTheme == valStr
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            currentTheme = valStr
-                                            onThemeChange(valStr)
-                                        },
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                                ) {
-                                    Text(
-                                        text = label,
-                                        color = if (isSelected) Color.White else primaryTextColor,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // History Privacy Toggle
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Text(
+                        text = "Settings",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = primaryTextColor
+                    )
+                    IconButton(
+                        onClick = { showSettingsDialog = false },
+                        modifier = Modifier.size(32.dp)
                     ) {
-                        Column {
-                            Text("Save History", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = primaryTextColor)
-                            Text("Keep recent explanations for quick access", fontSize = 11.sp, color = secondaryTextColor)
-                        }
-                        Switch(
-                            checked = historyEnabled,
-                            onCheckedChange = {
-                                historyEnabled = it
-                                SettingsManager.setHistoryEnabled(context, it)
-                            },
-                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = accent)
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
+                }
 
-                    // Updates & Privacy
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        if (isStatusDismissed || isTryItDismissed) {
-                            TextButton(
-                                onClick = {
+                // Default Mode
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Default Explanation Mode",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = primaryTextColor
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("ELI5", "Direct", "Detailed").forEach { mode ->
+                            val isSelected = defaultMode == mode
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        defaultMode = mode
+                                        SettingsManager.setDefaultMode(context, mode)
+                                    },
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                            ) {
+                                Text(
+                                    text = mode,
+                                    color = if (isSelected) Color.White else primaryTextColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 9.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Explanation Language
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Explanation Language",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = primaryTextColor
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("English", "Hindi").forEach { lang ->
+                            val isSelected = language == lang
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        language = lang
+                                        SettingsManager.setLanguage(context, lang)
+                                    },
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                            ) {
+                                Text(
+                                    text = lang,
+                                    color = if (isSelected) Color.White else primaryTextColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 9.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Proofread Tone
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Proofread Tone Default",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = primaryTextColor
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf("Casual", "Formal", "Urgent", "Translate").forEach { tone ->
+                            val isSelected = proofreadTone == tone
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        proofreadTone = tone
+                                        SettingsManager.setProofreadDefaultTone(context, tone)
+                                    },
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                            ) {
+                                Text(
+                                    text = tone,
+                                    color = if (isSelected) Color.White else primaryTextColor,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Theme
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Theme",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = primaryTextColor
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("System" to "system", "Light" to "light", "Dark" to "dark").forEach { (label, valStr) ->
+                            val isSelected = currentTheme == valStr
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        currentTheme = valStr
+                                        onThemeChange(valStr)
+                                    },
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
+                            ) {
+                                Text(
+                                    text = label,
+                                    color = if (isSelected) Color.White else primaryTextColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 9.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // History Privacy Toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Save History",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp,
+                            color = primaryTextColor
+                        )
+                        Text(
+                            "Keep recent explanations for quick access",
+                            fontSize = 11.5.sp,
+                            color = secondaryTextColor
+                        )
+                    }
+                    Switch(
+                        checked = historyEnabled,
+                        onCheckedChange = {
+                            historyEnabled = it
+                            SettingsManager.setHistoryEnabled(context, it)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = accent
+                        )
+                    )
+                }
+
+                HorizontalDivider(
+                    color = cardBorder,
+                    thickness = 1.dp
+                )
+
+                // Actions List
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (isStatusDismissed || isTryItDismissed) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
                                     SettingsManager.setStatusBannerDismissed(context, false)
                                     SettingsManager.setTryItDismissed(context, false)
                                     isStatusDismissed = false
                                     isTryItDismissed = false
                                     Toast.makeText(context, "Home cards restored", Toast.LENGTH_SHORT).show()
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isDark) Color(0xFF261F36) else PurpleLightBg
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Restore dismissed home cards", color = accent, fontSize = 13.sp)
+                                Text(
+                                    "Restore hidden home cards",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = accent
+                                )
+                                Text("↺", fontSize = 14.sp, color = accent, fontWeight = FontWeight.Bold)
                             }
                         }
+                    }
 
-                        TextButton(
-                            onClick = onCheckUpdates,
-                            modifier = Modifier.fillMaxWidth()
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onCheckUpdates() },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Check for Updates", color = accent, fontSize = 13.sp)
+                            Text(
+                                "Check for Updates",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = primaryTextColor
+                            )
+                            Text("→", fontSize = 13.sp, color = accent)
                         }
+                    }
 
-                        TextButton(
-                            onClick = {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(SettingsManager.PRIVACY_URL))
                                 context.startActivity(intent)
                             },
-                            modifier = Modifier.fillMaxWidth()
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Privacy Policy ↗", color = secondaryTextColor, fontSize = 13.sp)
+                            Text(
+                                "Privacy Policy",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = secondaryTextColor
+                            )
+                            Text("↗", fontSize = 13.sp, color = secondaryTextColor)
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Button(
+                    onClick = { showSettingsDialog = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = accent),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Done", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
-        )
+        }
     }
 }
