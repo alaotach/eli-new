@@ -28,3 +28,4 @@ local.properties
 *.zip
 KEYSTORE_CREDENTIALS.txt
 .kotlin/
+*.aab
