@@ -223,6 +223,8 @@ class ExplainOverlayActivity : Activity() {
 
         val cacheKey = "$mode:$language" + if (extraModifier.isNullOrEmpty()) "" else ":$extraModifier"
 
+        AnalyticsManager.logExplainRequest(this, mode, language, isFromSnip, originalSelectedText.length)
+
         if (cachedExplanations.containsKey(cacheKey)) {
             val cached = cachedExplanations[cacheKey]!!
             currentExplanationText = cached
@@ -231,6 +233,7 @@ class ExplainOverlayActivity : Activity() {
                 tv.alpha = 1.0f
                 Markwon.create(this).setMarkdown(tv, cached)
             }
+            AnalyticsManager.logExplainSuccess(this, mode, language, isCached = true)
             return
         }
 
@@ -301,6 +304,7 @@ class ExplainOverlayActivity : Activity() {
                     bodyTextView?.let { tv ->
                         tv.alpha = 1.0f
                     }
+                    AnalyticsManager.logExplainSuccess(this@ExplainOverlayActivity, mode, language, isCached = false)
                     HistoryManager.saveItem(
                         this@ExplainOverlayActivity,
                         HistoryItem(System.currentTimeMillis(), originalSelectedText, explanation, mode)
@@ -479,6 +483,7 @@ class ExplainOverlayActivity : Activity() {
                 if (currentExplanationText.isNotBlank()) {
                     val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     cm.setPrimaryClip(ClipData.newPlainText("ELI5 Explanation", currentExplanationText))
+                    AnalyticsManager.logCopyResult(this@ExplainOverlayActivity, currentActiveMode, currentActiveLanguage)
                     Toast.makeText(this@ExplainOverlayActivity, "Copied to clipboard", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -494,6 +499,7 @@ class ExplainOverlayActivity : Activity() {
             setPadding((dp * 8).toInt(), (dp * 6).toInt(), (dp * 8).toInt(), (dp * 6).toInt())
             setOnClickListener {
                 if (currentExplanationText.isNotBlank()) {
+                    AnalyticsManager.logShareCard(this@ExplainOverlayActivity, currentActiveMode, currentActiveLanguage)
                     ShareImageGenerator.shareExplanation(
                         this@ExplainOverlayActivity,
                         originalSelectedText,
@@ -663,6 +669,7 @@ class ExplainOverlayActivity : Activity() {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             setOnClickListener {
                 showLanguagePickerDialog { selected ->
+                    AnalyticsManager.logLanguageChanged(this@ExplainOverlayActivity, selected.englishName, "overlay_modal")
                     if (!selected.englishName.equals(userDefaultLanguage, ignoreCase = true)) {
                         secondaryLanguage = selected.englishName
                     }

@@ -523,6 +523,7 @@ fun MainScreen(
                                 .clickable {
                                     currentLanguage = langName
                                     SettingsManager.setLanguage(context, langName)
+                                    AnalyticsManager.logLanguageChanged(context, langName, "home_chip")
                                 },
                             shape = RoundedCornerShape(10.dp),
                             color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg,
@@ -1251,6 +1252,7 @@ fun MainScreen(
             onSelectLanguage = { selected ->
                 currentLanguage = selected
                 SettingsManager.setLanguage(context, selected)
+                AnalyticsManager.logLanguageChanged(context, selected, "home_picker_dialog")
                 showLanguagePicker = false
             },
             onDismiss = { showLanguagePicker = false },

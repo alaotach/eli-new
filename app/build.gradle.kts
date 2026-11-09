@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -99,6 +100,10 @@ dependencies {
 
     // ML Kit Text Recognition (On-device, 100% offline & free, Play Store compliant)
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+
+    // Firebase Analytics (Live real-time telemetry)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -14,6 +14,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import com.alaotach.eli5.AnalyticsManager
 import com.alaotach.eli5.ExplainOverlayActivity
 import com.alaotach.eli5.SettingsManager
 
@@ -23,6 +24,7 @@ class CircleSnipActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AnalyticsManager.logCircleGesture(this)
 
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
