@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ELI5</string>
+    <string name="action_explain">설명하다</string>
+    <string name="action_explain_desc">자세한 설명을 받아보세요</string>
+    <string name="action_key_points">핵심 포인트</string>
+    <string name="action_key_points_desc">요점 추출</string>
+    <string name="action_simplify">단순화하다</string>
+    <string name="action_simplify_desc">일반 언어로 변환</string>
+    <string name="action_summarize">요약</string>
+    <string name="action_summarize_desc">간략한 요약 보기</string>
+    <string name="action_translate">번역하다</string>
+    <string name="action_translate_desc">다른 언어로 번역</string>
+    <string name="characters_total">총 %d자</string>
+    <string name="choose_action">작업을 선택하세요</string>
+    <string name="close">닫기</string>
+    <string name="empty_state_message">앱에서 텍스트를 선택하고 메뉴에서 ELI5를 선택하거나 아래에 텍스트를 붙여넣으세요.</string>
+    <string name="error">오류</string>
+    <string name="no_text_selected">선택한 텍스트가 없습니다.</string>
+    <string name="paste_from_clipboard">클립보드에서 붙여넣기</string>
+    <string name="processing">처리 중…</string>
+    <string name="selected_text">선택한 텍스트</string>
+    <string name="explain_with_eli5">ELI5로 설명해보세요</string>
+    <string name="proofread_eli5">교정(ELI5)</string>
+    <string name="circle_to_eli5">ELI5로 순환</string>
     <string name="header_settings">설정</string>
     <string name="header_change_lang">언어 변경</string>
     <string name="status_on">ELI5 실행 중</string>

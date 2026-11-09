@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ELI5</string>
+    <string name="action_explain">説明する</string>
+    <string name="action_explain_desc">詳しい説明を受ける</string>
+    <string name="action_key_points">重要なポイント</string>
+    <string name="action_key_points_desc">要点を抜粋</string>
+    <string name="action_simplify">簡素化する</string>
+    <string name="action_simplify_desc">平易な言語に変換する</string>
+    <string name="action_summarize">要約する</string>
+    <string name="action_summarize_desc">簡単な概要を取得する</string>
+    <string name="action_translate">翻訳する</string>
+    <string name="action_translate_desc">別の言語に翻訳する</string>
+    <string name="characters_total">合計 %d 文字</string>
+    <string name="choose_action">アクションを選択してください</string>
+    <string name="close">閉じる</string>
+    <string name="empty_state_message">任意のアプリでテキストを選択し、メニューから ELI5 を選択するか、下にテキストを貼り付けます</string>
+    <string name="error">エラー</string>
+    <string name="no_text_selected">テキストが選択されていません</string>
+    <string name="paste_from_clipboard">クリップボードから貼り付け</string>
+    <string name="processing">処理中…</string>
+    <string name="selected_text">選択したテキスト</string>
+    <string name="explain_with_eli5">ELI5で説明する</string>
+    <string name="proofread_eli5">校正 (ELI5)</string>
+    <string name="circle_to_eli5">ELI5へのサークル</string>
     <string name="header_settings">設定</string>
     <string name="header_change_lang">言語を変更</string>
     <string name="status_on">ELI5は有効です</string>

@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ELI5</string>
+    <string name="action_explain">اشرح</string>
+    <string name="action_explain_desc">احصل على شرح مفصل</string>
+    <string name="action_key_points">النقاط الرئيسية</string>
+    <string name="action_key_points_desc">استخراج النقاط الرئيسية</string>
+    <string name="action_simplify">بسّط</string>
+    <string name="action_simplify_desc">تحويل إلى لغة واضحة</string>
+    <string name="action_summarize">تلخيص</string>
+    <string name="action_summarize_desc">احصل على ملخص مختصر</string>
+    <string name="action_translate">ترجمة</string>
+    <string name="action_translate_desc">ترجمة إلى لغة أخرى</string>
+    <string name="characters_total">إجمالي %d حرفًا</string>
+    <string name="choose_action">اختر إجراءً</string>
+    <string name="close">إغلاق</string>
+    <string name="empty_state_message">حدد النص في أي تطبيق واختر ELI5 من القائمة، أو الصق النص أدناه</string>
+    <string name="error">خطأ</string>
+    <string name="no_text_selected">لم يتم تحديد أي نص</string>
+    <string name="paste_from_clipboard">لصق من الحافظة</string>
+    <string name="processing">جارٍ المعالجة…</string>
+    <string name="selected_text">النص المحدد</string>
+    <string name="explain_with_eli5">اشرح باستخدام ELI5</string>
+    <string name="proofread_eli5">التدقيق اللغوي (ELI5)</string>
+    <string name="circle_to_eli5">دائرة إلى ELI5</string>
     <string name="header_settings">الإعدادات</string>
     <string name="header_change_lang">تغيير اللغة</string>
     <string name="status_on">ELI5 قيد التشغيل</string>

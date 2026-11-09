@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ЭЛИ5</string>
+    <string name="action_explain">Объясни</string>
+    <string name="action_explain_desc">Получите подробное объяснение</string>
+    <string name="action_key_points">Ключевые моменты</string>
+    <string name="action_key_points_desc">Извлеките основные моменты</string>
+    <string name="action_simplify">Упростить</string>
+    <string name="action_simplify_desc">Преобразование в простой язык</string>
+    <string name="action_summarize">Подвести итог</string>
+    <string name="action_summarize_desc">Получить краткое резюме</string>
+    <string name="action_translate">Перевести</string>
+    <string name="action_translate_desc">Перевести на другой язык</string>
+    <string name="characters_total">Всего символов: %d</string>
+    <string name="choose_action">Выберите действие</string>
+    <string name="close">Закрыть</string>
+    <string name="empty_state_message">Выделите текст в любом приложении и выберите ELI5 в меню или вставьте текст ниже.</string>
+    <string name="error">Ошибка</string>
+    <string name="no_text_selected">Текст не выбран</string>
+    <string name="paste_from_clipboard">Вставить из буфера обмена</string>
+    <string name="processing">Обработка…</string>
+    <string name="selected_text">Выделенный текст</string>
+    <string name="explain_with_eli5">Объясните с помощью ELI5</string>
+    <string name="proofread_eli5">Корректура (ELI5)</string>
+    <string name="circle_to_eli5">Круг до ELI5</string>
     <string name="header_settings">Настройки</string>
     <string name="header_change_lang">Сменить язык</string>
     <string name="status_on">ELI5 включен</string>

@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ELI5</string>
+    <string name="action_explain">వివరించండి</string>
+    <string name="action_explain_desc">వివరణాత్మక వివరణ పొందండి</string>
+    <string name="action_key_points">కీ పాయింట్లు</string>
+    <string name="action_key_points_desc">ప్రధాన అంశాలను సంగ్రహించండి</string>
+    <string name="action_simplify">సరళీకృతం చేయండి</string>
+    <string name="action_simplify_desc">సాధారణ భాషలోకి మార్చండి</string>
+    <string name="action_summarize">సంగ్రహించండి</string>
+    <string name="action_summarize_desc">సంక్షిప్త సారాంశాన్ని పొందండి</string>
+    <string name="action_translate">అనువదించు</string>
+    <string name="action_translate_desc">మరొక భాషలోకి అనువదించండి</string>
+    <string name="characters_total">మొత్తం %d అక్షరాలు</string>
+    <string name="choose_action">ఒక చర్యను ఎంచుకోండి</string>
+    <string name="close">మూసివేయి</string>
+    <string name="empty_state_message">ఏదైనా యాప్‌లో వచనాన్ని ఎంచుకోండి మరియు మెను నుండి ELI5ని ఎంచుకోండి లేదా దిగువ వచనాన్ని అతికించండి</string>
+    <string name="error">లోపం</string>
+    <string name="no_text_selected">వచనం ఏదీ ఎంచుకోబడలేదు</string>
+    <string name="paste_from_clipboard">క్లిప్‌బోర్డ్ నుండి అతికించండి</string>
+    <string name="processing">ప్రాసెస్ చేస్తోంది...</string>
+    <string name="selected_text">ఎంచుకున్న వచనం</string>
+    <string name="explain_with_eli5">ELI5తో వివరించండి</string>
+    <string name="proofread_eli5">ప్రూఫ్ రీడ్ (ELI5)</string>
+    <string name="circle_to_eli5">ELI5కి సర్కిల్</string>
     <string name="header_settings">సెట్టింగ్‌లు</string>
     <string name="header_change_lang">భాషను మార్చండి</string>
     <string name="status_on">ELI5 ఆన్‌లో ఉంది</string>

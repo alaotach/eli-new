@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ELI5</string>
+    <string name="action_explain">ব্যাখ্যা কর</string>
+    <string name="action_explain_desc">একটি বিস্তারিত ব্যাখ্যা পান</string>
+    <string name="action_key_points">মূল পয়েন্ট</string>
+    <string name="action_key_points_desc">মূল পয়েন্ট বের করুন</string>
+    <string name="action_simplify">সরলীকরণ</string>
+    <string name="action_simplify_desc">সরল ভাষায় রূপান্তর করুন</string>
+    <string name="action_summarize">সারসংক্ষেপ</string>
+    <string name="action_summarize_desc">একটি সংক্ষিপ্ত সারসংক্ষেপ পান</string>
+    <string name="action_translate">অনুবাদ করুন</string>
+    <string name="action_translate_desc">অন্য ভাষায় অনুবাদ করুন</string>
+    <string name="characters_total">মোট %d অক্ষর</string>
+    <string name="choose_action">একটি কর্ম চয়ন করুন</string>
+    <string name="close">বন্ধ</string>
+    <string name="empty_state_message">যেকোনো অ্যাপে পাঠ্য নির্বাচন করুন এবং মেনু থেকে ELI5 চয়ন করুন, অথবা নীচে পাঠ্য পেস্ট করুন</string>
+    <string name="error">ত্রুটি</string>
+    <string name="no_text_selected">কোনো পাঠ্য নির্বাচন করা হয়নি</string>
+    <string name="paste_from_clipboard">ক্লিপবোর্ড থেকে পেস্ট করুন</string>
+    <string name="processing">প্রক্রিয়া করা হচ্ছে...</string>
+    <string name="selected_text">নির্বাচিত পাঠ্য</string>
+    <string name="explain_with_eli5">ELI5 দিয়ে ব্যাখ্যা কর</string>
+    <string name="proofread_eli5">প্রুফরিড (ELI5)</string>
+    <string name="circle_to_eli5">ELI5 এ বৃত্ত</string>
     <string name="header_settings">সেটিংস</string>
     <string name="header_change_lang">ভাষা পরিবর্তন</string>
     <string name="status_on">ELI5 চালু আছে</string>

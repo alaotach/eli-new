@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ELI5</string>
+    <string name="action_explain">解释一下</string>
+    <string name="action_explain_desc">获取详细解释</string>
+    <string name="action_key_points">要点</string>
+    <string name="action_key_points_desc">提取要点</string>
+    <string name="action_simplify">简化</string>
+    <string name="action_simplify_desc">转换为简单语言</string>
+    <string name="action_summarize">总结</string>
+    <string name="action_summarize_desc">获取简短摘要</string>
+    <string name="action_translate">翻译</string>
+    <string name="action_translate_desc">翻译成另一种语言</string>
+    <string name="characters_total">总共 %d 个字符</string>
+    <string name="choose_action">选择一个动作</string>
+    <string name="close">关闭</string>
+    <string name="empty_state_message">在任何应用程序中选择文本，然后从菜单中选择 ELI5，或粘贴下面的文本</string>
+    <string name="error">错误</string>
+    <string name="no_text_selected">未选择任何文字</string>
+    <string name="paste_from_clipboard">从剪贴板粘贴</string>
+    <string name="processing">正在处理…</string>
+    <string name="selected_text">选定的文本</string>
+    <string name="explain_with_eli5">用 ELI5 解释</string>
+    <string name="proofread_eli5">校对（ELI5）</string>
+    <string name="circle_to_eli5">转至ELI5</string>
     <string name="header_settings">设置</string>
     <string name="header_change_lang">切换语言</string>
     <string name="status_on">ELI5 已启用</string>

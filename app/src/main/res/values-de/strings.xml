@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">ELI5</string>
+    <string name="action_explain">Erklären Sie</string>
+    <string name="action_explain_desc">Erhalten Sie eine ausführliche Erklärung</string>
+    <string name="action_key_points">Wichtige Punkte</string>
+    <string name="action_key_points_desc">Extrahieren Sie die wichtigsten Punkte</string>
+    <string name="action_simplify">Vereinfachen</string>
+    <string name="action_simplify_desc">In Klartext umwandeln</string>
+    <string name="action_summarize">Zusammenfassen</string>
+    <string name="action_summarize_desc">Erhalten Sie eine kurze Zusammenfassung</string>
+    <string name="action_translate">Übersetzen</string>
+    <string name="action_translate_desc">In eine andere Sprache übersetzen</string>
+    <string name="characters_total">Insgesamt %d Zeichen</string>
+    <string name="choose_action">Wählen Sie eine Aktion</string>
+    <string name="close">Schließen</string>
+    <string name="empty_state_message">Wählen Sie Text in einer beliebigen App aus und wählen Sie ELI5 aus dem Menü oder fügen Sie den Text unten ein</string>
+    <string name="error">Fehler</string>
+    <string name="no_text_selected">Kein Text ausgewählt</string>
+    <string name="paste_from_clipboard">Aus der Zwischenablage einfügen</string>
+    <string name="processing">Verarbeitung…</string>
+    <string name="selected_text">Ausgewählter Text</string>
+    <string name="explain_with_eli5">Erklären Sie mit ELI5</string>
+    <string name="proofread_eli5">Korrekturlesen (ELI5)</string>
+    <string name="circle_to_eli5">Kreisen Sie zu ELI5</string>
     <string name="header_settings">Einstellungen</string>
     <string name="header_change_lang">Sprache ändern</string>
     <string name="status_on">ELI5 ist aktiv</string>
