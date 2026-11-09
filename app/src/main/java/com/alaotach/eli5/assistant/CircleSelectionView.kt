@@ -6,7 +6,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PointF
@@ -15,15 +14,19 @@ import android.graphics.RectF
 import android.graphics.Region
 import android.graphics.Typeface
 import android.os.Build
-import android.os.VibrationEffect
 import android.os.Vibrator
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.alaotach.eli5.R
+import com.alaotach.eli5.SettingsManager
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
@@ -40,6 +43,12 @@ class CircleSelectionView @JvmOverloads constructor(
     private var isAnalyzing = false
     private var isCircleGesture = false
 
+    // Screen Translation state (Google Lens style)
+    private var isTranslating = false
+    private var isShowingTranslation = false
+    private var showOriginalOnly = false
+    private var translatedBlocks = listOf<TranslatedBlock>()
+
     private val touchPath = Path()
     private val touchPoints = mutableListOf<PointF>()
     private var lastX = 0f
@@ -49,6 +58,12 @@ class CircleSelectionView @JvmOverloads constructor(
     private var maxX = Float.MIN_VALUE
     private var maxY = Float.MIN_VALUE
     private var hasDrawn = false
+
+    // Hit-testing rects
+    private val pillRect = RectF()
+    private val translateBtnRect = RectF()
+    private val toggleOriginalBtnRect = RectF()
+    private val closeBtnRect = RectF()
 
     // Authentic ELI5 App Logo
     private val eli5Logo = ContextCompat.getDrawable(context, R.drawable.ic_eli5_logo)
@@ -102,13 +117,13 @@ class CircleSelectionView @JvmOverloads constructor(
 
     private val titleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 14.5f * dp
+        textSize = 14f * dp
         typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
     }
 
     private val subtitleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#C4B5FD") // Light lavender
-        textSize = 11.5f * dp
+        textSize = 11f * dp
         typeface = Typeface.create("sans-serif", Typeface.NORMAL)
     }
 
@@ -119,6 +134,39 @@ class CircleSelectionView @JvmOverloads constructor(
         typeface = Typeface.DEFAULT_BOLD
     }
 
+    // Translate Button & Badge Paints
+    private val translateBtnBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = Color.parseColor("#268B5CF6")
+    }
+
+    private val translateBtnBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 1.2f * dp
+        color = Color.parseColor("#8B5CF6")
+    }
+
+    private val translateBtnTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = 12f * dp
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+    }
+
+    // Google Lens Style Overlay Paints
+    private val lensBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
+
+    private val lensBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 1f * dp
+    }
+
+    private val lensTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+        typeface = Typeface.create("sans-serif", Typeface.NORMAL)
+    }
+
     private var selectionRect: RectF? = null
     private var pulseAlpha = 255
     private var pulseAnimator: ValueAnimator? = null
@@ -126,6 +174,9 @@ class CircleSelectionView @JvmOverloads constructor(
     // Callbacks: (croppedBitmap, localPathWithinBitmap?, boundingBox)
     var onSelectionCompleted: ((Bitmap, Path?, Rect) -> Unit)? = null
     var onDismissRequested: (() -> Unit)? = null
+
+    private val targetLanguage: String
+        get() = SettingsManager.getLanguage(context)
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)
@@ -163,14 +214,39 @@ class CircleSelectionView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun startScreenTranslation() {
+        val bmp = screenshot ?: return
+        if (isTranslating) return
+
+        isTranslating = true
+        isShowingTranslation = false
+        showOriginalOnly = false
+        triggerHaptic(0)
+        pulseAnimator?.start()
+        invalidate()
+
+        ScreenTranslator.translateScreen(bmp, targetLanguage) { blocks ->
+            isTranslating = false
+            pulseAnimator?.cancel()
+            if (blocks.isNotEmpty()) {
+                translatedBlocks = blocks
+                isShowingTranslation = true
+                showOriginalOnly = false
+                triggerHaptic(1)
+            } else {
+                Toast.makeText(context, "No text found on screen to translate", Toast.LENGTH_SHORT).show()
+            }
+            invalidate()
+        }
+    }
+
     private fun triggerHaptic(type: Int) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val vibrator = context.getSystemService(Vibrator::class.java)
                 val effect = when (type) {
-                    0 -> VibrationEffect.createOneShot(12, VibrationEffect.DEFAULT_AMPLITUDE)
-                    1 -> VibrationEffect.createOneShot(25, 200)
-                    else -> VibrationEffect.createOneShot(15, VibrationEffect.DEFAULT_AMPLITUDE)
+                    1 -> android.os.VibrationEffect.createOneShot(35, android.os.VibrationEffect.DEFAULT_AMPLITUDE)
+                    else -> android.os.VibrationEffect.createOneShot(15, 80)
                 }
                 vibrator?.vibrate(effect)
             } else {
@@ -181,31 +257,40 @@ class CircleSelectionView @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (isAnalyzing) return true
-
         val x = event.x
         val y = event.y
 
-        val pillHeight = 56f * dp
-        val pillWidth = min(width * 0.88f, 380f * dp)
-        val pillLeft = (width - pillWidth) / 2f
-        val pillTop = 48f * dp
-        val pillRight = pillLeft + pillWidth
-        val pillBottom = pillTop + pillHeight
-        val centerY = pillTop + (pillHeight / 2f)
-        val closeCenterX = pillRight - 24f * dp
-
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                // Check if tapped the '✕' close button
-                val distToClose = hypot((x - closeCenterX).toDouble(), (y - centerY).toDouble())
-                if (distToClose <= 28f * dp) {
-                    onDismissRequested?.invoke()
+                // 1. Check if tapped the '✕' close button
+                if (closeBtnRect.contains(x, y)) {
+                    if (isShowingTranslation) {
+                        isShowingTranslation = false
+                        showOriginalOnly = false
+                        translatedBlocks = emptyList()
+                        invalidate()
+                    } else {
+                        onDismissRequested?.invoke()
+                    }
                     return true
                 }
 
-                // Check if tapped the pill body
-                if (x in pillLeft..pillRight && y in pillTop..pillBottom) {
+                // 2. Check if in translated mode and tapped the Original/Translated toggle chip
+                if (isShowingTranslation && toggleOriginalBtnRect.contains(x, y)) {
+                    showOriginalOnly = !showOriginalOnly
+                    triggerHaptic(0)
+                    invalidate()
+                    return true
+                }
+
+                // 3. Check if tapped the Translate button
+                if (!isShowingTranslation && !isTranslating && translateBtnRect.contains(x, y)) {
+                    startScreenTranslation()
+                    return true
+                }
+
+                // 4. Check if tapped inside the floating pill body
+                if (pillRect.contains(x, y)) {
                     return true
                 }
 
@@ -245,8 +330,10 @@ class CircleSelectionView @JvmOverloads constructor(
 
             MotionEvent.ACTION_UP -> {
                 if (!hasDrawn || touchPoints.size < 2) {
-                    // Tapped outside without drawing: dismiss
-                    onDismissRequested?.invoke()
+                    // Tapped outside without drawing: dismiss if not viewing translation
+                    if (!isShowingTranslation) {
+                        onDismissRequested?.invoke()
+                    }
                     return true
                 }
 
@@ -256,75 +343,62 @@ class CircleSelectionView @JvmOverloads constructor(
                 // If user just tapped or tiny drag, dismiss
                 if (rectWidth < 40f && rectHeight < 40f) {
                     resetSelection()
-                    onDismissRequested?.invoke()
+                    if (!isShowingTranslation) {
+                        onDismissRequested?.invoke()
+                    }
                     return true
                 }
 
-                // Determine if gesture is a circle/lasso
-                val firstPt = touchPoints.first()
-                val lastPt = touchPoints.last()
-                val directDist = hypot((lastPt.x - firstPt.x).toDouble(), (lastPt.y - firstPt.y).toDouble())
+                // Add margin around selected area
+                val margin = 20f * dp
+                val left = max(0f, minX - margin)
+                val top = max(0f, minY - margin)
+                val right = min(width.toFloat(), maxX + margin)
+                val bottom = min(height.toFloat(), maxY + margin)
+                selectionRect = RectF(left, top, right, bottom)
 
-                var totalPathLength = 0.0
-                for (i in 1 until touchPoints.size) {
-                    val p1 = touchPoints[i - 1]
-                    val p2 = touchPoints[i]
-                    totalPathLength += hypot((p2.x - p1.x).toDouble(), (p2.y - p1.y).toDouble())
-                }
+                val startPt = touchPoints.first()
+                val endPt = touchPoints.last()
+                val dist = hypot((endPt.x - startPt.x).toDouble(), (endPt.y - startPt.y).toDouble())
+                isCircleGesture = dist < (rectWidth * 0.45)
 
-                val diagonal = hypot(rectWidth.toDouble(), rectHeight.toDouble())
-                isCircleGesture = directDist < (diagonal * 0.5) || totalPathLength > (diagonal * 1.8)
-
-                val padding = 20f * dp
-                val left = max(0f, minX - padding)
-                val top = max(0f, minY - padding)
-                val right = min(width.toFloat(), maxX + padding)
-                val bottom = min(height.toFloat(), maxY + padding)
-
-                val finalRect = RectF(left, top, right, bottom)
-                selectionRect = finalRect
                 isAnalyzing = true
-                triggerHaptic(1)
                 pulseAnimator?.start()
+                triggerHaptic(1)
                 invalidate()
 
-                processSelection(finalRect)
-                return true
-            }
-
-            MotionEvent.ACTION_CANCEL -> {
-                resetSelection()
+                postDelayed({
+                    completeSelection(selectionRect!!)
+                }, 150)
                 return true
             }
         }
         return super.onTouchEvent(event)
     }
 
-    private fun processSelection(rectF: RectF) {
-        val bmp = screenshot ?: return
-
-        val scaleX = bmp.width.toFloat() / width.toFloat()
-        val scaleY = bmp.height.toFloat() / height.toFloat()
-
-        val cropX = max(0, (rectF.left * scaleX).toInt())
-        val cropY = max(0, (rectF.top * scaleY).toInt())
-        val cropW = min(bmp.width - cropX, ((rectF.width()) * scaleX).toInt())
-        val cropH = min(bmp.height - cropY, ((rectF.height()) * scaleY).toInt())
-
-        if (cropW > 10 && cropH > 10) {
+    private fun completeSelection(cropRect: RectF) {
+        val bmp = screenshot
+        if (bmp != null) {
             try {
+                val scaleX = bmp.width.toFloat() / width.toFloat()
+                val scaleY = bmp.height.toFloat() / height.toFloat()
+
+                val cropX = (cropRect.left * scaleX).toInt().coerceIn(0, bmp.width - 1)
+                val cropY = (cropRect.top * scaleY).toInt().coerceIn(0, bmp.height - 1)
+                val cropW = (cropRect.width() * scaleX).toInt().coerceAtMost(bmp.width - cropX).coerceAtLeast(1)
+                val cropH = (cropRect.height() * scaleY).toInt().coerceAtMost(bmp.height - cropY).coerceAtLeast(1)
+
                 val cropped = Bitmap.createBitmap(bmp, cropX, cropY, cropW, cropH)
                 val androidRect = Rect(cropX, cropY, cropX + cropW, cropY + cropH)
 
-                val localPath = if (isCircleGesture) {
-                    val matrix = Matrix().apply {
+                // Build localized path inside the cropped bitmap coordinate space
+                val localPath = Path().apply {
+                    val m = android.graphics.Matrix().apply {
+                        postTranslate(-cropRect.left, -cropRect.top)
                         postScale(scaleX, scaleY)
-                        postTranslate(-cropX.toFloat(), -cropY.toFloat())
                     }
-                    val transformed = Path()
-                    touchPath.transform(matrix, transformed)
-                    transformed
-                } else null
+                    touchPath.transform(m, this)
+                }
 
                 post {
                     onSelectionCompleted?.invoke(cropped, localPath, androidRect)
@@ -347,7 +421,65 @@ class CircleSelectionView @JvmOverloads constructor(
             canvas.drawBitmap(it, null, destRect, null)
         }
 
-        // 2. Dim the background with subtle scrim, preserving the circled area at 100% brightness
+        // 2. Draw Google Lens style Translated Text Overlays on top of original text
+        if (isShowingTranslation && !showOriginalOnly && screenshot != null) {
+            val bmp = screenshot!!
+            val scaleX = width.toFloat() / bmp.width
+            val scaleY = height.toFloat() / bmp.height
+
+            for (block in translatedBlocks) {
+                val bLeft = block.bounds.left * scaleX - 3f * dp
+                val bTop = block.bounds.top * scaleY - 2.5f * dp
+                val bRight = block.bounds.right * scaleX + 3f * dp
+                val bBottom = block.bounds.bottom * scaleY + 2.5f * dp
+                val blockRect = RectF(bLeft, bTop, bRight, bBottom)
+
+                // Draw background badge covering original text with sampled solid color
+                val solidBg = Color.rgb(Color.red(block.bgColor), Color.green(block.bgColor), Color.blue(block.bgColor))
+                lensBgPaint.color = solidBg
+                lensBgPaint.alpha = 248 // 97% opacity for clean coverage like Google Lens
+                canvas.drawRoundRect(blockRect, 6f * dp, 6f * dp, lensBgPaint)
+
+                // Subtle contrasting border
+                lensBorderPaint.color = Color.argb(45, Color.red(block.textColor), Color.green(block.textColor), Color.blue(block.textColor))
+                canvas.drawRoundRect(blockRect, 6f * dp, 6f * dp, lensBorderPaint)
+
+                // Format & render translated text inside the box
+                val padH = 4f * dp
+                val padV = 2f * dp
+                val availW = max(12f * dp, blockRect.width() - (padH * 2))
+                val availH = max(10f * dp, blockRect.height() - (padV * 2))
+
+                val optimalSize = ScreenTranslator.calculateOptimalTextSize(
+                    block.translatedText,
+                    availW,
+                    availH,
+                    dp,
+                    lensTextPaint
+                )
+                lensTextPaint.textSize = optimalSize
+                lensTextPaint.color = block.textColor
+
+                val layout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    StaticLayout.Builder.obtain(block.translatedText, 0, block.translatedText.length, lensTextPaint, max(1, availW.toInt()))
+                        .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                        .setLineSpacing(0f, 1.15f)
+                        .setIncludePad(false)
+                        .build()
+                } else {
+                    @Suppress("DEPRECATION")
+                    StaticLayout(block.translatedText, lensTextPaint, max(1, availW.toInt()), Layout.Alignment.ALIGN_NORMAL, 1.15f, 0f, false)
+                }
+
+                canvas.save()
+                val offsetY = if (layout.height < availH) (availH - layout.height) / 2f else 0f
+                canvas.translate(blockRect.left + padH, blockRect.top + padV + offsetY)
+                layout.draw(canvas)
+                canvas.restore()
+            }
+        }
+
+        // 3. Dim the background with subtle scrim during circle selection
         if (hasDrawn && touchPoints.size > 2) {
             canvas.save()
             val closedPath = Path(touchPath).apply { close() }
@@ -359,7 +491,7 @@ class CircleSelectionView @JvmOverloads constructor(
             }
             canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
             canvas.restore()
-        } else {
+        } else if (!isShowingTranslation) {
             canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
         }
 
@@ -386,14 +518,14 @@ class CircleSelectionView @JvmOverloads constructor(
     }
 
     private fun drawInstructionPill(canvas: Canvas) {
-        val pillHeight = 56f * dp
-        val pillWidth = min(width * 0.88f, 380f * dp)
+        val pillHeight = 58f * dp
+        val pillWidth = min(width * 0.94f, 410f * dp)
         val pillLeft = (width - pillWidth) / 2f
         val pillTop = 48f * dp
         val pillRight = pillLeft + pillWidth
         val pillBottom = pillTop + pillHeight
-        val pillRect = RectF(pillLeft, pillTop, pillRight, pillBottom)
-        val cornerRadius = 28f * dp
+        pillRect.set(pillLeft, pillTop, pillRight, pillBottom)
+        val cornerRadius = 29f * dp
 
         // Island Background & Border
         canvas.drawRoundRect(pillRect, cornerRadius, cornerRadius, pillBgPaint)
@@ -401,8 +533,13 @@ class CircleSelectionView @JvmOverloads constructor(
 
         val centerY = pillTop + (pillHeight / 2f)
 
+        // Close '✕' Button on far right
+        val closeCenterX = pillRight - 22f * dp
+        closeBtnRect.set(closeCenterX - 20f * dp, centerY - 20f * dp, closeCenterX + 20f * dp, centerY + 20f * dp)
+        canvas.drawText("✕", closeCenterX, centerY + 6f * dp, closeButtonPaint)
+
         // Left ELI5 App Logo
-        val logoSize = 34f * dp
+        val logoSize = 32f * dp
         val logoLeft = pillLeft + 12f * dp
         val logoTop = centerY - (logoSize / 2f)
         val logoRight = logoLeft + logoSize
@@ -410,23 +547,94 @@ class CircleSelectionView @JvmOverloads constructor(
         eli5Logo?.setBounds(logoLeft.toInt(), logoTop.toInt(), logoRight.toInt(), logoBottom.toInt())
         eli5Logo?.draw(canvas)
 
-        // Center Title & Subtitle
-        val textStartX = logoRight + 12f * dp
-        if (isAnalyzing) {
-            titleTextPaint.color = Color.parseColor("#A78BFA")
-            canvas.drawText("Analyzing with ELI5…", textStartX, centerY - 2f * dp, titleTextPaint)
-            subtitleTextPaint.color = Color.parseColor("#E2E8F0")
-            canvas.drawText("Focusing on circled content", textStartX, centerY + 14f * dp, subtitleTextPaint)
-        } else {
-            titleTextPaint.color = Color.WHITE
-            canvas.drawText("Circle to ELI5", textStartX, centerY - 2f * dp, titleTextPaint)
-            subtitleTextPaint.color = Color.parseColor("#C4B5FD")
-            canvas.drawText("Circle or box anything to explain", textStartX, centerY + 14f * dp, subtitleTextPaint)
-        }
+        val textStartX = logoRight + 10f * dp
 
-        // Right Close '✕' Button
-        val closeCenterX = pillRight - 24f * dp
-        canvas.drawText("✕", closeCenterX, centerY + 6f * dp, closeButtonPaint)
+        when {
+            isShowingTranslation -> {
+                // Translation Result State:
+                // Show language badge and Original / Translated toggle chip
+                titleTextPaint.color = Color.parseColor("#A78BFA")
+                canvas.drawText("文A $targetLanguage", textStartX, centerY - 2f * dp, titleTextPaint)
+                subtitleTextPaint.color = Color.parseColor("#E2E8F0")
+                val blockCountText = "${translatedBlocks.size} blocks translated"
+                canvas.drawText(blockCountText, textStartX, centerY + 13f * dp, subtitleTextPaint)
+
+                // Toggle chip: [👁 Show Original] vs [✨ Show Translated]
+                val toggleWidth = 110f * dp
+                val toggleHeight = 32f * dp
+                val toggleRight = closeBtnRect.left - 8f * dp
+                val toggleLeft = toggleRight - toggleWidth
+                val toggleTop = centerY - (toggleHeight / 2f)
+                val toggleBottom = centerY + (toggleHeight / 2f)
+                toggleOriginalBtnRect.set(toggleLeft, toggleTop, toggleRight, toggleBottom)
+
+                translateBtnBgPaint.color = Color.parseColor(if (showOriginalOnly) "#338B5CF6" else "#4D8B5CF6")
+                canvas.drawRoundRect(toggleOriginalBtnRect, 16f * dp, 16f * dp, translateBtnBgPaint)
+                translateBtnBorderPaint.color = Color.parseColor("#A78BFA")
+                canvas.drawRoundRect(toggleOriginalBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
+
+                translateBtnTextPaint.textSize = 11.5f * dp
+                val toggleLabel = if (showOriginalOnly) "✨ Translated" else "👁 Original"
+                canvas.drawText(toggleLabel, toggleOriginalBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
+            }
+
+            isTranslating -> {
+                // Translating in-progress state
+                titleTextPaint.color = Color.parseColor("#A78BFA")
+                canvas.drawText("Translating screen…", textStartX, centerY - 2f * dp, titleTextPaint)
+                subtitleTextPaint.color = Color.parseColor("#E2E8F0")
+                canvas.drawText("Translating to $targetLanguage", textStartX, centerY + 13f * dp, subtitleTextPaint)
+
+                // Translating progress capsule
+                val transPillW = 82f * dp
+                val transPillH = 32f * dp
+                val transRight = closeBtnRect.left - 8f * dp
+                val transLeft = transRight - transPillW
+                val transRect = RectF(transLeft, centerY - transPillH / 2f, transRight, centerY + transPillH / 2f)
+
+                translateBtnBgPaint.color = Color.argb((pulseAlpha * 0.35f).toInt(), 139, 92, 246)
+                canvas.drawRoundRect(transRect, 16f * dp, 16f * dp, translateBtnBgPaint)
+                translateBtnBorderPaint.color = Color.argb(pulseAlpha, 167, 139, 250)
+                canvas.drawRoundRect(transRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
+
+                translateBtnTextPaint.textSize = 11f * dp
+                canvas.drawText("⏳ Working", transRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
+            }
+
+            isAnalyzing -> {
+                // Circling analysis in-progress
+                titleTextPaint.color = Color.parseColor("#A78BFA")
+                canvas.drawText("Analyzing with ELI5…", textStartX, centerY - 2f * dp, titleTextPaint)
+                subtitleTextPaint.color = Color.parseColor("#E2E8F0")
+                canvas.drawText("Focusing on circled content", textStartX, centerY + 13f * dp, subtitleTextPaint)
+            }
+
+            else -> {
+                // Normal Circle to Search State:
+                // Title, Subtitle, and prominent [文A Translate] capsule button
+                titleTextPaint.color = Color.WHITE
+                canvas.drawText("Circle to Search", textStartX, centerY - 2f * dp, titleTextPaint)
+                subtitleTextPaint.color = Color.parseColor("#C4B5FD")
+                canvas.drawText("Circle anything or translate", textStartX, centerY + 13f * dp, subtitleTextPaint)
+
+                // Translate Button Capsule
+                val btnW = 90f * dp
+                val btnH = 32f * dp
+                val btnRight = closeBtnRect.left - 6f * dp
+                val btnLeft = btnRight - btnW
+                val btnTop = centerY - (btnH / 2f)
+                val btnBottom = centerY + (btnH / 2f)
+                translateBtnRect.set(btnLeft, btnTop, btnRight, btnBottom)
+
+                translateBtnBgPaint.color = Color.parseColor("#338B5CF6")
+                canvas.drawRoundRect(translateBtnRect, 16f * dp, 16f * dp, translateBtnBgPaint)
+                translateBtnBorderPaint.color = Color.parseColor("#8B5CF6")
+                canvas.drawRoundRect(translateBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
+
+                translateBtnTextPaint.textSize = 11.5f * dp
+                canvas.drawText("文A Translate", translateBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
+            }
+        }
     }
 
     override fun onDetachedFromWindow() {
