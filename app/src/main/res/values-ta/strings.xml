@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 மொழி ▾</string>
     <string name="proofread_copied_toast">கிளிப்போர்டுக்கு நகலெடுக்கப்பட்டது</string>
     <string name="proofread_choose_target_lang">இலக்கு மொழியைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="onboarding_step1_title">1 தட்டலில் எதையும் விளக்கவும்</string>
+    <string name="onboarding_step1_subtitle">எந்த பயன்பாட்டிலும் உரையைத் தனிப்படுத்தவும், மேலும் (⋮) என்பதைத் தட்டி, ELI5ஐத் தேர்ந்தெடுக்கவும்.</string>
+    <string name="onboarding_step1_caption1">1. உரையைத் தனிப்படுத்தி &amp;amp; தட்டவும் ⋮</string>
+    <string name="onboarding_step1_caption2">2. ‘ELI5 உடன் விளக்கவும்’ என்பதைத் தட்டவும்</string>
+    <string name="onboarding_step1_caption3">3. மிதக்கும் விளக்கம் உடனடியாகத் தோன்றும்!</string>
+    <string name="onboarding_btn_continue">தொடரவும் →</string>
+    <string name="onboarding_step2_title">பிற பயன்பாடுகள் மீது காட்சி</string>
+    <string name="onboarding_step2_keyline">விளக்க அட்டையைக் காட்ட மட்டுமே பயன்படுத்தப்படுகிறது.</string>
+    <string name="onboarding_step2_subtitle">அமைப்புகளில் ELI5 ஐக் கண்டறிந்து, நிலைமாற்றத்தை இயக்கவும்.</string>
+    <string name="onboarding_step2_card1">1. ELI5ஐத் தட்டவும்</string>
+    <string name="onboarding_step2_card2">2. ஆன் செய்யவும்</string>
+    <string name="onboarding_btn_grant">அனுமதி வழங்கவும்</string>
+    <string name="onboarding_btn_granted">அனுமதி வழங்கப்பட்டது ✓</string>
+    <string name="onboarding_step3_title">இப்போதே முயற்சிக்கவும்</string>
+    <string name="onboarding_step3_subtitle">உண்மையான விளக்க அட்டையைப் பார்க்க மாதிரி உரையைத் தட்டவும்:</string>
+    <string name="onboarding_sample1_badge">⚖️ சட்டப்பூர்வ குத்தகை விதி</string>
+    <string name="onboarding_sample1_text">குத்தகைதாரர் குத்தகைதாரருக்கு எந்தவிதமான துணை பொறுப்புகள் மற்றும் கலைக்கப்பட்ட சேதங்களுக்கு எதிராகவும் இழப்பீடு வழங்கவும் மற்றும் பாதிப்பில்லாதவராகவும் இருக்க வேண்டும்.</string>
+    <string name="onboarding_sample2_badge">🩺 மருத்துவ நோய் கண்டறிதல்</string>
+    <string name="onboarding_sample2_text">நோயாளி கனாலிதியாசிஸுக்கு இரண்டாம் நிலை இடியோபாடிக் தீங்கற்ற பராக்ஸிஸ்மல் நிலை வெர்டிகோவைக் கொண்டிருக்கிறார்.</string>
+    <string name="onboarding_step3_success">அருமை! விளக்கம் வேலை செய்கிறது. ELI5 ஐ எங்கு வேண்டுமானாலும் பயன்படுத்த நீங்கள் தயாராக உள்ளீர்கள்.</string>
+    <string name="onboarding_btn_get_started">தொடங்கு →</string>
+    <string name="onboarding_btn_lets_go">போகலாம்! →</string>
 </resources>

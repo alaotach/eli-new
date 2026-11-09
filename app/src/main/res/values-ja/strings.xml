@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 言語 ▾</string>
     <string name="proofread_copied_toast">クリップボードにコピーされました</string>
     <string name="proofread_choose_target_lang">ターゲット言語を選択してください</string>
+    <string name="onboarding_step1_title">1タップで何でも説明</string>
+    <string name="onboarding_step1_subtitle">任意のアプリ内のテキストを強調表示し、その他 (⋮) をタップして、ELI5 を選択します。</string>
+    <string name="onboarding_step1_caption1">1. テキストを強調表示して「⋮」をタップします</string>
+    <string name="onboarding_step1_caption2">2.「ELI5で説明する」をタップ</string>
+    <string name="onboarding_step1_caption3">3. 瞬時にフローティング説明が表示される！</string>
+    <string name="onboarding_btn_continue">続き→</string>
+    <string name="onboarding_step2_title">他のアプリの上に重ねて表示</string>
+    <string name="onboarding_step2_keyline">説明カードを表示するためにのみ使用されます。</string>
+    <string name="onboarding_step2_subtitle">設定で ELI5 を見つけて、トグルをオンに切り替えます。</string>
+    <string name="onboarding_step2_card1">1.「ELI5」をタップします</string>
+    <string name="onboarding_step2_card2">2. 電源を入れます</string>
+    <string name="onboarding_btn_grant">許可を与える</string>
+    <string name="onboarding_btn_granted">許可の付与 ✓</string>
+    <string name="onboarding_step3_title">今すぐ試してください</string>
+    <string name="onboarding_step3_subtitle">いずれかのサンプル テキストをタップすると、実際の説明カードが表示されます。</string>
+    <string name="onboarding_sample1_badge">⚖️ 法定リース条項</string>
+    <string name="onboarding_sample1_text">借手は、代位債務および清算損害金から貸主を補償し、免責するものとします。</string>
+    <string name="onboarding_sample2_badge">🩺 医学的診断</string>
+    <string name="onboarding_sample2_text">患者は、涙管炎に続発する特発性良性発作性頭位めまい症を患っている。</string>
+    <string name="onboarding_step3_success">素晴らしい！説明は機能します。どこでも ELI5 を使用する準備ができました。</string>
+    <string name="onboarding_btn_get_started">始めましょう→</string>
+    <string name="onboarding_btn_lets_go">行こう！ →</string>
 </resources>

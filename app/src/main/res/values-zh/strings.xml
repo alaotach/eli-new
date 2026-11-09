@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 语言 ▾</string>
     <string name="proofread_copied_toast">已复制到剪贴板</string>
     <string name="proofread_choose_target_lang">选择目标语言</string>
+    <string name="onboarding_step1_title">一键解释任何内容</string>
+    <string name="onboarding_step1_subtitle">在任何应用程序中突出显示文本，点击更多 (⋮)，然后选择 ELI5。</string>
+    <string name="onboarding_step1_caption1">1. 突出显示文本并点击 ⋮</string>
+    <string name="onboarding_step1_caption2">2. 点击“用 ELI5 解释”</string>
+    <string name="onboarding_step1_caption3">3. 浮动说明立即出现！</string>
+    <string name="onboarding_btn_continue">继续 →</string>
+    <string name="onboarding_step2_title">显示在其他应用程序之上</string>
+    <string name="onboarding_step2_keyline">仅用于显示说明卡。</string>
+    <string name="onboarding_step2_subtitle">在设置中找到 ELI5 并将开关打开。</string>
+    <string name="onboarding_step2_card1">1. 点击 ELI5</string>
+    <string name="onboarding_step2_card2">2. 打开</string>
+    <string name="onboarding_btn_grant">授予许可</string>
+    <string name="onboarding_btn_granted">已授予许可 ✓</string>
+    <string name="onboarding_step3_title">立即尝试</string>
+    <string name="onboarding_step3_subtitle">点击任一示例文本即可查看真正的说明卡：</string>
+    <string name="onboarding_sample1_badge">⚖️ 合法租赁条款</string>
+    <string name="onboarding_sample1_text">承租人应赔偿出租人免受任何代位责任和违约金的损害。</string>
+    <string name="onboarding_sample2_badge">🩺 医疗诊断</string>
+    <string name="onboarding_sample2_text">患者出现继发于耳管结石的特发性良性阵发性位置性眩晕。</string>
+    <string name="onboarding_step3_success">惊人的！解释有效。您已准备好在任何地方使用 ELI5。</string>
+    <string name="onboarding_btn_get_started">开始使用 →</string>
+    <string name="onboarding_btn_lets_go">我们走吧！ →</string>
 </resources>

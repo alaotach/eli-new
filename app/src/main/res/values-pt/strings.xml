@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Idioma ▾</string>
     <string name="proofread_copied_toast">Copiado para a área de transferência</string>
     <string name="proofread_choose_target_lang">Selecione o idioma de destino</string>
+    <string name="onboarding_step1_title">Explique qualquer coisa com um toque</string>
+    <string name="onboarding_step1_subtitle">Destaque o texto em qualquer aplicativo, toque em Mais (⋮) e escolha ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Destaque o texto e toque em ⋮</string>
+    <string name="onboarding_step1_caption2">2. Toque em ‘Explicar com ELI5’</string>
+    <string name="onboarding_step1_caption3">3. A explicação flutuante aparece instantaneamente!</string>
+    <string name="onboarding_btn_continue">Continuar →</string>
+    <string name="onboarding_step2_title">Exibir em outros aplicativos</string>
+    <string name="onboarding_step2_keyline">Usado apenas para mostrar o cartão explicativo.</string>
+    <string name="onboarding_step2_subtitle">Encontre ELI5 nas configurações e ative o botão.</string>
+    <string name="onboarding_step2_card1">1. Toque em ELI5</string>
+    <string name="onboarding_step2_card2">2. LIGUE</string>
+    <string name="onboarding_btn_grant">Conceder permissão</string>
+    <string name="onboarding_btn_granted">Permissão concedida ✓</string>
+    <string name="onboarding_step3_title">Experimente agora mesmo</string>
+    <string name="onboarding_step3_subtitle">Toque em qualquer texto de exemplo para ver o cartão de explicação real:</string>
+    <string name="onboarding_sample1_badge">⚖️ CLÁUSULA LEGAL DE LOCAÇÃO</string>
+    <string name="onboarding_sample1_text">O Locatário deverá indenizar e isentar o Locador de e contra quaisquer responsabilidades de sub-rogação e danos liquidados.</string>
+    <string name="onboarding_sample2_badge">🩺 DIAGNÓSTICO MÉDICO</string>
+    <string name="onboarding_sample2_text">O paciente apresenta vertigem posicional paroxística benigna idiopática secundária à canalitíase.</string>
+    <string name="onboarding_step3_success">Incrível! A explicação funciona. Você está pronto para usar o ELI5 em qualquer lugar.</string>
+    <string name="onboarding_btn_get_started">Comece →</string>
+    <string name="onboarding_btn_lets_go">Vamos! →</string>
 </resources>

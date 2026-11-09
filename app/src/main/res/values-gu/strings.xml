@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 ભાષા ▾</string>
     <string name="proofread_copied_toast">ક્લિપબોર્ડ પર કૉપિ કરી</string>
     <string name="proofread_choose_target_lang">લક્ષ્ય ભાષા પસંદ કરો</string>
+    <string name="onboarding_step1_title">1 ટેપમાં કંઈપણ સમજાવો</string>
+    <string name="onboarding_step1_subtitle">કોઈપણ એપ્લિકેશનમાં ટેક્સ્ટ હાઇલાઇટ કરો, વધુ (⋮) પર ટૅપ કરો અને ELI5 પસંદ કરો.</string>
+    <string name="onboarding_step1_caption1">1. ટેક્સ્ટ હાઇલાઇટ કરો અને ⋮ ટૅપ કરો</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 સાથે સમજાવો’ પર ટૅપ કરો</string>
+    <string name="onboarding_step1_caption3">3. ફ્લોટિંગ સમજૂતી તરત જ દેખાય છે!</string>
+    <string name="onboarding_btn_continue">ચાલુ રાખો →</string>
+    <string name="onboarding_step2_title">અન્ય એપ્સ પર ડિસ્પ્લે</string>
+    <string name="onboarding_step2_keyline">માત્ર સમજૂતી કાર્ડ બતાવવા માટે વપરાય છે.</string>
+    <string name="onboarding_step2_subtitle">સેટિંગ્સમાં ELI5 શોધો અને ટૉગલ ચાલુ કરો.</string>
+    <string name="onboarding_step2_card1">1. ELI5 ને ટેપ કરો</string>
+    <string name="onboarding_step2_card2">2. ચાલુ કરો</string>
+    <string name="onboarding_btn_grant">પરવાનગી આપો</string>
+    <string name="onboarding_btn_granted">પરવાનગી આપવામાં આવી ✓</string>
+    <string name="onboarding_step3_title">અત્યારે જ અજમાવી જુઓ</string>
+    <string name="onboarding_step3_subtitle">વાસ્તવિક સમજૂતી કાર્ડ જોવા માટે નમૂના ટેક્સ્ટને ટેપ કરો:</string>
+    <string name="onboarding_sample1_badge">⚖️ લીગલ લીઝ ક્લોઝ</string>
+    <string name="onboarding_sample1_text">પટેદારે કોઈપણ સબરોગેશન જવાબદારીઓ અને લિક્વિડેટેડ નુકસાનીથી અને તેની સામે પટેદારને નુકસાન પહોંચાડશે અને તેને પકડી રાખશે.</string>
+    <string name="onboarding_sample2_badge">🩺 તબીબી નિદાન</string>
+    <string name="onboarding_sample2_text">દર્દીને આઇડિયોપેથિક સૌમ્ય પેરોક્સિસ્મલ પોઝીશનલ વર્ટિગો સેકન્ડરી ટુ કેનાલિથિયાસિસ હોય છે.</string>
+    <string name="onboarding_step3_success">અદ્ભુત! સમજૂતી કામ કરે છે. તમે ગમે ત્યાં ELI5 નો ઉપયોગ કરવા માટે તૈયાર છો.</string>
+    <string name="onboarding_btn_get_started">પ્રારંભ કરો →</string>
+    <string name="onboarding_btn_lets_go">ચાલો જઈએ! →</string>
 </resources>

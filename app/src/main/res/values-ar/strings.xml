@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 اللغة ▾</string>
     <string name="proofread_copied_toast">تم النسخ إلى الحافظة</string>
     <string name="proofread_choose_target_lang">حدد اللغة الهدف</string>
+    <string name="onboarding_step1_title">اشرح أي شيء بنقرة واحدة</string>
+    <string name="onboarding_step1_subtitle">قم بتمييز النص في أي تطبيق، وانقر فوق المزيد (⋮)، واختر ELI5.</string>
+    <string name="onboarding_step1_caption1">1. قم بتمييز النص ثم اضغط على ⋮</string>
+    <string name="onboarding_step1_caption2">2. اضغط على ”اشرح باستخدام ELI5”</string>
+    <string name="onboarding_step1_caption3">3. يظهر الشرح العائم على الفور!</string>
+    <string name="onboarding_btn_continue">متابعة →</string>
+    <string name="onboarding_step2_title">العرض على التطبيقات الأخرى</string>
+    <string name="onboarding_step2_keyline">تستخدم فقط لإظهار بطاقة الشرح.</string>
+    <string name="onboarding_step2_subtitle">ابحث عن ELI5 في الإعدادات وقم بتشغيل المفتاح.</string>
+    <string name="onboarding_step2_card1">1. اضغط على ELI5</string>
+    <string name="onboarding_step2_card2">2. قم بالتشغيل</string>
+    <string name="onboarding_btn_grant">إذن المنح</string>
+    <string name="onboarding_btn_granted">تم منح الإذن ✓</string>
+    <string name="onboarding_step3_title">جربه الآن</string>
+    <string name="onboarding_step3_subtitle">اضغط على أي نص نموذجي لرؤية بطاقة الشرح الحقيقية:</string>
+    <string name="onboarding_sample1_badge">⚖️ بند الإيجار القانوني</string>
+    <string name="onboarding_sample1_text">يجب على المستأجر تعويض المؤجر وحمايته من وضد أي التزامات الحلول والأضرار المقطوعة.</string>
+    <string name="onboarding_sample2_badge">🩺 التشخيص الطبي</string>
+    <string name="onboarding_sample2_text">يعاني المريض من دوار موضعي حميد الانتيابي مجهول السبب ثانوي لتحصي القناة.</string>
+    <string name="onboarding_step3_success">مذهل! يعمل الشرح. أنت جاهز لاستخدام ELI5 في أي مكان.</string>
+    <string name="onboarding_btn_get_started">ابدأ →</string>
+    <string name="onboarding_btn_lets_go">هيا بنا! →</string>
 </resources>

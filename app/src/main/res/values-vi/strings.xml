@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Ngôn ngữ ▾</string>
     <string name="proofread_copied_toast">Đã sao chép vào bảng nhớ tạm</string>
     <string name="proofread_choose_target_lang">Chọn ngôn ngữ đích</string>
+    <string name="onboarding_step1_title">Giải thích bất cứ điều gì trong 1 lần nhấn</string>
+    <string name="onboarding_step1_subtitle">Đánh dấu văn bản trong bất kỳ ứng dụng nào, nhấn vào Thêm (⋮) và chọn ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Đánh dấu văn bản và nhấn ⋮</string>
+    <string name="onboarding_step1_caption2">2. Nhấn vào ‘Giải thích bằng ELI5’</string>
+    <string name="onboarding_step1_caption3">3. Giải thích nổi xuất hiện ngay lập tức!</string>
+    <string name="onboarding_btn_continue">Tiếp tục →</string>
+    <string name="onboarding_step2_title">Hiển thị trên các ứng dụng khác</string>
+    <string name="onboarding_step2_keyline">Chỉ được sử dụng để hiển thị thẻ giải thích.</string>
+    <string name="onboarding_step2_subtitle">Tìm ELI5 trong cài đặt và BẬT nút chuyển đổi.</string>
+    <string name="onboarding_step2_card1">1. Nhấn vào ELI5</string>
+    <string name="onboarding_step2_card2">2. BẬT</string>
+    <string name="onboarding_btn_grant">Cấp quyền</string>
+    <string name="onboarding_btn_granted">Đã được cấp phép ✓</string>
+    <string name="onboarding_step3_title">Hãy thử nó ngay bây giờ</string>
+    <string name="onboarding_step3_subtitle">Nhấn vào một trong hai văn bản mẫu để xem thẻ giải thích thực sự:</string>
+    <string name="onboarding_sample1_badge">⚖️ ĐIỀU KHOẢN THUÊ PHÁP LUẬT</string>
+    <string name="onboarding_sample1_text">Bên thuê sẽ bồi thường và tránh cho Bên cho thuê khỏi bất kỳ trách nhiệm pháp lý thế quyền nào và các thiệt hại được thanh lý.</string>
+    <string name="onboarding_sample2_badge">🩺 CHẨN ĐOÁN Y TẾ</string>
+    <string name="onboarding_sample2_text">Bệnh nhân có biểu hiện chóng mặt tư thế kịch phát lành tính vô căn thứ phát do sỏi ống tủy.</string>
+    <string name="onboarding_step3_success">Tuyệt vời! Giải thích có tác dụng. Bạn đã sẵn sàng sử dụng ELI5 ở mọi nơi.</string>
+    <string name="onboarding_btn_get_started">Bắt đầu →</string>
+    <string name="onboarding_btn_lets_go">Đi thôi! →</string>
 </resources>

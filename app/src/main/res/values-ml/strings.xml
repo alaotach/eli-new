@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 ഭാഷ ▾</string>
     <string name="proofread_copied_toast">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തി</string>
     <string name="proofread_choose_target_lang">ടാർഗെറ്റ് ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+    <string name="onboarding_step1_title">1 ടാപ്പിൽ എന്തും വിശദീകരിക്കുക</string>
+    <string name="onboarding_step1_subtitle">ഏത് ആപ്പിലും ടെക്‌സ്‌റ്റ് ഹൈലൈറ്റ് ചെയ്യുക, കൂടുതൽ ടാപ്പ് ചെയ്യുക (⋮), തുടർന്ന് ELI5 തിരഞ്ഞെടുക്കുക.</string>
+    <string name="onboarding_step1_caption1">1. ടെക്‌സ്‌റ്റ് ഹൈലൈറ്റ് ചെയ്‌ത് ⋮ ടാപ്പ് ചെയ്യുക</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 ഉപയോഗിച്ച് വിശദീകരിക്കുക’ ടാപ്പ് ചെയ്യുക</string>
+    <string name="onboarding_step1_caption3">3. ഫ്ലോട്ടിംഗ് വിശദീകരണം തൽക്ഷണം ദൃശ്യമാകുന്നു!</string>
+    <string name="onboarding_btn_continue">തുടരുക →</string>
+    <string name="onboarding_step2_title">മറ്റ് ആപ്പുകളിൽ പ്രദർശിപ്പിക്കുക</string>
+    <string name="onboarding_step2_keyline">വിശദീകരണ കാർഡ് കാണിക്കാൻ മാത്രം ഉപയോഗിക്കുന്നു.</string>
+    <string name="onboarding_step2_subtitle">ക്രമീകരണങ്ങളിൽ ELI5 കണ്ടെത്തി ടോഗിൾ ഓണാക്കുക.</string>
+    <string name="onboarding_step2_card1">1. ELI5 ടാപ്പ് ചെയ്യുക</string>
+    <string name="onboarding_step2_card2">2. ഓണാക്കുക</string>
+    <string name="onboarding_btn_grant">അനുമതി നൽകുക</string>
+    <string name="onboarding_btn_granted">അനുമതി ലഭിച്ചു ✓</string>
+    <string name="onboarding_step3_title">ഇപ്പോൾ തന്നെ പരീക്ഷിക്കൂ</string>
+    <string name="onboarding_step3_subtitle">യഥാർത്ഥ വിശദീകരണ കാർഡ് കാണുന്നതിന് ഏതെങ്കിലും സാമ്പിൾ ടെക്‌സ്‌റ്റ് ടാപ്പുചെയ്യുക:</string>
+    <string name="onboarding_sample1_badge">⚖️ നിയമപരമായ വാടക ക്ലോസ്</string>
+    <string name="onboarding_sample1_text">ഏതെങ്കിലും സബ്‌റോഗേഷൻ ബാധ്യതകളിൽ നിന്നും ലിക്വിഡേറ്റ് ചെയ്ത നാശനഷ്ടങ്ങളിൽ നിന്നും പാട്ടക്കാരന് നഷ്ടപരിഹാരം നൽകുകയും നിരുപദ്രവകരമാക്കുകയും ചെയ്യും.</string>
+    <string name="onboarding_sample2_badge">🩺 മെഡിക്കൽ ഡയഗ്നോസിസ്</string>
+    <string name="onboarding_sample2_text">രോഗിക്ക് കനാലിത്തിയാസിസിന് ദ്വിതീയമായ ഇഡിയൊപാത്തിക് ബെനിൻ പാരോക്സിസ്മൽ പൊസിഷണൽ വെർട്ടിഗോ ഉണ്ട്.</string>
+    <string name="onboarding_step3_success">ഗംഭീരം! വിശദീകരണം പ്രവർത്തിക്കുന്നു. നിങ്ങൾ എവിടെയും ELI5 ഉപയോഗിക്കാൻ തയ്യാറാണ്.</string>
+    <string name="onboarding_btn_get_started">ആരംഭിക്കുക →</string>
+    <string name="onboarding_btn_lets_go">നമുക്ക് പോകാം! →</string>
 </resources>

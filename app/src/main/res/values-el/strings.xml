@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Γλώσσα ▾</string>
     <string name="proofread_copied_toast">Αντιγράφηκε στο πρόχειρο</string>
     <string name="proofread_choose_target_lang">Επιλέξτε Γλώσσα προορισμού</string>
+    <string name="onboarding_step1_title">Εξηγήστε οτιδήποτε με 1 πάτημα</string>
+    <string name="onboarding_step1_subtitle">Επισημάνετε κείμενο σε οποιαδήποτε εφαρμογή, πατήστε Περισσότερα (⋮) και επιλέξτε ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Επισημάνετε το κείμενο και πατήστε ⋮</string>
+    <string name="onboarding_step1_caption2">2. Πατήστε ”Εξήγηση με ELI5”</string>
+    <string name="onboarding_step1_caption3">3. Η πλωτή εξήγηση εμφανίζεται αμέσως!</string>
+    <string name="onboarding_btn_continue">Συνέχεια →</string>
+    <string name="onboarding_step2_title">Εμφάνιση πάνω από άλλες εφαρμογές</string>
+    <string name="onboarding_step2_keyline">Χρησιμοποιείται μόνο για την εμφάνιση της κάρτας επεξήγησης.</string>
+    <string name="onboarding_step2_subtitle">Βρείτε το ELI5 στις ρυθμίσεις και ενεργοποιήστε το διακόπτη.</string>
+    <string name="onboarding_step2_card1">1. Πατήστε ELI5</string>
+    <string name="onboarding_step2_card2">2. Ενεργοποιήστε</string>
+    <string name="onboarding_btn_grant">Χορήγηση άδειας</string>
+    <string name="onboarding_btn_granted">Χορηγήθηκε άδεια ✓</string>
+    <string name="onboarding_step3_title">Δοκιμάστε το αμέσως τώρα</string>
+    <string name="onboarding_step3_subtitle">Πατήστε οποιοδήποτε δείγμα κειμένου για να δείτε την πραγματική κάρτα επεξήγησης:</string>
+    <string name="onboarding_sample1_badge">⚖️ ΡΗΤΡΑ ΝΟΜΙΚΗΣ ΜΙΣΘΩΣΗΣ</string>
+    <string name="onboarding_sample1_text">Ο Μισθωτής θα αποζημιώσει και θα κρατήσει αβλαβή τον Εκμισθωτή από και έναντι οποιωνδήποτε υποχρεώσεων υποκατάστασης και εκκαθαρισμένων ζημιών.</string>
+    <string name="onboarding_sample2_badge">🩺 ΙΑΤΡΙΚΗ ΔΙΑΓΝΩΣΗ</string>
+    <string name="onboarding_sample2_text">Ο ασθενής παρουσιάζει ιδιοπαθή καλοήθη παροξυσμικό ίλιγγο θέσης δευτεροπαθώς λόγω καναλιθίασης.</string>
+    <string name="onboarding_step3_success">Φοβερό! Εργασίες επεξήγησης. Είστε έτοιμοι να χρησιμοποιήσετε το ELI5 οπουδήποτε.</string>
+    <string name="onboarding_btn_get_started">Ξεκινήστε →</string>
+    <string name="onboarding_btn_lets_go">Πάμε! →</string>
 </resources>

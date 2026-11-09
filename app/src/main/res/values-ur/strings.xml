@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 زبان ▾</string>
     <string name="proofread_copied_toast">کلپ بورڈ پر کاپی ہو گیا۔</string>
     <string name="proofread_choose_target_lang">ہدف کی زبان منتخب کریں۔</string>
+    <string name="onboarding_step1_title">1 تھپتھپا کر کسی بھی چیز کی وضاحت کریں۔</string>
+    <string name="onboarding_step1_subtitle">کسی بھی ایپ میں متن کو نمایاں کریں، مزید (⋮) کو تھپتھپائیں، اور ELI5 کو منتخب کریں۔</string>
+    <string name="onboarding_step1_caption1">1. متن کو نمایاں کریں اور ⋮ کو تھپتھپائیں۔</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 کے ساتھ وضاحت کریں’ پر ٹیپ کریں</string>
+    <string name="onboarding_step1_caption3">3. فلوٹنگ وضاحت فوری طور پر ظاہر ہوتی ہے!</string>
+    <string name="onboarding_btn_continue">جاری رکھیں →</string>
+    <string name="onboarding_step2_title">دیگر ایپس پر ڈسپلے کریں۔</string>
+    <string name="onboarding_step2_keyline">صرف وضاحتی کارڈ دکھانے کے لیے استعمال کیا جاتا ہے۔</string>
+    <string name="onboarding_step2_subtitle">ترتیبات میں ELI5 تلاش کریں اور ٹوگل کو آن کریں۔</string>
+    <string name="onboarding_step2_card1">1. ELI5 کو تھپتھپائیں۔</string>
+    <string name="onboarding_step2_card2">2. آن کریں۔</string>
+    <string name="onboarding_btn_grant">اجازت دیں۔</string>
+    <string name="onboarding_btn_granted">اجازت دی گئی ✓</string>
+    <string name="onboarding_step3_title">ابھی اسے آزمائیں۔</string>
+    <string name="onboarding_step3_subtitle">اصلی وضاحتی کارڈ دیکھنے کے لیے نمونے کے متن پر ٹیپ کریں:</string>
+    <string name="onboarding_sample1_badge">⚖️ قانونی لیز کی شق</string>
+    <string name="onboarding_sample1_text">کرایہ دار معاوضہ ادا کرے گا اور لیزر کو کسی بھی ماتحت ذمہ داریوں اور ختم شدہ نقصانات سے اور اس کے خلاف بے ضرر رکھے گا۔</string>
+    <string name="onboarding_sample2_badge">🩺 طبی تشخیص</string>
+    <string name="onboarding_sample2_text">مریض idiopathic benign paroxysmal positional vertigo ثانوی to canalithiasis کے ساتھ پیش کرتا ہے۔</string>
+    <string name="onboarding_step3_success">بہت اچھے! وضاحت کام کرتی ہے۔ آپ کہیں بھی ELI5 استعمال کرنے کے لیے تیار ہیں۔</string>
+    <string name="onboarding_btn_get_started">شروع کریں →</string>
+    <string name="onboarding_btn_lets_go">چلو چلو! →</string>
 </resources>

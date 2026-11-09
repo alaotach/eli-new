@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Język ▾</string>
     <string name="proofread_copied_toast">Skopiowano do schowka</string>
     <string name="proofread_choose_target_lang">Wybierz Język docelowy</string>
+    <string name="onboarding_step1_title">Wyjaśnij wszystko jednym dotknięciem</string>
+    <string name="onboarding_step1_subtitle">Zaznacz tekst w dowolnej aplikacji, dotknij Więcej (⋮) i wybierz ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Zaznacz tekst i dotknij ⋮</string>
+    <string name="onboarding_step1_caption2">2. Kliknij „Wyjaśnij za pomocą ELI5”</string>
+    <string name="onboarding_step1_caption3">3. Pływające wyjaśnienie pojawia się natychmiast!</string>
+    <string name="onboarding_btn_continue">Kontynuuj →</string>
+    <string name="onboarding_step2_title">Wyświetlaj nad innymi aplikacjami</string>
+    <string name="onboarding_step2_keyline">Służy wyłącznie do pokazania karty objaśnień.</string>
+    <string name="onboarding_step2_subtitle">Znajdź ELI5 w ustawieniach i włącz przełącznik.</string>
+    <string name="onboarding_step2_card1">1. Dotknij ELI5</string>
+    <string name="onboarding_step2_card2">2. Włącz</string>
+    <string name="onboarding_btn_grant">Udziel pozwolenia</string>
+    <string name="onboarding_btn_granted">Pozwolenie udzielone ✓</string>
+    <string name="onboarding_step3_title">Spróbuj już teraz</string>
+    <string name="onboarding_step3_subtitle">Kliknij dowolny przykładowy tekst, aby zobaczyć prawdziwą kartę objaśnień:</string>
+    <string name="onboarding_sample1_badge">⚖️ PRAWNA KLAUZULA NAJMU</string>
+    <string name="onboarding_sample1_text">Najemca zabezpieczy i zwolni Wynajmującego z odpowiedzialności z tytułu wszelkich zobowiązań wynikających z subrogacji i kar umownych.</string>
+    <string name="onboarding_sample2_badge">🩺DIAGNOSTYKA MEDYCZNA</string>
+    <string name="onboarding_sample2_text">U pacjenta występują idiopatyczne, łagodne napadowe zawroty głowy położeniowe, wtórne do zapalenia kanalików.</string>
+    <string name="onboarding_step3_success">Wspaniały! Wyjaśnienie działa. Możesz używać ELI5 w dowolnym miejscu.</string>
+    <string name="onboarding_btn_get_started">Rozpocznij →</string>
+    <string name="onboarding_btn_lets_go">Chodźmy! →</string>
 </resources>

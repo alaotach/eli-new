@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 ภาษา ▾</string>
     <string name="proofread_copied_toast">คัดลอกไปยังคลิปบอร์ดแล้ว</string>
     <string name="proofread_choose_target_lang">เลือกภาษาเป้าหมาย</string>
+    <string name="onboarding_step1_title">อธิบายอะไรก็ได้ด้วยการแตะเพียงครั้งเดียว</string>
+    <string name="onboarding_step1_subtitle">ไฮไลต์ข้อความในแอปใดก็ได้ แตะเพิ่มเติม (⋮) แล้วเลือก ELI5</string>
+    <string name="onboarding_step1_caption1">1. ไฮไลท์ข้อความแล้วแตะ ⋮</string>
+    <string name="onboarding_step1_caption2">2. แตะ ’อธิบายด้วย ELI5’</string>
+    <string name="onboarding_step1_caption3">3. คำอธิบายแบบลอยตัวปรากฏขึ้นทันที!</string>
+    <string name="onboarding_btn_continue">ดำเนินการต่อ →</string>
+    <string name="onboarding_step2_title">แสดงบนแอปอื่นๆ</string>
+    <string name="onboarding_step2_keyline">ใช้เพื่อแสดงบัตรคำอธิบายเท่านั้น</string>
+    <string name="onboarding_step2_subtitle">ค้นหา ELI5 ในการตั้งค่าและเปิดสวิตช์</string>
+    <string name="onboarding_step2_card1">1. แตะ ELI5</string>
+    <string name="onboarding_step2_card2">2. เปิดเครื่อง</string>
+    <string name="onboarding_btn_grant">ให้สิทธิ์</string>
+    <string name="onboarding_btn_granted">ได้รับอนุญาต ✓</string>
+    <string name="onboarding_step3_title">ลองตอนนี้เลย</string>
+    <string name="onboarding_step3_subtitle">แตะข้อความตัวอย่างเพื่อดูการ์ดคำอธิบายจริง:</string>
+    <string name="onboarding_sample1_badge">⚖️ เงื่อนไขสัญญาเช่าทางกฎหมาย</string>
+    <string name="onboarding_sample1_text">ผู้เช่าจะต้องชดใช้ค่าเสียหายและไม่รับผิดชอบต่อผู้ให้เช่าจากและต่อความรับผิดในการรับช่วงสิทธิและความเสียหายที่ชำระบัญชี</string>
+    <string name="onboarding_sample2_badge">🩺 การวินิจฉัยทางการแพทย์</string>
+    <string name="onboarding_sample2_text">ผู้ป่วยจะมีอาการเวียนศีรษะตำแหน่ง paroxysmal ที่ไม่ทราบสาเหตุ รองจากโรค canalithiasis</string>
+    <string name="onboarding_step3_success">สุดยอด! อธิบายการทำงาน คุณพร้อมที่จะใช้ ELI5 ได้ทุกที่</string>
+    <string name="onboarding_btn_get_started">เริ่มต้น →</string>
+    <string name="onboarding_btn_lets_go">ไปกันเถอะ! →</string>
 </resources>

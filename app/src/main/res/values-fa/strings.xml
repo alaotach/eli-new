@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 زبان ▾</string>
     <string name="proofread_copied_toast">در کلیپ بورد کپی شد</string>
     <string name="proofread_choose_target_lang">زبان مقصد را انتخاب کنید</string>
+    <string name="onboarding_step1_title">هر چیزی را با یک ضربه توضیح دهید</string>
+    <string name="onboarding_step1_subtitle">متن را در هر برنامه ای برجسته کنید، روی More (⋮) ضربه بزنید و ELI5 را انتخاب کنید.</string>
+    <string name="onboarding_step1_caption1">1. متن را برجسته کنید و روی ⋮ ضربه بزنید</string>
+    <string name="onboarding_step1_caption2">2. روی «توضیح با ELI5» ضربه بزنید</string>
+    <string name="onboarding_step1_caption3">3. توضیح شناور به نظر می رسد فورا!</string>
+    <string name="onboarding_btn_continue">ادامه →</string>
+    <string name="onboarding_step2_title">نمایش بر روی سایر برنامه ها</string>
+    <string name="onboarding_step2_keyline">فقط برای نشان دادن کارت توضیح استفاده می شود.</string>
+    <string name="onboarding_step2_subtitle">ELI5 را در تنظیمات پیدا کنید و کلید را روشن کنید.</string>
+    <string name="onboarding_step2_card1">1. روی ELI5 ضربه بزنید</string>
+    <string name="onboarding_step2_card2">2. روشن کنید</string>
+    <string name="onboarding_btn_grant">اعطای مجوز</string>
+    <string name="onboarding_btn_granted">مجوز داده شده ✓</string>
+    <string name="onboarding_step3_title">همین حالا آن را امتحان کنید</string>
+    <string name="onboarding_step3_subtitle">برای دیدن کارت توضیح واقعی، روی یکی از متن های نمونه ضربه بزنید:</string>
+    <string name="onboarding_sample1_badge">⚖️ بند اجاره قانونی</string>
+    <string name="onboarding_sample1_text">مستاجر باید موجر را از هرگونه تعهدات جانشینی و خسارات تسویه شده غرامت و بی ضرر نگه دارد.</string>
+    <string name="onboarding_sample2_badge">🩺 تشخیص پزشکی</string>
+    <string name="onboarding_sample2_text">بیمار با سرگیجه موضعی حمله ای خوش خیم ایدیوپاتیک ثانویه به کانالیتیازیس مراجعه می کند.</string>
+    <string name="onboarding_step3_success">عالی! توضیح کار می کند. شما آماده استفاده از ELI5 در هر مکانی هستید.</string>
+    <string name="onboarding_btn_get_started">شروع کنید →</string>
+    <string name="onboarding_btn_lets_go">برویم →</string>
 </resources>

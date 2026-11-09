@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Lingua ▾</string>
     <string name="proofread_copied_toast">Copiato negli appunti</string>
     <string name="proofread_choose_target_lang">Seleziona la lingua di destinazione</string>
+    <string name="onboarding_step1_title">Spiega qualsiasi cosa con un solo tocco</string>
+    <string name="onboarding_step1_subtitle">Evidenzia il testo in qualsiasi app, tocca Altro (⋮) e scegli ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Evidenzia il testo e tocca ⋮</string>
+    <string name="onboarding_step1_caption2">2. Tocca ”Spiega con ELI5”</string>
+    <string name="onboarding_step1_caption3">3. La spiegazione mobile appare immediatamente!</string>
+    <string name="onboarding_btn_continue">Continua→</string>
+    <string name="onboarding_step2_title">Visualizza su altre app</string>
+    <string name="onboarding_step2_keyline">Utilizzato solo per mostrare la scheda esplicativa.</string>
+    <string name="onboarding_step2_subtitle">Trova ELI5 nelle impostazioni e attiva l’interruttore.</string>
+    <string name="onboarding_step2_card1">1. Tocca ELI5</string>
+    <string name="onboarding_step2_card2">2. Accendere</string>
+    <string name="onboarding_btn_grant">Concedere l’autorizzazione</string>
+    <string name="onboarding_btn_granted">Autorizzazione concessa ✓</string>
+    <string name="onboarding_step3_title">Provalo adesso</string>
+    <string name="onboarding_step3_subtitle">Tocca uno dei due testi di esempio per vedere la vera scheda esplicativa:</string>
+    <string name="onboarding_sample1_badge">⚖️CLAUSOLA DI LOCAZIONE LEGALE</string>
+    <string name="onboarding_sample1_text">La Conduttrice dovrà manlevare e tenere indenne il Locatore da e contro eventuali passività di surrogazione e penale.</string>
+    <string name="onboarding_sample2_badge">🩺 DIAGNOSI MEDICA</string>
+    <string name="onboarding_sample2_text">Il paziente presenta vertigine parossistica posizionale benigna idiopatica secondaria a canalitiasi.</string>
+    <string name="onboarding_step3_success">Eccezionale! La spiegazione funziona. Sei pronto per utilizzare ELI5 ovunque.</string>
+    <string name="onboarding_btn_get_started">Inizia →</string>
+    <string name="onboarding_btn_lets_go">Andiamo! →</string>
 </resources>

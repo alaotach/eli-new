@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 ਭਾਸ਼ਾ ▾</string>
     <string name="proofread_copied_toast">ਕਲਿੱਪਬੋਰਡ ’ਤੇ ਕਾਪੀ ਕੀਤਾ ਗਿਆ</string>
     <string name="proofread_choose_target_lang">ਟਾਰਗੇਟ ਭਾਸ਼ਾ ਚੁਣੋ</string>
+    <string name="onboarding_step1_title">1 ਟੈਪ ਵਿੱਚ ਕੁਝ ਵੀ ਸਮਝਾਓ</string>
+    <string name="onboarding_step1_subtitle">ਕਿਸੇ ਵੀ ਐਪ ਵਿੱਚ ਟੈਕਸਟ ਨੂੰ ਹਾਈਲਾਈਟ ਕਰੋ, ਹੋਰ (⋮) ’ਤੇ ਟੈਪ ਕਰੋ, ਅਤੇ ELI5 ਚੁਣੋ।</string>
+    <string name="onboarding_step1_caption1">1. ਲਿਖਤ ਨੂੰ ਉਜਾਗਰ ਕਰੋ ਅਤੇ ⋮ ’ਤੇ ਟੈਪ ਕਰੋ</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 ਨਾਲ ਸਮਝਾਓ’ ’ਤੇ ਟੈਪ ਕਰੋ</string>
+    <string name="onboarding_step1_caption3">3. ਫਲੋਟਿੰਗ ਵਿਆਖਿਆ ਤੁਰੰਤ ਪ੍ਰਗਟ ਹੁੰਦੀ ਹੈ!</string>
+    <string name="onboarding_btn_continue">ਜਾਰੀ ਰੱਖੋ →</string>
+    <string name="onboarding_step2_title">ਹੋਰ ਐਪਸ ਉੱਤੇ ਡਿਸਪਲੇ ਕਰੋ</string>
+    <string name="onboarding_step2_keyline">ਸਿਰਫ਼ ਸਪਸ਼ਟੀਕਰਨ ਕਾਰਡ ਦਿਖਾਉਣ ਲਈ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ।</string>
+    <string name="onboarding_step2_subtitle">ਸੈਟਿੰਗਾਂ ਵਿੱਚ ELI5 ਲੱਭੋ ਅਤੇ ਟੌਗਲ ਨੂੰ ਚਾਲੂ ਕਰੋ।</string>
+    <string name="onboarding_step2_card1">1. ELI5 ’ਤੇ ਟੈਪ ਕਰੋ</string>
+    <string name="onboarding_step2_card2">2. ਚਾਲੂ ਕਰੋ</string>
+    <string name="onboarding_btn_grant">ਇਜਾਜ਼ਤ ਦਿਓ</string>
+    <string name="onboarding_btn_granted">ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਗਈ ✓</string>
+    <string name="onboarding_step3_title">ਇਸ ਨੂੰ ਹੁਣੇ ਅਜ਼ਮਾਓ</string>
+    <string name="onboarding_step3_subtitle">ਅਸਲੀ ਸਪੱਸ਼ਟੀਕਰਨ ਕਾਰਡ ਦੇਖਣ ਲਈ ਨਮੂਨਾ ਟੈਕਸਟ ’ਤੇ ਟੈਪ ਕਰੋ:</string>
+    <string name="onboarding_sample1_badge">⚖️ ਕਨੂੰਨੀ ਲੀਜ਼ ਕਲਾਜ਼</string>
+    <string name="onboarding_sample1_text">ਪਟੇਦਾਰ ਕਿਸੇ ਵੀ ਸਬਰੋਗੇਸ਼ਨ ਦੇਣਦਾਰੀਆਂ ਅਤੇ ਲਿਕਵੀਡੇਟਡ ਨੁਕਸਾਨਾਂ ਤੋਂ ਅਤੇ ਇਸਦੇ ਵਿਰੁੱਧ ਪਟੇਦਾਰ ਨੂੰ ਨੁਕਸਾਨ ਦੀ ਭਰਪਾਈ ਕਰੇਗਾ ਅਤੇ ਰੱਖੇਗਾ।</string>
+    <string name="onboarding_sample2_badge">🩺 ਮੈਡੀਕਲ ਨਿਦਾਨ</string>
+    <string name="onboarding_sample2_text">ਮਰੀਜ਼ ਇਡੀਓਪੈਥਿਕ ਸੁਭਾਵਕ ਪੈਰੋਕਸਿਜ਼ਮਲ ਪੋਜੀਸ਼ਨਲ ਵਰਟੀਗੋ ਸੈਕੰਡਰੀ ਤੋਂ ਕੈਨੇਲਿਥਿਆਸਿਸ ਦੇ ਨਾਲ ਪੇਸ਼ ਕਰਦਾ ਹੈ।</string>
+    <string name="onboarding_step3_success">ਸ਼ਾਨਦਾਰ! ਵਿਆਖਿਆ ਦਾ ਕੰਮ ਕਰਦਾ ਹੈ। ਤੁਸੀਂ ELI5 ਨੂੰ ਕਿਤੇ ਵੀ ਵਰਤਣ ਲਈ ਤਿਆਰ ਹੋ।</string>
+    <string name="onboarding_btn_get_started">ਸ਼ੁਰੂ ਕਰੋ →</string>
+    <string name="onboarding_btn_lets_go">ਚਲੋ ਚੱਲੀਏ! →</string>
 </resources>

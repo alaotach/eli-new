@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 भाषा ▾</string>
     <string name="proofread_copied_toast">क्लिपबोर्ड पर कॉपी किया गया</string>
     <string name="proofread_choose_target_lang">लक्ष्य भाषा चुनें</string>
+    <string name="onboarding_step1_title">1 टैप में कुछ भी समझाएं</string>
+    <string name="onboarding_step1_subtitle">किसी भी ऐप में टेक्स्ट को हाइलाइट करें, अधिक (⋮) टैप करें, और ELI5 चुनें।</string>
+    <string name="onboarding_step1_caption1">1. टेक्स्ट को हाइलाइट करें और ⋮ टैप करें</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 के साथ समझाएं’ पर टैप करें</string>
+    <string name="onboarding_step1_caption3">3. फ़्लोटिंग स्पष्टीकरण तुरंत प्रकट होता है!</string>
+    <string name="onboarding_btn_continue">जारी रखें →</string>
+    <string name="onboarding_step2_title">अन्य ऐप्स पर प्रदर्शित करें</string>
+    <string name="onboarding_step2_keyline">केवल स्पष्टीकरण कार्ड दिखाने के लिए उपयोग किया जाता है।</string>
+    <string name="onboarding_step2_subtitle">सेटिंग्स में ELI5 ढूंढें और टॉगल को चालू करें।</string>
+    <string name="onboarding_step2_card1">1. ELI5 टैप करें</string>
+    <string name="onboarding_step2_card2">2. चालू करें</string>
+    <string name="onboarding_btn_grant">अनुमति प्रदान करें</string>
+    <string name="onboarding_btn_granted">अनुमति दी गई ✓</string>
+    <string name="onboarding_step3_title">इसे अभी आज़माएं</string>
+    <string name="onboarding_step3_subtitle">वास्तविक स्पष्टीकरण कार्ड देखने के लिए किसी भी नमूना पाठ पर टैप करें:</string>
+    <string name="onboarding_sample1_badge">⚖️ कानूनी पट्टा खंड</string>
+    <string name="onboarding_sample1_text">पट्टेदार किसी भी प्रतिस्थापन देनदारियों और परिसमाप्त क्षतियों से पट्टेदार को क्षतिपूर्ति देगा और उसे हानिरहित रखेगा।</string>
+    <string name="onboarding_sample2_badge">🩺चिकित्सा निदान</string>
+    <string name="onboarding_sample2_text">रोगी कैनालिथियासिस के द्वितीयक अज्ञातहेतुक सौम्य पैरॉक्सिस्मल पोजिशनल वर्टिगो से पीड़ित होता है।</string>
+    <string name="onboarding_step3_success">बहुत बढ़िया! स्पष्टीकरण कार्य करता है. आप कहीं भी ELI5 का उपयोग करने के लिए तैयार हैं।</string>
+    <string name="onboarding_btn_get_started">आरंभ करें →</string>
+    <string name="onboarding_btn_lets_go">चलो चलें! →</string>
 </resources>

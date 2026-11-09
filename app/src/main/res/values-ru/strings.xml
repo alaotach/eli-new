@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Язык ▾</string>
     <string name="proofread_copied_toast">Скопировано в буфер обмена</string>
     <string name="proofread_choose_target_lang">Выберите целевой язык</string>
+    <string name="onboarding_step1_title">Объясните что угодно в 1 нажатие</string>
+    <string name="onboarding_step1_subtitle">Выделите текст в любом приложении, нажмите «Еще» (⋮) и выберите ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Выделите текст и нажмите ⋮.</string>
+    <string name="onboarding_step1_caption2">2. Нажмите «Объяснить с помощью ELI5».</string>
+    <string name="onboarding_step1_caption3">3. Плавающее пояснение появляется мгновенно!</string>
+    <string name="onboarding_btn_continue">Продолжить →</string>
+    <string name="onboarding_step2_title">Отображение поверх других приложений</string>
+    <string name="onboarding_step2_keyline">Используется только для показа поясняющей карточки.</string>
+    <string name="onboarding_step2_subtitle">Найдите ELI5 в настройках и включите переключатель.</string>
+    <string name="onboarding_step2_card1">1. Нажмите ELI5.</string>
+    <string name="onboarding_step2_card2">2. ВКЛЮЧИТЕ</string>
+    <string name="onboarding_btn_grant">Предоставить разрешение</string>
+    <string name="onboarding_btn_granted">Разрешение получено ✓</string>
+    <string name="onboarding_step3_title">Попробуйте прямо сейчас</string>
+    <string name="onboarding_step3_subtitle">Коснитесь любого образца текста, чтобы увидеть реальную карточку с объяснением:</string>
+    <string name="onboarding_sample1_badge">⚖️ ЗАКОННАЯ УСЛОВИЯ АРЕНДЫ</string>
+    <string name="onboarding_sample1_text">Арендатор обязуется возместить ущерб и оградить Арендодателя от любых суброгационных обязательств и заранее оцененных убытков.</string>
+    <string name="onboarding_sample2_badge">🩺 МЕДИЦИНСКАЯ ДИАГНОСТИКА</string>
+    <string name="onboarding_sample2_text">У пациента идиопатическое доброкачественное пароксизмальное позиционное головокружение, вторичное по отношению к каналитиазу.</string>
+    <string name="onboarding_step3_success">Потрясающий! Объяснение работает. Вы готовы использовать ELI5 где угодно.</string>
+    <string name="onboarding_btn_get_started">Начать →</string>
+    <string name="onboarding_btn_lets_go">Поехали! →</string>
 </resources>

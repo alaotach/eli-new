@@ -45,6 +45,31 @@ fun Context.dpToPx(dp: Float): Int {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).toInt()
 }
 
+fun createStepIndicator(context: Context, activeIndex: Int): LinearLayout {
+    val row = LinearLayout(context).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER
+        setPadding(0, 0, 0, context.dpToPx(14f))
+    }
+    for (i in 0 until 3) {
+        val dot = View(context).apply {
+            val isActive = i == activeIndex
+            layoutParams = LinearLayout.LayoutParams(
+                context.dpToPx(if (isActive) 24f else 8f),
+                context.dpToPx(8f)
+            ).apply {
+                setMargins(context.dpToPx(4f), 0, context.dpToPx(4f), 0)
+            }
+            background = GradientDrawable().apply {
+                setColor(if (isActive) ONBOARDING_PURPLE else Color.parseColor("#38304D"))
+                cornerRadius = context.dpToPx(4f).toFloat()
+            }
+        }
+        row.addView(dot)
+    }
+    return row
+}
+
 // -------------------------------------------------------------
 // Screen 1: How It Works Demo (Animated Looping Tutorial)
 // -------------------------------------------------------------
@@ -53,30 +78,49 @@ class OnboardingStep1Fragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = requireContext()
+
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
             setBackgroundColor(ONBOARDING_BG)
-            setPadding(context.dpToPx(24f), context.dpToPx(32f), context.dpToPx(24f), context.dpToPx(24f))
+            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
+
+        // Scrollable content area
+        val scrollView = ScrollView(context).apply {
+            isFillViewport = true
+            isVerticalScrollBarEnabled = false
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1.0f)
+        }
+
+        val content = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(context.dpToPx(24f), context.dpToPx(16f), context.dpToPx(24f), context.dpToPx(16f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
+        scrollView.addView(content)
+        root.addView(scrollView)
+
+        // Progress dots
+        content.addView(createStepIndicator(context, 0))
 
         // Title & subtitle
         val title = TextView(context).apply {
-            text = "Explain anything in 1 tap"
+            text = getString(R.string.onboarding_step1_title)
             setTextColor(ONBOARDING_TEXT_PRIMARY)
-            textSize = 24f
+            textSize = 23f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         }
         val subtitle = TextView(context).apply {
-            text = "Highlight text in any app, tap More (⋮), and choose ELI5."
+            text = getString(R.string.onboarding_step1_subtitle)
             setTextColor(ONBOARDING_TEXT_MUTED)
             textSize = 14f
             gravity = Gravity.CENTER
-            setPadding(0, context.dpToPx(6f), 0, context.dpToPx(16f))
+            setPadding(0, context.dpToPx(6f), 0, context.dpToPx(14f))
         }
-        root.addView(title)
-        root.addView(subtitle)
+        content.addView(title)
+        content.addView(subtitle)
 
         // Demo card container
         val demoCard = LinearLayout(context).apply {
@@ -88,20 +132,23 @@ class OnboardingStep1Fragment : Fragment() {
                 setStroke(context.dpToPx(1f), Color.argb(100, 139, 92, 246))
             }
             setPadding(context.dpToPx(12f), context.dpToPx(12f), context.dpToPx(12f), context.dpToPx(12f))
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = context.dpToPx(8f)
+            }
         }
 
         val demoImageView = ImageView(context).apply {
             setImageResource(R.drawable.tutorial_img_6)
             scaleType = ImageView.ScaleType.FIT_CENTER
             adjustViewBounds = true
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
+            maxHeight = context.dpToPx(260f)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
         demoCard.addView(demoImageView)
 
         // Step caption bar
         val stepCaption = TextView(context).apply {
-            text = "1. Highlight text & tap ⋮"
+            text = getString(R.string.onboarding_step1_caption1)
             setTextColor(Color.WHITE)
             textSize = 13.5f
             typeface = Typeface.DEFAULT_BOLD
@@ -110,7 +157,7 @@ class OnboardingStep1Fragment : Fragment() {
         }
         demoCard.addView(stepCaption)
 
-        // Step indicator dots
+        // Step indicator dots inside card
         val dotsRow = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
@@ -131,13 +178,13 @@ class OnboardingStep1Fragment : Fragment() {
             dotsRow.addView(dot)
         }
         demoCard.addView(dotsRow)
-        root.addView(demoCard)
+        content.addView(demoCard)
 
         // Looping animation steps
         val demoSteps = listOf(
-            Triple(R.drawable.tutorial_img_6, "1. Highlight text & tap ⋮", 0),
-            Triple(R.drawable.tutorial_img_7, "2. Tap 'Explain with ELI5'", 1),
-            Triple(R.drawable.tutorial_img_4, "3. Floating explanation appears instantly!", 2)
+            Triple(R.drawable.tutorial_img_6, getString(R.string.onboarding_step1_caption1), 0),
+            Triple(R.drawable.tutorial_img_7, getString(R.string.onboarding_step1_caption2), 1),
+            Triple(R.drawable.tutorial_img_4, getString(R.string.onboarding_step1_caption3), 2)
         )
         var currentStep = 0
 
@@ -172,9 +219,17 @@ class OnboardingStep1Fragment : Fragment() {
             updateStep(currentStep + 1)
         }
 
-        // Continue Button
+        // Pinned Bottom Button Bar (Guaranteed visible on every screen)
+        val bottomBar = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(context.dpToPx(24f), context.dpToPx(8f), context.dpToPx(24f), context.dpToPx(16f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            background = ColorDrawable(ONBOARDING_BG)
+        }
+
         val continueBtn = Button(context).apply {
-            text = "Continue →"
+            text = getString(R.string.onboarding_btn_continue)
             setTextColor(Color.WHITE)
             textSize = 16f
             typeface = Typeface.DEFAULT_BOLD
@@ -183,14 +238,14 @@ class OnboardingStep1Fragment : Fragment() {
                 setColor(ONBOARDING_PURPLE)
                 cornerRadius = context.dpToPx(28f).toFloat()
             }
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(54f)).apply {
-                topMargin = context.dpToPx(16f)
-            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(52f))
             setOnClickListener {
                 (activity as? OnboardingActivity)?.nextStep()
             }
         }
-        root.addView(continueBtn)
+        bottomBar.addView(continueBtn)
+        root.addView(bottomBar)
+
         return root
     }
 
@@ -204,32 +259,53 @@ class OnboardingStep1Fragment : Fragment() {
 // Screen 2: Permission Explanation (Used only to show the explanation card)
 // -------------------------------------------------------------
 class OnboardingStep2Fragment : Fragment() {
+    private var grantBtn: Button? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = requireContext()
+
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
             setBackgroundColor(ONBOARDING_BG)
-            setPadding(context.dpToPx(24f), context.dpToPx(32f), context.dpToPx(24f), context.dpToPx(24f))
+            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
+
+        // Scrollable content area
+        val scrollView = ScrollView(context).apply {
+            isFillViewport = true
+            isVerticalScrollBarEnabled = false
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1.0f)
+        }
+
+        val content = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(context.dpToPx(24f), context.dpToPx(16f), context.dpToPx(24f), context.dpToPx(16f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
+        scrollView.addView(content)
+        root.addView(scrollView)
+
+        // Progress dots
+        content.addView(createStepIndicator(context, 1))
 
         // Custom vector ShieldView replacing emoji
         val shield = ShieldView(context).apply {
             layoutParams = LinearLayout.LayoutParams(context.dpToPx(52f), context.dpToPx(58f)).apply {
-                topMargin = context.dpToPx(8f)
-                bottomMargin = context.dpToPx(12f)
+                topMargin = context.dpToPx(4f)
+                bottomMargin = context.dpToPx(8f)
             }
         }
-        root.addView(shield)
+        content.addView(shield)
 
         val title = TextView(context).apply {
-            text = "Display Over Other Apps"
+            text = getString(R.string.onboarding_step2_title)
             setTextColor(ONBOARDING_TEXT_PRIMARY)
             textSize = 22f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         }
-        root.addView(title)
+        content.addView(title)
 
         // Key required line per spec
         val keyLineCard = LinearLayout(context).apply {
@@ -239,40 +315,42 @@ class OnboardingStep2Fragment : Fragment() {
                 cornerRadius = context.dpToPx(12f).toFloat()
                 setStroke(context.dpToPx(1f), ONBOARDING_PURPLE)
             }
-            setPadding(context.dpToPx(16f), context.dpToPx(10f), context.dpToPx(16f), context.dpToPx(10f))
+            setPadding(context.dpToPx(16f), context.dpToPx(8f), context.dpToPx(16f), context.dpToPx(8f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                topMargin = context.dpToPx(12f)
-                bottomMargin = context.dpToPx(8f)
+                topMargin = context.dpToPx(10f)
+                bottomMargin = context.dpToPx(6f)
             }
         }
 
         val keyLineText = TextView(context).apply {
-            text = "Used only to show the explanation card."
+            text = getString(R.string.onboarding_step2_keyline)
             setTextColor(Color.WHITE)
-            textSize = 14f
+            textSize = 13.5f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         }
         keyLineCard.addView(keyLineText)
-        root.addView(keyLineCard)
+        content.addView(keyLineCard)
 
         val explanation = TextView(context).apply {
-            text = "Find ELI5 in settings and switch the toggle ON."
+            text = getString(R.string.onboarding_step2_subtitle)
             setTextColor(ONBOARDING_TEXT_MUTED)
-            textSize = 13.5f
+            textSize = 13f
             gravity = Gravity.CENTER
-            setPadding(0, 0, 0, context.dpToPx(10f))
+            setPadding(0, 0, 0, context.dpToPx(8f))
         }
-        root.addView(explanation)
+        content.addView(explanation)
 
         // Tutorial Screenshots Guide (tutorial_img_1 & tutorial_img_2 side by side)
         val imagesRow = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f).apply {
-                bottomMargin = context.dpToPx(14f)
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = context.dpToPx(8f)
             }
         }
+
+        val cardHeight = context.dpToPx(148f)
 
         // Card 1: Find ELI5
         val card1 = LinearLayout(context).apply {
@@ -283,8 +361,8 @@ class OnboardingStep2Fragment : Fragment() {
                 cornerRadius = context.dpToPx(14f).toFloat()
                 setStroke(context.dpToPx(1f), Color.argb(80, 139, 92, 246))
             }
-            setPadding(context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(8f))
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+            setPadding(context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f))
+            layoutParams = LinearLayout.LayoutParams(0, cardHeight, 1f).apply {
                 marginEnd = context.dpToPx(6f)
             }
         }
@@ -295,12 +373,12 @@ class OnboardingStep2Fragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
         }
         val lbl1 = TextView(context).apply {
-            text = "1. Tap ELI5"
+            text = getString(R.string.onboarding_step2_card1)
             setTextColor(Color.WHITE)
-            textSize = 12f
+            textSize = 11.5f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            setPadding(0, context.dpToPx(4f), 0, 0)
+            setPadding(0, context.dpToPx(3f), 0, 0)
         }
         card1.addView(img1)
         card1.addView(lbl1)
@@ -314,8 +392,8 @@ class OnboardingStep2Fragment : Fragment() {
                 cornerRadius = context.dpToPx(14f).toFloat()
                 setStroke(context.dpToPx(1f), Color.argb(80, 139, 92, 246))
             }
-            setPadding(context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(8f))
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+            setPadding(context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f))
+            layoutParams = LinearLayout.LayoutParams(0, cardHeight, 1f).apply {
                 marginStart = context.dpToPx(6f)
             }
         }
@@ -326,31 +404,41 @@ class OnboardingStep2Fragment : Fragment() {
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
         }
         val lbl2 = TextView(context).apply {
-            text = "2. Turn ON"
+            text = getString(R.string.onboarding_step2_card2)
             setTextColor(Color.WHITE)
-            textSize = 12f
+            textSize = 11.5f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            setPadding(0, context.dpToPx(4f), 0, 0)
+            setPadding(0, context.dpToPx(3f), 0, 0)
         }
         card2.addView(img2)
         card2.addView(lbl2)
 
         imagesRow.addView(card1)
         imagesRow.addView(card2)
-        root.addView(imagesRow)
+        content.addView(imagesRow)
 
-        val grantBtn = Button(context).apply {
-            text = if (Settings.canDrawOverlays(context)) "Permission Granted ✓" else "Grant Permission"
+        // Pinned Bottom Button Bar (Guaranteed visible on every screen)
+        val bottomBar = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(context.dpToPx(24f), context.dpToPx(8f), context.dpToPx(24f), context.dpToPx(16f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            background = ColorDrawable(ONBOARDING_BG)
+        }
+
+        grantBtn = Button(context).apply {
+            val isGranted = Settings.canDrawOverlays(context)
+            text = if (isGranted) getString(R.string.onboarding_btn_granted) else getString(R.string.onboarding_btn_grant)
             setTextColor(Color.WHITE)
             textSize = 16f
             typeface = Typeface.DEFAULT_BOLD
             isAllCaps = false
             background = GradientDrawable().apply {
-                setColor(if (Settings.canDrawOverlays(context)) Color.parseColor("#10B981") else ONBOARDING_PURPLE)
+                setColor(if (isGranted) Color.parseColor("#10B981") else ONBOARDING_PURPLE)
                 cornerRadius = context.dpToPx(28f).toFloat()
             }
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(54f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(52f))
             setOnClickListener {
                 val onboarding = activity as? OnboardingActivity ?: return@setOnClickListener
                 if (!Settings.canDrawOverlays(context)) {
@@ -364,8 +452,22 @@ class OnboardingStep2Fragment : Fragment() {
                 }
             }
         }
-        root.addView(grantBtn)
+        bottomBar.addView(grantBtn)
+        root.addView(bottomBar)
+
         return root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val context = context ?: return
+        if (Settings.canDrawOverlays(context)) {
+            grantBtn?.text = getString(R.string.onboarding_btn_granted)
+            grantBtn?.background = GradientDrawable().apply {
+                setColor(Color.parseColor("#10B981"))
+                cornerRadius = context.dpToPx(28f).toFloat()
+            }
+        }
     }
 }
 
@@ -379,58 +481,68 @@ class OnboardingStep3Fragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = requireContext()
+
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
             setBackgroundColor(ONBOARDING_BG)
-            setPadding(context.dpToPx(24f), context.dpToPx(36f), context.dpToPx(24f), context.dpToPx(28f))
+            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
 
+        // Scrollable content area
+        val scrollView = ScrollView(context).apply {
+            isFillViewport = true
+            isVerticalScrollBarEnabled = false
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1.0f)
+        }
+
+        val content = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(context.dpToPx(24f), context.dpToPx(16f), context.dpToPx(24f), context.dpToPx(16f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        }
+        scrollView.addView(content)
+        root.addView(scrollView)
+
+        // Progress dots
+        content.addView(createStepIndicator(context, 2))
+
         val title = TextView(context).apply {
-            text = "Try it right now"
+            text = getString(R.string.onboarding_step3_title)
             setTextColor(ONBOARDING_TEXT_PRIMARY)
-            textSize = 24f
+            textSize = 23f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         }
         val subtitle = TextView(context).apply {
-            text = "Tap either sample text to see the real explanation card:"
+            text = getString(R.string.onboarding_step3_subtitle)
             setTextColor(ONBOARDING_TEXT_MUTED)
             textSize = 14f
             gravity = Gravity.CENTER
-            setPadding(0, context.dpToPx(6f), 0, context.dpToPx(20f))
+            setPadding(0, context.dpToPx(6f), 0, context.dpToPx(16f))
         }
-        root.addView(title)
-        root.addView(subtitle)
-
-        val scrollArea = ScrollView(context).apply {
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
-            isVerticalScrollBarEnabled = false
-        }
-        val samplesBox = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-        scrollArea.addView(samplesBox)
+        content.addView(title)
+        content.addView(subtitle)
 
         // Sample 1: Lease clause
         val sample1Card = createSampleCard(
-            badge = "⚖️  LEGAL LEASE CLAUSE",
-            text = "The Lessee shall indemnify and hold harmless the Lessor from and against any subrogation liabilities and liquidated damages.",
+            badge = getString(R.string.onboarding_sample1_badge),
+            text = getString(R.string.onboarding_sample1_text),
             onTest = { testText ->
                 onUserTestedSample(testText)
             }
         )
-        samplesBox.addView(sample1Card)
+        content.addView(sample1Card)
 
         // Sample 2: Medical line
         val sample2Card = createSampleCard(
-            badge = "🩺  MEDICAL DIAGNOSIS",
-            text = "The patient presents with idiopathic benign paroxysmal positional vertigo secondary to canalithiasis.",
+            badge = getString(R.string.onboarding_sample2_badge),
+            text = getString(R.string.onboarding_sample2_text),
             onTest = { testText ->
                 onUserTestedSample(testText)
             }
         )
-        samplesBox.addView(sample2Card)
+        content.addView(sample2Card)
 
         // Green check success box
         greenCheckContainer = LinearLayout(context).apply {
@@ -456,7 +568,7 @@ class OnboardingStep3Fragment : Fragment() {
             setPadding(0, 0, context.dpToPx(12f), 0)
         }
         val checkText = TextView(context).apply {
-            text = "Awesome! Explanation works. You're ready to use ELI5 anywhere."
+            text = getString(R.string.onboarding_step3_success)
             setTextColor(Color.WHITE)
             textSize = 13.5f
             typeface = Typeface.DEFAULT_BOLD
@@ -464,12 +576,19 @@ class OnboardingStep3Fragment : Fragment() {
         }
         greenCheckContainer?.addView(checkIcon)
         greenCheckContainer?.addView(checkText)
-        samplesBox.addView(greenCheckContainer)
+        content.addView(greenCheckContainer)
 
-        root.addView(scrollArea)
+        // Pinned Bottom Button Bar (Guaranteed visible on every screen)
+        val bottomBar = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setPadding(context.dpToPx(24f), context.dpToPx(8f), context.dpToPx(24f), context.dpToPx(16f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            background = ColorDrawable(ONBOARDING_BG)
+        }
 
         finishBtn = Button(context).apply {
-            text = "Get Started →"
+            text = getString(R.string.onboarding_btn_get_started)
             setTextColor(Color.WHITE)
             textSize = 16f
             typeface = Typeface.DEFAULT_BOLD
@@ -478,14 +597,14 @@ class OnboardingStep3Fragment : Fragment() {
                 setColor(ONBOARDING_PURPLE)
                 cornerRadius = context.dpToPx(28f).toFloat()
             }
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(56f)).apply {
-                topMargin = context.dpToPx(16f)
-            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(52f))
             setOnClickListener {
                 completeOnboarding()
             }
         }
-        root.addView(finishBtn)
+        bottomBar.addView(finishBtn)
+        root.addView(bottomBar)
+
         return root
     }
 
@@ -498,9 +617,9 @@ class OnboardingStep3Fragment : Fragment() {
                 cornerRadius = context.dpToPx(18f).toFloat()
                 setStroke(context.dpToPx(1.5f), Color.argb(120, 139, 92, 246))
             }
-            setPadding(context.dpToPx(18f), context.dpToPx(16f), context.dpToPx(18f), context.dpToPx(16f))
+            setPadding(context.dpToPx(16f), context.dpToPx(14f), context.dpToPx(16f), context.dpToPx(14f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                bottomMargin = context.dpToPx(16f)
+                bottomMargin = context.dpToPx(12f)
             }
             isClickable = true
             isFocusable = true
@@ -521,20 +640,20 @@ class OnboardingStep3Fragment : Fragment() {
             }
             setPadding(context.dpToPx(10f), context.dpToPx(4f), context.dpToPx(10f), context.dpToPx(4f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                bottomMargin = context.dpToPx(12f)
+                bottomMargin = context.dpToPx(10f)
             }
         }
 
         val bodyTv = TextView(context).apply {
             this.text = text
             setTextColor(Color.parseColor("#F9FAFB"))
-            textSize = 15f
-            setLineSpacing(0f, 1.3f)
-            setPadding(0, 0, 0, context.dpToPx(14f))
+            textSize = 14.5f
+            setLineSpacing(0f, 1.25f)
+            setPadding(0, 0, 0, context.dpToPx(12f))
         }
 
         val btn = TextView(context).apply {
-            this.text = "Explain with ELI5 ✨"
+            this.text = getString(R.string.explain_with_eli5) + " ✨"
             setTextColor(Color.WHITE)
             textSize = 14f
             typeface = Typeface.DEFAULT_BOLD
@@ -543,7 +662,7 @@ class OnboardingStep3Fragment : Fragment() {
                 setColor(ONBOARDING_PURPLE)
                 cornerRadius = context.dpToPx(12f).toFloat()
             }
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(44f))
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, context.dpToPx(42f))
             setOnClickListener {
                 onTest(text)
             }
@@ -558,7 +677,7 @@ class OnboardingStep3Fragment : Fragment() {
     private fun onUserTestedSample(sampleText: String) {
         hasTested = true
         greenCheckContainer?.visibility = View.VISIBLE
-        finishBtn?.text = "Let's Go! →"
+        finishBtn?.text = getString(R.string.onboarding_btn_lets_go)
         val intent = Intent(requireContext(), ExplainOverlayActivity::class.java).apply {
             putExtra(ExplainOverlayActivity.EXTRA_TEXT, sampleText)
         }
@@ -586,6 +705,16 @@ class OnboardingActivity : AppCompatActivity() {
         if (Settings.canDrawOverlays(this)) {
             nextStep()
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val lang = SettingsManager.getLanguage(newBase)
+        val langObj = LanguageManager.getLanguageByEnglishName(lang)
+        val locale = java.util.Locale.forLanguageTag(langObj.code)
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val localizedContext = newBase.createConfigurationContext(config)
+        super.attachBaseContext(localizedContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

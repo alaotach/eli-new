@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Dil ▾</string>
     <string name="proofread_copied_toast">Panoya kopyalandı</string>
     <string name="proofread_choose_target_lang">Hedef Dili Seçin</string>
+    <string name="onboarding_step1_title">1 dokunuşla her şeyi açıklayın</string>
+    <string name="onboarding_step1_subtitle">Herhangi bir uygulamada metni vurgulayın, Diğer’e (⋮) dokunun ve ELI5’i seçin.</string>
+    <string name="onboarding_step1_caption1">1. Metni vurgulayın ve ⋮’ye dokunun</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 ile Açıkla’ya dokunun</string>
+    <string name="onboarding_step1_caption3">3. Kayan açıklama anında görünür!</string>
+    <string name="onboarding_btn_continue">Devam →</string>
+    <string name="onboarding_step2_title">Diğer Uygulamaların Üzerinde Görüntüle</string>
+    <string name="onboarding_step2_keyline">Yalnızca açıklama kartını göstermek için kullanılır.</string>
+    <string name="onboarding_step2_subtitle">Ayarlarda ELI5’i bulun ve düğmeyi AÇIK konumuna getirin.</string>
+    <string name="onboarding_step2_card1">1. ELI5’e dokunun</string>
+    <string name="onboarding_step2_card2">2. AÇIN</string>
+    <string name="onboarding_btn_grant">İzin Ver</string>
+    <string name="onboarding_btn_granted">İzin Verildi ✓</string>
+    <string name="onboarding_step3_title">Hemen dene</string>
+    <string name="onboarding_step3_subtitle">Gerçek açıklama kartını görmek için örnek metinlerden birine dokunun:</string>
+    <string name="onboarding_sample1_badge">⚖️ YASAL KİRA MADDESİ</string>
+    <string name="onboarding_sample1_text">Kiracı, Kiralayanı her türlü halefiyet yükümlülüğü ve maddi zararlardan tazmin edecek ve masun tutacaktır.</string>
+    <string name="onboarding_sample2_badge">🩺 TIBBİ TEŞHİS</string>
+    <string name="onboarding_sample2_text">Hasta kanalitiazise sekonder idiyopatik benign paroksismal pozisyonel vertigo ile başvurmaktadır.</string>
+    <string name="onboarding_step3_success">Mükemmel! Açıklama işe yarıyor. ELI5’i her yerde kullanmaya hazırsınız.</string>
+    <string name="onboarding_btn_get_started">Başlayın →</string>
+    <string name="onboarding_btn_lets_go">Hadi gidelim! →</string>
 </resources>

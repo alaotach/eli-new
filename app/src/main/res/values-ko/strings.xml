@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 언어 ▾</string>
     <string name="proofread_copied_toast">클립보드에 복사됨</string>
     <string name="proofread_choose_target_lang">대상 언어 선택</string>
+    <string name="onboarding_step1_title">탭 한 번으로 무엇이든 설명하세요</string>
+    <string name="onboarding_step1_subtitle">앱에서 텍스트를 강조표시하고 더보기(⋮)를 탭한 후 ELI5를 선택하세요.</string>
+    <string name="onboarding_step1_caption1">1. 텍스트를 강조표시하고 ⋮를 탭하세요.</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5로 설명’을 탭하세요.</string>
+    <string name="onboarding_step1_caption3">3. 플로팅 설명이 즉시 등장!</string>
+    <string name="onboarding_btn_continue">계속 →</string>
+    <string name="onboarding_step2_title">다른 앱 위에 표시</string>
+    <string name="onboarding_step2_keyline">설명 카드를 표시하는 데에만 사용됩니다.</string>
+    <string name="onboarding_step2_subtitle">설정에서 ELI5를 찾아 토글을 ON으로 전환하세요.</string>
+    <string name="onboarding_step2_card1">1. ELI5를 탭하세요</string>
+    <string name="onboarding_step2_card2">2. 켜기</string>
+    <string name="onboarding_btn_grant">권한 부여</string>
+    <string name="onboarding_btn_granted">권한 부여됨 ✓</string>
+    <string name="onboarding_step3_title">지금 바로 사용해 보세요</string>
+    <string name="onboarding_step3_subtitle">실제 설명 카드를 보려면 샘플 텍스트 중 하나를 탭하세요.</string>
+    <string name="onboarding_sample1_badge">⚖️ 법적 임대 조항</string>
+    <string name="onboarding_sample1_text">임차인은 대위채무 및 청산된 손해로부터 임대인에게 손해를 입히지 않고 배상해야 합니다.</string>
+    <string name="onboarding_sample2_badge">🩺 의료 진단</string>
+    <string name="onboarding_sample2_text">환자는 관석증에 이차적인 특발성 양성 발작성 체위 현기증을 나타냈습니다.</string>
+    <string name="onboarding_step3_success">엄청난! 설명이 작동합니다. 이제 ELI5를 어디에서나 사용할 준비가 되었습니다.</string>
+    <string name="onboarding_btn_get_started">시작하기 →</string>
+    <string name="onboarding_btn_lets_go">가자! →</string>
 </resources>

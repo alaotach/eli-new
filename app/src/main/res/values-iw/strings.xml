@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 שפה ▾</string>
     <string name="proofread_copied_toast">הועתק ללוח</string>
     <string name="proofread_choose_target_lang">בחר שפת יעד</string>
+    <string name="onboarding_step1_title">הסבר כל דבר בהקשה אחת</string>
+    <string name="onboarding_step1_subtitle">הדגש טקסט בכל אפליקציה, הקש על עוד (⋮) ובחר ELI5.</string>
+    <string name="onboarding_step1_caption1">1. סמן טקסט והקש על ⋮</string>
+    <string name="onboarding_step1_caption2">2. הקש על ’הסבר עם ELI5’</string>
+    <string name="onboarding_step1_caption3">3. הסבר צף מופיע באופן מיידי!</string>
+    <string name="onboarding_btn_continue">המשך →</string>
+    <string name="onboarding_step2_title">תצוגה על פני אפליקציות אחרות</string>
+    <string name="onboarding_step2_keyline">משמש רק להצגת כרטיס ההסבר.</string>
+    <string name="onboarding_step2_subtitle">מצא את ELI5 בהגדרות והפעל את המתג.</string>
+    <string name="onboarding_step2_card1">1. הקש על ELI5</string>
+    <string name="onboarding_step2_card2">2. הפעל</string>
+    <string name="onboarding_btn_grant">תן רשות</string>
+    <string name="onboarding_btn_granted">הרשאה ניתנה ✓</string>
+    <string name="onboarding_step3_title">נסה את זה עכשיו</string>
+    <string name="onboarding_step3_subtitle">הקש על אחד מהטקסטים לדוגמה כדי לראות את כרטיס ההסבר האמיתי:</string>
+    <string name="onboarding_sample1_badge">⚖️ סעיף חכירה משפטי</string>
+    <string name="onboarding_sample1_text">השוכר ישפה וישפה את המשכיר מפני ונגד כל התחייבויות חלוף ופיצויים מחוסלים.</string>
+    <string name="onboarding_sample2_badge">🩺 אבחון רפואי</string>
+    <string name="onboarding_sample2_text">החולה מופיע עם סחרחורת פוזיציונית שפירה אידיופטית משנית ל-canalithiasis.</string>
+    <string name="onboarding_step3_success">מדהים! ההסבר עובד. אתה מוכן להשתמש ב-ELI5 בכל מקום.</string>
+    <string name="onboarding_btn_get_started">התחל →</string>
+    <string name="onboarding_btn_lets_go">בוא נלך! →</string>
 </resources>

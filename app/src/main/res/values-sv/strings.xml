@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Språk ▾</string>
     <string name="proofread_copied_toast">Kopierade till urklipp</string>
     <string name="proofread_choose_target_lang">Välj Målspråk</string>
+    <string name="onboarding_step1_title">Förklara vad som helst med ett tryck</string>
+    <string name="onboarding_step1_subtitle">Markera text i valfri app, tryck på Mer (⋮) och välj ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Markera text och tryck på ⋮</string>
+    <string name="onboarding_step1_caption2">2. Tryck på ”Förklara med ELI5”</string>
+    <string name="onboarding_step1_caption3">3. Flytande förklaring dyker upp omedelbart!</string>
+    <string name="onboarding_btn_continue">Fortsätt →</string>
+    <string name="onboarding_step2_title">Visa över andra appar</string>
+    <string name="onboarding_step2_keyline">Används endast för att visa förklaringskortet.</string>
+    <string name="onboarding_step2_subtitle">Hitta ELI5 i inställningarna och slå PÅ reglaget.</string>
+    <string name="onboarding_step2_card1">1. Tryck på ELI5</string>
+    <string name="onboarding_step2_card2">2. Slå PÅ</string>
+    <string name="onboarding_btn_grant">Ge tillstånd</string>
+    <string name="onboarding_btn_granted">Tillstånd beviljat ✓</string>
+    <string name="onboarding_step3_title">Prova det nu</string>
+    <string name="onboarding_step3_subtitle">Tryck på endera exempeltexten för att se det riktiga förklaringskortet:</string>
+    <string name="onboarding_sample1_badge">⚖️ LAGLIG LEASERINGSKLAUSUL</string>
+    <string name="onboarding_sample1_text">Hyrestagaren ska ersätta och hålla uthyraren skadeslös från och mot eventuella subrogationsansvar och skadestånd.</string>
+    <string name="onboarding_sample2_badge">🩺 MEDICINSK DIAGNOS</string>
+    <string name="onboarding_sample2_text">Patienten uppvisar idiopatisk benign paroxysmal positionsyrsel sekundärt till canalithiasis.</string>
+    <string name="onboarding_step3_success">Fantastiskt! Förklaring fungerar. Du är redo att använda ELI5 var som helst.</string>
+    <string name="onboarding_btn_get_started">Kom igång →</string>
+    <string name="onboarding_btn_lets_go">Låt oss gå! →</string>
 </resources>

@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Wika ▾</string>
     <string name="proofread_copied_toast">Kinopya sa clipboard</string>
     <string name="proofread_choose_target_lang">Piliin ang Target na Wika</string>
+    <string name="onboarding_step1_title">Ipaliwanag ang anuman sa 1 tap</string>
+    <string name="onboarding_step1_subtitle">I-highlight ang text sa anumang app, i-tap ang Higit pa (⋮), at piliin ang ELI5.</string>
+    <string name="onboarding_step1_caption1">1. I-highlight ang text at i-tap ang ⋮</string>
+    <string name="onboarding_step1_caption2">2. I-tap ang ‘Ipaliwanag gamit ang ELI5’</string>
+    <string name="onboarding_step1_caption3">3. Lumilitaw kaagad ang lumulutang na paliwanag!</string>
+    <string name="onboarding_btn_continue">Magpatuloy →</string>
+    <string name="onboarding_step2_title">Ipakita sa Iba pang Mga App</string>
+    <string name="onboarding_step2_keyline">Ginagamit lang para ipakita ang explanation card.</string>
+    <string name="onboarding_step2_subtitle">Hanapin ang ELI5 sa mga setting at i-ON ang toggle.</string>
+    <string name="onboarding_step2_card1">1. I-tap ang ELI5</string>
+    <string name="onboarding_step2_card2">2. I-ON</string>
+    <string name="onboarding_btn_grant">Magbigay ng Pahintulot</string>
+    <string name="onboarding_btn_granted">Ipinagkaloob ang Pahintulot ✓</string>
+    <string name="onboarding_step3_title">Subukan ito ngayon</string>
+    <string name="onboarding_step3_subtitle">I-tap ang alinman sa sample na text para makita ang totoong explanation card:</string>
+    <string name="onboarding_sample1_badge">⚖️ LEGAL LEASE CLAUSE</string>
+    <string name="onboarding_sample1_text">Ang Lessee ay dapat magbayad ng danyos at pananatilihing hindi nakakapinsala sa Lessor mula sa at laban sa anumang mga pananagutan sa subrogation at mga liquidated na pinsala.</string>
+    <string name="onboarding_sample2_badge">🩺 MEDICAL DIAGNOSIS</string>
+    <string name="onboarding_sample2_text">Ang pasyente ay nagpapakita ng idiopathic benign paroxysmal positional vertigo na pangalawa sa canalithiasis.</string>
+    <string name="onboarding_step3_success">Galing! Gumagana ang pagpapaliwanag. Handa ka nang gamitin ang ELI5 kahit saan.</string>
+    <string name="onboarding_btn_get_started">Magsimula →</string>
+    <string name="onboarding_btn_lets_go">Tara na! →</string>
 </resources>

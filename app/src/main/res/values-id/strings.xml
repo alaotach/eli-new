@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Bahasa ▾</string>
     <string name="proofread_copied_toast">Disalin ke papan klip</string>
     <string name="proofread_choose_target_lang">Pilih Bahasa Sasaran</string>
+    <string name="onboarding_step1_title">Jelaskan apa pun dalam 1 ketukan</string>
+    <string name="onboarding_step1_subtitle">Sorot teks di aplikasi apa pun, ketuk Lainnya (⋮), dan pilih ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Sorot teks &amp;amp; ketuk ⋮</string>
+    <string name="onboarding_step1_caption2">2. Ketuk ’Jelaskan dengan ELI5’</string>
+    <string name="onboarding_step1_caption3">3. Penjelasan mengambang muncul seketika!</string>
+    <string name="onboarding_btn_continue">Lanjutkan →</string>
+    <string name="onboarding_step2_title">Tampilkan Di Atas Aplikasi Lain</string>
+    <string name="onboarding_step2_keyline">Digunakan hanya untuk menunjukkan kartu penjelasan.</string>
+    <string name="onboarding_step2_subtitle">Temukan ELI5 di pengaturan dan aktifkan sakelar.</string>
+    <string name="onboarding_step2_card1">1. Ketuk ELI5</string>
+    <string name="onboarding_step2_card2">2. HIDUPKAN</string>
+    <string name="onboarding_btn_grant">Berikan Izin</string>
+    <string name="onboarding_btn_granted">Izin Diberikan ✓</string>
+    <string name="onboarding_step3_title">Cobalah sekarang</string>
+    <string name="onboarding_step3_subtitle">Ketuk salah satu contoh teks untuk melihat kartu penjelasan sebenarnya:</string>
+    <string name="onboarding_sample1_badge">⚖️ KLAUSUL SEWA HUKUM</string>
+    <string name="onboarding_sample1_text">Penyewa akan mengganti kerugian dan membebaskan Penyewa dari dan terhadap segala kewajiban subrogasi dan kerusakan yang dilikuidasi.</string>
+    <string name="onboarding_sample2_badge">🩺 DIAGNOSIS MEDIS</string>
+    <string name="onboarding_sample2_text">Pasien datang dengan vertigo posisi paroksismal jinak idiopatik akibat canalithiasis.</string>
+    <string name="onboarding_step3_success">Luar biasa! Penjelasan berhasil. Anda siap menggunakan ELI5 di mana saja.</string>
+    <string name="onboarding_btn_get_started">Memulai →</string>
+    <string name="onboarding_btn_lets_go">Ayo Pergi! →</string>
 </resources>

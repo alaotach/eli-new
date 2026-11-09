@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Idioma ▾</string>
     <string name="proofread_copied_toast">Copiado al portapapeles</string>
     <string name="proofread_choose_target_lang">Seleccionar idioma de destino</string>
+    <string name="onboarding_step1_title">Explica cualquier cosa en 1 toque</string>
+    <string name="onboarding_step1_subtitle">Resalte el texto en cualquier aplicación, toque Más (⋮) y elija ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Resalte el texto y toque ⋮</string>
+    <string name="onboarding_step1_caption2">2. Toque ’Explicar con ELI5’</string>
+    <string name="onboarding_step1_caption3">3. ¡La explicación flotante aparece instantáneamente!</string>
+    <string name="onboarding_btn_continue">Continuar →</string>
+    <string name="onboarding_step2_title">Mostrar sobre otras aplicaciones</string>
+    <string name="onboarding_step2_keyline">Se utiliza únicamente para mostrar la tarjeta explicativa.</string>
+    <string name="onboarding_step2_subtitle">Busque ELI5 en la configuración y encienda el interruptor.</string>
+    <string name="onboarding_step2_card1">1. Toque ELI5</string>
+    <string name="onboarding_step2_card2">2. Encienda</string>
+    <string name="onboarding_btn_grant">Conceder permiso</string>
+    <string name="onboarding_btn_granted">Permiso concedido ✓</string>
+    <string name="onboarding_step3_title">Pruébalo ahora mismo</string>
+    <string name="onboarding_step3_subtitle">Toque cualquiera de los textos de muestra para ver la tarjeta explicativa real:</string>
+    <string name="onboarding_sample1_badge">⚖️ CLÁUSULA LEGAL DE ARRENDAMIENTO</string>
+    <string name="onboarding_sample1_text">El Arrendatario indemnizará y eximirá de toda responsabilidad al Arrendador de cualquier responsabilidad de subrogación y indemnización por daños y perjuicios.</string>
+    <string name="onboarding_sample2_badge">🩺 DIAGNÓSTICO MÉDICO</string>
+    <string name="onboarding_sample2_text">El paciente presenta vértigo posicional paroxístico benigno idiopático secundario a canalitiasis.</string>
+    <string name="onboarding_step3_success">¡Impresionante! La explicación funciona. Estás listo para usar ELI5 en cualquier lugar.</string>
+    <string name="onboarding_btn_get_started">Empezar →</string>
+    <string name="onboarding_btn_lets_go">¡Vamos! →</string>
 </resources>

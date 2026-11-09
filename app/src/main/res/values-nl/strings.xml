@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Taal ▾</string>
     <string name="proofread_copied_toast">Gekopieerd naar klembord</string>
     <string name="proofread_choose_target_lang">Selecteer Doeltaal</string>
+    <string name="onboarding_step1_title">Leg alles uit in 1 tik</string>
+    <string name="onboarding_step1_subtitle">Markeer tekst in een willekeurige app, tik op Meer (⋮) en kies ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Markeer tekst en tik op ⋮</string>
+    <string name="onboarding_step1_caption2">2. Tik op ‘Leg uit met ELI5’</string>
+    <string name="onboarding_step1_caption3">3. Zwevende uitleg verschijnt onmiddellijk!</string>
+    <string name="onboarding_btn_continue">Ga verder →</string>
+    <string name="onboarding_step2_title">Weergave via andere apps</string>
+    <string name="onboarding_step2_keyline">Wordt alleen gebruikt om de uitlegkaart te tonen.</string>
+    <string name="onboarding_step2_subtitle">Zoek ELI5 in de instellingen en zet de schakelaar AAN.</string>
+    <string name="onboarding_step2_card1">1. Tik op ELI5</string>
+    <string name="onboarding_step2_card2">2. Schakel AAN</string>
+    <string name="onboarding_btn_grant">Toestemming verlenen</string>
+    <string name="onboarding_btn_granted">Toestemming verleend ✓</string>
+    <string name="onboarding_step3_title">Probeer het nu meteen</string>
+    <string name="onboarding_step3_subtitle">Tik op een van de voorbeeldteksten om de echte uitlegkaart te zien:</string>
+    <string name="onboarding_sample1_badge">⚖️WETTELIJKE HUURCLAUSULE</string>
+    <string name="onboarding_sample1_text">De Huurder zal de Verhuurder vrijwaren van en tegen eventuele subrogatieverplichtingen en schadevergoedingen.</string>
+    <string name="onboarding_sample2_badge">🩺 MEDISCHE DIAGNOSE</string>
+    <string name="onboarding_sample2_text">De patiënt presenteert zich met idiopathische, goedaardige paroxysmale positieduizeligheid secundair aan canalithiase.</string>
+    <string name="onboarding_step3_success">Geweldig! Uitleg werkt. U bent klaar om ELI5 overal te gebruiken.</string>
+    <string name="onboarding_btn_get_started">Aan de slag →</string>
+    <string name="onboarding_btn_lets_go">Laten we gaan! →</string>
 </resources>

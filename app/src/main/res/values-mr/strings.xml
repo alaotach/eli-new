@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 भाषा ▾</string>
     <string name="proofread_copied_toast">क्लिपबोर्डवर कॉपी केले</string>
     <string name="proofread_choose_target_lang">लक्ष्य भाषा निवडा</string>
+    <string name="onboarding_step1_title">1 टॅपमध्ये काहीही स्पष्ट करा</string>
+    <string name="onboarding_step1_subtitle">कोणत्याही ॲपमध्ये मजकूर हायलाइट करा, अधिक (⋮) वर टॅप करा आणि ELI5 निवडा.</string>
+    <string name="onboarding_step1_caption1">1. मजकूर हायलाइट करा आणि ⋮ टॅप करा</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 सह स्पष्ट करा’ वर टॅप करा</string>
+    <string name="onboarding_step1_caption3">3. फ्लोटिंग स्पष्टीकरण त्वरित दिसून येते!</string>
+    <string name="onboarding_btn_continue">सुरू ठेवा →</string>
+    <string name="onboarding_step2_title">इतर ॲप्सवर प्रदर्शित करा</string>
+    <string name="onboarding_step2_keyline">फक्त स्पष्टीकरण कार्ड दाखवण्यासाठी वापरले जाते.</string>
+    <string name="onboarding_step2_subtitle">सेटिंग्जमध्ये ELI5 शोधा आणि टॉगल चालू करा.</string>
+    <string name="onboarding_step2_card1">1. ELI5 वर टॅप करा</string>
+    <string name="onboarding_step2_card2">2. चालू करा</string>
+    <string name="onboarding_btn_grant">परवानगी द्या</string>
+    <string name="onboarding_btn_granted">परवानगी दिली ✓</string>
+    <string name="onboarding_step3_title">आत्ताच करून पहा</string>
+    <string name="onboarding_step3_subtitle">वास्तविक स्पष्टीकरण कार्ड पाहण्यासाठी नमुना मजकूरावर टॅप करा:</string>
+    <string name="onboarding_sample1_badge">⚖️ कायदेशीर लीज क्लॉज</string>
+    <string name="onboarding_sample1_text">पट्टेदार कोणत्याही सबरोगेशन दायित्वे आणि लिक्विडेटेड हानीपासून आणि त्याच्या विरुद्ध पट्टेदाराची भरपाई करेल आणि निरुपद्रवी ठेवेल.</string>
+    <string name="onboarding_sample2_badge">🩺 वैद्यकीय निदान</string>
+    <string name="onboarding_sample2_text">रुग्णाला इडिओपॅथिक सौम्य पॅरोक्सिस्मल पोझिशनल व्हर्टिगो दुय्यम कॅनालिथियासिस आहे.</string>
+    <string name="onboarding_step3_success">अप्रतिम! स्पष्टीकरण कार्य करते. तुम्ही कुठेही ELI5 वापरण्यास तयार आहात.</string>
+    <string name="onboarding_btn_get_started">प्रारंभ करा →</string>
+    <string name="onboarding_btn_lets_go">चला जाऊया! →</string>
 </resources>

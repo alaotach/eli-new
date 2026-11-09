@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Bahasa ▾</string>
     <string name="proofread_copied_toast">Disalin ke papan keratan</string>
     <string name="proofread_choose_target_lang">Pilih Bahasa Sasaran</string>
+    <string name="onboarding_step1_title">Terangkan apa-apa dalam 1 ketikan</string>
+    <string name="onboarding_step1_subtitle">Serlahkan teks dalam mana-mana apl, ketik Lagi (⋮) dan pilih ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Serlahkan teks &amp;amp; ketik ⋮</string>
+    <string name="onboarding_step1_caption2">2. Ketik ’Terangkan dengan ELI5’</string>
+    <string name="onboarding_step1_caption3">3. Penjelasan terapung muncul serta-merta!</string>
+    <string name="onboarding_btn_continue">Teruskan →</string>
+    <string name="onboarding_step2_title">Paparan Atas Apl Lain</string>
+    <string name="onboarding_step2_keyline">Digunakan hanya untuk menunjukkan kad penerangan.</string>
+    <string name="onboarding_step2_subtitle">Cari ELI5 dalam tetapan dan tukar togol HIDUP.</string>
+    <string name="onboarding_step2_card1">1. Ketik ELI5</string>
+    <string name="onboarding_step2_card2">2. HIDUPKAN</string>
+    <string name="onboarding_btn_grant">Berikan Kebenaran</string>
+    <string name="onboarding_btn_granted">Kebenaran Diberikan ✓</string>
+    <string name="onboarding_step3_title">Cubalah sekarang</string>
+    <string name="onboarding_step3_subtitle">Ketik sama ada teks sampel untuk melihat kad penjelasan sebenar:</string>
+    <string name="onboarding_sample1_badge">⚖️ FASAL PAJAKAN UNDANG-UNDANG</string>
+    <string name="onboarding_sample1_text">Pemajak hendaklah menanggung rugi dan tidak memudaratkan Pemberi Pajak daripada dan terhadap sebarang liabiliti subrogasi dan ganti rugi tercair.</string>
+    <string name="onboarding_sample2_badge">🩺 DIAGNOSIS PERUBATAN</string>
+    <string name="onboarding_sample2_text">Pesakit hadir dengan vertigo kedudukan paroxysmal jinak idiopatik akibat kanalithiasis.</string>
+    <string name="onboarding_step3_success">Hebat! Penjelasan berfungsi. Anda sudah bersedia untuk menggunakan ELI5 di mana-mana sahaja.</string>
+    <string name="onboarding_btn_get_started">Bermula →</string>
+    <string name="onboarding_btn_lets_go">Jom Pergi! →</string>
 </resources>

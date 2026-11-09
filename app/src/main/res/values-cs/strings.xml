@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Jazyk ▾</string>
     <string name="proofread_copied_toast">Zkopírováno do schránky</string>
     <string name="proofread_choose_target_lang">Vyberte Cílový jazyk</string>
+    <string name="onboarding_step1_title">Vysvětlete cokoliv jediným klepnutím</string>
+    <string name="onboarding_step1_subtitle">Zvýrazněte text v libovolné aplikaci, klepněte na Více (⋮) a vyberte ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Zvýrazněte text a klepněte na ⋮</string>
+    <string name="onboarding_step1_caption2">2. Klepněte na „Vysvětlit pomocí ELI5“</string>
+    <string name="onboarding_step1_caption3">3. Plovoucí vysvětlení se objeví okamžitě!</string>
+    <string name="onboarding_btn_continue">Pokračovat →</string>
+    <string name="onboarding_step2_title">Zobrazení přes jiné aplikace</string>
+    <string name="onboarding_step2_keyline">Používá se pouze k zobrazení karty s vysvětlením.</string>
+    <string name="onboarding_step2_subtitle">Najděte ELI5 v nastavení a přepněte přepínač do polohy ON.</string>
+    <string name="onboarding_step2_card1">1. Klepněte na ELI5</string>
+    <string name="onboarding_step2_card2">2. Zapněte</string>
+    <string name="onboarding_btn_grant">Udělení povolení</string>
+    <string name="onboarding_btn_granted">Povolení uděleno ✓</string>
+    <string name="onboarding_step3_title">Zkuste to hned teď</string>
+    <string name="onboarding_step3_subtitle">Klepnutím na kterýkoli ukázkový text zobrazíte kartu skutečného vysvětlení:</string>
+    <string name="onboarding_sample1_badge">⚖️ PRÁVNÍ USTANOVENÍ O NÁJMU</string>
+    <string name="onboarding_sample1_text">Nájemce odškodní a ochrání pronajímatele za jakékoli subrogační závazky a náhradu škody.</string>
+    <string name="onboarding_sample2_badge">🩺 LÉKAŘSKÁ DIAGNOSTIKA</string>
+    <string name="onboarding_sample2_text">Pacient přichází s idiopatickým benigním paroxysmálním polohovým vertigem sekundárním ke kanalitiáze.</string>
+    <string name="onboarding_step3_success">Úžasné! Vysvětlovací práce. Jste připraveni používat ELI5 kdekoli.</string>
+    <string name="onboarding_btn_get_started">Začínáme →</string>
+    <string name="onboarding_btn_lets_go">Pojďme! →</string>
 </resources>

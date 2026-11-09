@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Sprache ▾</string>
     <string name="proofread_copied_toast">In die Zwischenablage kopiert</string>
     <string name="proofread_choose_target_lang">Wählen Sie Zielsprache aus</string>
+    <string name="onboarding_step1_title">Erklären Sie alles mit nur einem Fingertipp</string>
+    <string name="onboarding_step1_subtitle">Markieren Sie Text in einer beliebigen App, tippen Sie auf „Mehr“ (⋮) und wählen Sie ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Markieren Sie den Text und tippen Sie auf ⋮</string>
+    <string name="onboarding_step1_caption2">2. Tippen Sie auf „Erklären mit ELI5“.</string>
+    <string name="onboarding_step1_caption3">3. Die schwebende Erklärung erscheint sofort!</string>
+    <string name="onboarding_btn_continue">Weiter →</string>
+    <string name="onboarding_step2_title">Anzeige über anderen Apps</string>
+    <string name="onboarding_step2_keyline">Wird nur zum Vorzeigen der Erklärungskarte verwendet.</string>
+    <string name="onboarding_step2_subtitle">Suchen Sie in den Einstellungen nach ELI5 und schalten Sie den Schalter auf EIN.</string>
+    <string name="onboarding_step2_card1">1. Tippen Sie auf ELI5</string>
+    <string name="onboarding_step2_card2">2. Einschalten</string>
+    <string name="onboarding_btn_grant">Erlaubnis erteilen</string>
+    <string name="onboarding_btn_granted">Erlaubnis erteilt ✓</string>
+    <string name="onboarding_step3_title">Probieren Sie es gleich aus</string>
+    <string name="onboarding_step3_subtitle">Tippen Sie auf einen der Beispieltexte, um die eigentliche Erklärungskarte anzuzeigen:</string>
+    <string name="onboarding_sample1_badge">⚖️ RECHTLICHE MIETKLAUSE</string>
+    <string name="onboarding_sample1_text">Der Mieter stellt den Vermieter von jeglicher Forderungsabtretung und pauschalierten Schadensersatzansprüchen frei.</string>
+    <string name="onboarding_sample2_badge">🩺 MEDIZINISCHE DIAGNOSE</string>
+    <string name="onboarding_sample2_text">Der Patient leidet unter idiopathischem, gutartigem paroxysmalem Lagerungsschwindel als Folge einer Kanalithiasis.</string>
+    <string name="onboarding_step3_success">Eindrucksvoll! Erklärung funktioniert. Sie können ELI5 überall verwenden.</string>
+    <string name="onboarding_btn_get_started">Erste Schritte →</string>
+    <string name="onboarding_btn_lets_go">Auf geht’s! →</string>
 </resources>

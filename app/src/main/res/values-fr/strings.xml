@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Langue ▾</string>
     <string name="proofread_copied_toast">Copié dans le presse-papiers</string>
     <string name="proofread_choose_target_lang">Sélectionnez la langue cible</string>
+    <string name="onboarding_step1_title">Expliquez n’importe quoi en 1 clic</string>
+    <string name="onboarding_step1_subtitle">Mettez en surbrillance le texte dans n’importe quelle application, appuyez sur Plus (⋮) et choisissez ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Mettez le texte en surbrillance et appuyez sur ⋮</string>
+    <string name="onboarding_step1_caption2">2. Appuyez sur « Expliquer avec ELI5 »</string>
+    <string name="onboarding_step1_caption3">3. L’explication flottante apparaît instantanément !</string>
+    <string name="onboarding_btn_continue">Continuer →</string>
+    <string name="onboarding_step2_title">Afficher sur d’autres applications</string>
+    <string name="onboarding_step2_keyline">Utilisé uniquement pour afficher la carte explicative.</string>
+    <string name="onboarding_step2_subtitle">Recherchez ELI5 dans les paramètres et activez la bascule.</string>
+    <string name="onboarding_step2_card1">1. Appuyez sur ELI5</string>
+    <string name="onboarding_step2_card2">2. Allumez</string>
+    <string name="onboarding_btn_grant">Accorder l’autorisation</string>
+    <string name="onboarding_btn_granted">Autorisation accordée ✓</string>
+    <string name="onboarding_step3_title">Essayez-le maintenant</string>
+    <string name="onboarding_step3_subtitle">Appuyez sur l’un des exemples de texte pour voir la véritable carte d’explication :</string>
+    <string name="onboarding_sample1_badge">⚖️ CLAUSE LÉGALE DE BAIL</string>
+    <string name="onboarding_sample1_text">Le locataire devra indemniser et dégager de toute responsabilité le bailleur contre toute responsabilité de subrogation et dommages-intérêts.</string>
+    <string name="onboarding_sample2_badge">🩺 DIAGNOSTIC MÉDICAL</string>
+    <string name="onboarding_sample2_text">Le patient présente un vertige positionnel paroxystique bénin idiopathique secondaire à une canalithiase.</string>
+    <string name="onboarding_step3_success">Génial! L’explication fonctionne. Vous êtes prêt à utiliser ELI5 n’importe où.</string>
+    <string name="onboarding_btn_get_started">Commencez →</string>
+    <string name="onboarding_btn_lets_go">Allons-y ! →</string>
 </resources>

@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 Мова ▾</string>
     <string name="proofread_copied_toast">Скопійовано в буфер обміну</string>
     <string name="proofread_choose_target_lang">Виберіть мову перекладу</string>
+    <string name="onboarding_step1_title">Поясніть будь-що одним дотиком</string>
+    <string name="onboarding_step1_subtitle">Виділіть текст у будь-якій програмі, натисніть «Більше» (⋮) і виберіть ELI5.</string>
+    <string name="onboarding_step1_caption1">1. Виділіть текст і натисніть ⋮</string>
+    <string name="onboarding_step1_caption2">2. Натисніть «Пояснити за допомогою ELI5»</string>
+    <string name="onboarding_step1_caption3">3. Плаваюче пояснення з’являється миттєво!</string>
+    <string name="onboarding_btn_continue">Продовжити →</string>
+    <string name="onboarding_step2_title">Відображення поверх інших програм</string>
+    <string name="onboarding_step2_keyline">Використовується лише для показу пояснювальної картки.</string>
+    <string name="onboarding_step2_subtitle">Знайдіть ELI5 у налаштуваннях і переведіть перемикач у положення УВІМК.</string>
+    <string name="onboarding_step2_card1">1. Натисніть ELI5</string>
+    <string name="onboarding_step2_card2">2. Увімкніть</string>
+    <string name="onboarding_btn_grant">Надати дозвіл</string>
+    <string name="onboarding_btn_granted">Дозвіл надано ✓</string>
+    <string name="onboarding_step3_title">Спробуйте прямо зараз</string>
+    <string name="onboarding_step3_subtitle">Торкніться будь-якого зразка тексту, щоб побачити справжню картку пояснення:</string>
+    <string name="onboarding_sample1_badge">⚖️ ЮРИДИЧНА УГОДА ОРЕНДИ</string>
+    <string name="onboarding_sample1_text">Орендар відшкодовує та звільняє Орендодавця від будь-яких суброгаційних зобов’язань і неустойки.</string>
+    <string name="onboarding_sample2_badge">🩺 МЕДИЧНА ДІАГНОСТИКА</string>
+    <string name="onboarding_sample2_text">У пацієнта спостерігається ідіопатичне доброякісне пароксизмальне позиційне запаморочення, вторинне по відношенню до каналітіазу.</string>
+    <string name="onboarding_step3_success">Чудово! Пояснення працює. Ви готові використовувати ELI5 будь-де.</string>
+    <string name="onboarding_btn_get_started">Початок роботи →</string>
+    <string name="onboarding_btn_lets_go">Поїхали! →</string>
 </resources>

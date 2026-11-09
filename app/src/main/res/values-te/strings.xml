@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 భాష ▾</string>
     <string name="proofread_copied_toast">క్లిప్‌బోర్డ్‌కి కాపీ చేయబడింది</string>
     <string name="proofread_choose_target_lang">లక్ష్య భాషను ఎంచుకోండి</string>
+    <string name="onboarding_step1_title">1 ట్యాప్‌లో ఏదైనా వివరించండి</string>
+    <string name="onboarding_step1_subtitle">ఏదైనా యాప్‌లో వచనాన్ని హైలైట్ చేయండి, మరిన్ని (⋮) నొక్కండి మరియు ELI5ని ఎంచుకోండి.</string>
+    <string name="onboarding_step1_caption1">1. వచనాన్ని హైలైట్ చేయండి &amp;amp; ⋮ నొక్కండి</string>
+    <string name="onboarding_step1_caption2">2. ‘ELI5తో వివరించండి’ నొక్కండి</string>
+    <string name="onboarding_step1_caption3">3. ఫ్లోటింగ్ వివరణ తక్షణమే కనిపిస్తుంది!</string>
+    <string name="onboarding_btn_continue">కొనసాగించు →</string>
+    <string name="onboarding_step2_title">ఇతర యాప్‌లపై ప్రదర్శించండి</string>
+    <string name="onboarding_step2_keyline">వివరణ కార్డును చూపించడానికి మాత్రమే ఉపయోగించబడుతుంది.</string>
+    <string name="onboarding_step2_subtitle">సెట్టింగ్‌లలో ELI5ని కనుగొని, టోగుల్‌ని ఆన్ చేయండి.</string>
+    <string name="onboarding_step2_card1">1. ELI5ని నొక్కండి</string>
+    <string name="onboarding_step2_card2">2. ఆన్ చేయండి</string>
+    <string name="onboarding_btn_grant">అనుమతి ఇవ్వండి</string>
+    <string name="onboarding_btn_granted">అనుమతి మంజూరు చేయబడింది ✓</string>
+    <string name="onboarding_step3_title">ఇప్పుడే ప్రయత్నించండి</string>
+    <string name="onboarding_step3_subtitle">నిజమైన వివరణ కార్డ్‌ని చూడటానికి నమూనా వచనాన్ని నొక్కండి:</string>
+    <string name="onboarding_sample1_badge">⚖️ లీగల్ లీజ్ క్లాజ్</string>
+    <string name="onboarding_sample1_text">ఏదైనా సబ్‌రోగేషన్ బాధ్యతలు మరియు లిక్విడేటెడ్ నష్టాల నుండి మరియు వ్యతిరేకంగా లెజర్‌కు లీజుదారు నష్టపరిహారం చెల్లించాలి మరియు హానిచేయకుండా ఉంచాలి.</string>
+    <string name="onboarding_sample2_badge">🩺 వైద్య రోగ నిర్ధారణ</string>
+    <string name="onboarding_sample2_text">రోగికి ఇడియోపతిక్ నిరపాయమైన పరోక్సిస్మల్ పొజిషనల్ వెర్టిగో సెకండరీ కెనాలిథియాసిస్‌తో ఉంటుంది.</string>
+    <string name="onboarding_step3_success">అద్భుతం! వివరణ పనిచేస్తుంది. మీరు ఎక్కడైనా ELI5ని ఉపయోగించడానికి సిద్ధంగా ఉన్నారు.</string>
+    <string name="onboarding_btn_get_started">ప్రారంభించండి →</string>
+    <string name="onboarding_btn_lets_go">లెట్స్ గో! →</string>
 </resources>

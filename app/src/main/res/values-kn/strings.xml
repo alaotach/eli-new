@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 ಭಾಷೆ ▾</string>
     <string name="proofread_copied_toast">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಲಾಗಿದೆ</string>
     <string name="proofread_choose_target_lang">ಗುರಿ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</string>
+    <string name="onboarding_step1_title">1 ಟ್ಯಾಪ್‌ನಲ್ಲಿ ಏನನ್ನಾದರೂ ವಿವರಿಸಿ</string>
+    <string name="onboarding_step1_subtitle">ಯಾವುದೇ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಪಠ್ಯವನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ, ಇನ್ನಷ್ಟು (⋮) ಟ್ಯಾಪ್ ಮಾಡಿ ಮತ್ತು ELI5 ಆಯ್ಕೆಮಾಡಿ.</string>
+    <string name="onboarding_step1_caption1">1. ಪಠ್ಯವನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ ಮತ್ತು ⋮ ಟ್ಯಾಪ್ ಮಾಡಿ</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 ಜೊತೆಗೆ ವಿವರಿಸಿ’ ಟ್ಯಾಪ್ ಮಾಡಿ</string>
+    <string name="onboarding_step1_caption3">3. ತೇಲುವ ವಿವರಣೆಯು ತಕ್ಷಣವೇ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತದೆ!</string>
+    <string name="onboarding_btn_continue">ಮುಂದುವರಿಸಿ →</string>
+    <string name="onboarding_step2_title">ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ಗಳ ಮೇಲೆ ಪ್ರದರ್ಶಿಸಿ</string>
+    <string name="onboarding_step2_keyline">ವಿವರಣೆ ಕಾರ್ಡ್ ತೋರಿಸಲು ಮಾತ್ರ ಬಳಸಲಾಗುತ್ತದೆ.</string>
+    <string name="onboarding_step2_subtitle">ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ELI5 ಅನ್ನು ಹುಡುಕಿ ಮತ್ತು ಟಾಗಲ್ ಆನ್ ಮಾಡಿ.</string>
+    <string name="onboarding_step2_card1">1. ELI5 ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ</string>
+    <string name="onboarding_step2_card2">2. ಆನ್ ಮಾಡಿ</string>
+    <string name="onboarding_btn_grant">ಅನುಮತಿ ನೀಡಿ</string>
+    <string name="onboarding_btn_granted">ಅನುಮತಿ ನೀಡಲಾಗಿದೆ ✓</string>
+    <string name="onboarding_step3_title">ಈಗಲೇ ಪ್ರಯತ್ನಿಸಿ</string>
+    <string name="onboarding_step3_subtitle">ನಿಜವಾದ ವಿವರಣೆ ಕಾರ್ಡ್ ಅನ್ನು ನೋಡಲು ಮಾದರಿ ಪಠ್ಯವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ:</string>
+    <string name="onboarding_sample1_badge">⚖️ ಕಾನೂನು ಲೀಸ್ ಷರತ್ತು</string>
+    <string name="onboarding_sample1_text">ಗುತ್ತಿಗೆದಾರನು ಯಾವುದೇ ಸಬ್ರೊಗೇಶನ್ ಹೊಣೆಗಾರಿಕೆಗಳು ಮತ್ತು ದಿವಾಳಿಯಾದ ಹಾನಿಗಳಿಂದ ಮತ್ತು ವಿರುದ್ಧವಾಗಿ ಗುತ್ತಿಗೆದಾರನಿಗೆ ನಷ್ಟವನ್ನುಂಟುಮಾಡಬೇಕು ಮತ್ತು ನಿರುಪದ್ರವಿಯಾಗಿ ಹಿಡಿದಿಟ್ಟುಕೊಳ್ಳಬೇಕು.</string>
+    <string name="onboarding_sample2_badge">🩺 ವೈದ್ಯಕೀಯ ರೋಗನಿರ್ಣಯ</string>
+    <string name="onboarding_sample2_text">ರೋಗಿಯು ಇಡಿಯೋಪಥಿಕ್ ಬೆನಿಗ್ನ್ ಪ್ಯಾರೊಕ್ಸಿಸ್ಮಲ್ ಪೊಸಿಷನಲ್ ವರ್ಟಿಗೋವನ್ನು ಕೆನಾಲಿಥಿಯಾಸಿಸ್‌ಗೆ ದ್ವಿತೀಯಕವಾಗಿ ಪ್ರಸ್ತುತಪಡಿಸುತ್ತಾನೆ.</string>
+    <string name="onboarding_step3_success">ಅದ್ಭುತ! ವಿವರಣೆ ಕೆಲಸ. ನೀವು ಎಲ್ಲಿಯಾದರೂ ELI5 ಅನ್ನು ಬಳಸಲು ಸಿದ್ಧರಾಗಿರುವಿರಿ.</string>
+    <string name="onboarding_btn_get_started">ಪ್ರಾರಂಭಿಸಿ →</string>
+    <string name="onboarding_btn_lets_go">ಹೋಗೋಣ! →</string>
 </resources>

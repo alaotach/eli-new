@@ -120,4 +120,26 @@
     <string name="proofread_more_languages">🌐 ভাষা ▾</string>
     <string name="proofread_copied_toast">ক্লিপবোর্ডে কপি করা হয়েছে</string>
     <string name="proofread_choose_target_lang">টার্গেট ভাষা নির্বাচন করুন</string>
+    <string name="onboarding_step1_title">1 ট্যাপে যেকোনো কিছু ব্যাখ্যা করুন</string>
+    <string name="onboarding_step1_subtitle">যেকোনো অ্যাপে টেক্সট হাইলাইট করুন, আরও (⋮) আলতো চাপুন এবং ELI5 বেছে নিন।</string>
+    <string name="onboarding_step1_caption1">1. পাঠ্য হাইলাইট করুন এবং ⋮ আলতো চাপুন</string>
+    <string name="onboarding_step1_caption2">2. ’ELI5 দিয়ে ব্যাখ্যা করুন’ এ আলতো চাপুন</string>
+    <string name="onboarding_step1_caption3">3. ভাসমান ব্যাখ্যা অবিলম্বে প্রদর্শিত!</string>
+    <string name="onboarding_btn_continue">চালিয়ে যান →</string>
+    <string name="onboarding_step2_title">অন্যান্য অ্যাপের উপরে প্রদর্শন করুন</string>
+    <string name="onboarding_step2_keyline">শুধুমাত্র ব্যাখ্যা কার্ড দেখানোর জন্য ব্যবহৃত.</string>
+    <string name="onboarding_step2_subtitle">সেটিংসে ELI5 খুঁজুন এবং টগল চালু করুন।</string>
+    <string name="onboarding_step2_card1">1. ELI5 আলতো চাপুন</string>
+    <string name="onboarding_step2_card2">2. চালু করুন</string>
+    <string name="onboarding_btn_grant">অনুমতি দিন</string>
+    <string name="onboarding_btn_granted">অনুমতি দেওয়া হয়েছে ✓</string>
+    <string name="onboarding_step3_title">এখনই চেষ্টা করে দেখুন</string>
+    <string name="onboarding_step3_subtitle">আসল ব্যাখ্যা কার্ড দেখতে নমুনা পাঠ্যের যেকোন একটিতে ট্যাপ করুন:</string>
+    <string name="onboarding_sample1_badge">⚖️ আইনি লিজ ক্লজ</string>
+    <string name="onboarding_sample1_text">ইজারাগ্রহীতা ক্ষতিপূরণ করবে এবং ইজারাদাতাকে যেকোন প্রত্যাহার দায়বদ্ধতা এবং লিকুইডেটেড ক্ষতির বিরুদ্ধে ক্ষতিপূরণ দেবে।</string>
+    <string name="onboarding_sample2_badge">🩺 মেডিক্যাল ডায়াগনসিস</string>
+    <string name="onboarding_sample2_text">রোগীর ইডিওপ্যাথিক বেনাইন প্যারোক্সিসমাল পজিশনাল ভার্টিগো সেকেন্ডারি থেকে ক্যানালিথিয়াসিস দেখা দেয়।</string>
+    <string name="onboarding_step3_success">অসাধারন! ব্যাখ্যা কাজ করে। আপনি যে কোন জায়গায় ELI5 ব্যবহার করতে প্রস্তুত।</string>
+    <string name="onboarding_btn_get_started">শুরু করুন →</string>
+    <string name="onboarding_btn_lets_go">চল যাই! →</string>
 </resources>
