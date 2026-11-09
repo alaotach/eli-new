@@ -64,6 +64,7 @@ class CircleSelectionView @JvmOverloads constructor(
     private val translateBtnRect = RectF()
     private val toggleOriginalBtnRect = RectF()
     private val closeBtnRect = RectF()
+    private var isInteractingWithPill = false
 
     // Authentic ELI5 App Logo
     private val eli5Logo = ContextCompat.getDrawable(context, R.drawable.ic_eli5_logo)
@@ -262,8 +263,11 @@ class CircleSelectionView @JvmOverloads constructor(
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                isInteractingWithPill = false
+
                 // 1. Check if tapped the '✕' close button
                 if (closeBtnRect.contains(x, y)) {
+                    isInteractingWithPill = true
                     if (isShowingTranslation) {
                         isShowingTranslation = false
                         showOriginalOnly = false
@@ -277,6 +281,7 @@ class CircleSelectionView @JvmOverloads constructor(
 
                 // 2. Check if in translated mode and tapped the Original/Translated toggle chip
                 if (isShowingTranslation && toggleOriginalBtnRect.contains(x, y)) {
+                    isInteractingWithPill = true
                     showOriginalOnly = !showOriginalOnly
                     triggerHaptic(0)
                     invalidate()
@@ -285,12 +290,14 @@ class CircleSelectionView @JvmOverloads constructor(
 
                 // 3. Check if tapped the Translate button
                 if (!isShowingTranslation && !isTranslating && translateBtnRect.contains(x, y)) {
+                    isInteractingWithPill = true
                     startScreenTranslation()
                     return true
                 }
 
                 // 4. Check if tapped inside the floating pill body
                 if (pillRect.contains(x, y)) {
+                    isInteractingWithPill = true
                     return true
                 }
 
@@ -310,6 +317,8 @@ class CircleSelectionView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
+                if (isInteractingWithPill) return true
+
                 val dx = kotlin.math.abs(x - lastX)
                 val dy = kotlin.math.abs(y - lastY)
                 if (dx >= 4f || dy >= 4f) {
@@ -329,6 +338,18 @@ class CircleSelectionView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP -> {
+                if (isInteractingWithPill) {
+                    isInteractingWithPill = false
+                    return true
+                }
+
+                // Never dismiss if currently translating
+                if (isTranslating) {
+                    resetSelection()
+                    invalidate()
+                    return true
+                }
+
                 if (!hasDrawn || touchPoints.size < 2) {
                     // Tapped outside without drawing: dismiss if not viewing translation
                     if (!isShowingTranslation) {
@@ -340,7 +361,7 @@ class CircleSelectionView @JvmOverloads constructor(
                 val rectWidth = maxX - minX
                 val rectHeight = maxY - minY
 
-                // If user just tapped or tiny drag, dismiss
+                // If user just tapped or tiny drag, dismiss if not viewing translation
                 if (rectWidth < 40f && rectHeight < 40f) {
                     resetSelection()
                     if (!isShowingTranslation) {
@@ -370,6 +391,13 @@ class CircleSelectionView @JvmOverloads constructor(
                 postDelayed({
                     completeSelection(selectionRect!!)
                 }, 150)
+                return true
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                isInteractingWithPill = false
+                resetSelection()
+                invalidate()
                 return true
             }
         }
