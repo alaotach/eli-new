@@ -10,10 +10,9 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PointF
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Region
 import android.graphics.Typeface
 import android.os.Build
 import android.os.VibrationEffect
@@ -88,12 +87,6 @@ class CircleSelectionView @JvmOverloads constructor(
         color = Color.parseColor("#59000000") // 35% translucent dark scrim
     }
 
-    // Clear mode paint to punch out the selected region inside the circle
-    private val clearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-    }
-
     // ELI5 Floating Island Header
     private val pillBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#F20F172A") // Deep frosted slate / dark violet
@@ -105,16 +98,6 @@ class CircleSelectionView @JvmOverloads constructor(
         color = Color.parseColor("#668B5CF6") // Neon violet border
         style = Paint.Style.STROKE
         strokeWidth = 1.5f * dp
-    }
-
-    private val pillIconBadgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#7C3AED") // Vibrant violet badge
-        style = Paint.Style.FILL
-    }
-
-    private val pillIconTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 16f * dp
-        textAlign = Paint.Align.CENTER
     }
 
     private val titleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -364,13 +347,20 @@ class CircleSelectionView @JvmOverloads constructor(
             canvas.drawBitmap(it, null, destRect, null)
         }
 
-        // 2. Dim the background with subtle scrim
-        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
-
-        // 3. Punch out the selected region inside the user's circle
+        // 2. Dim the background with subtle scrim, preserving the circled area at 100% brightness
         if (hasDrawn && touchPoints.size > 2) {
+            canvas.save()
             val closedPath = Path(touchPath).apply { close() }
-            canvas.drawPath(closedPath, clearPaint)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                canvas.clipOutPath(closedPath)
+            } else {
+                @Suppress("DEPRECATION")
+                canvas.clipPath(closedPath, Region.Op.DIFFERENCE)
+            }
+            canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
+            canvas.restore()
+        } else {
+            canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
         }
 
         // 4. Draw signature ELI5 glowing stroke & touch orb

@@ -10,6 +10,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -22,6 +23,11 @@ class CircleSnipActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
 
         val root = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
