@@ -73,10 +73,13 @@ object ScreenTranslator {
                 return@detectBlocksMultiScript
             }
 
-            // Check if detected blocks contain substantial content or if they are just peripheral icons/time
+            // Check if detected blocks contain substantial content or if they are just peripheral icons/time,
+            // or if any detected on-device block is garbled pseudo-Latin from Russian/Cyrillic
+            val hasGarbledBlocks = detectedBlocks.any { OcrHelper.isLikelyGarbledLatin(it.second) }
             val hasSubstantialContent = isSubstantialContentDetected(detectedBlocks, screenshot.height)
-            if (!hasSubstantialContent && isCloudPreferredScript(targetLanguage)) {
-                Log.d(TAG, "On-device blocks lack body content and target language is $targetLanguage; querying Cloud Vision...")
+
+            if (hasGarbledBlocks || (!hasSubstantialContent && isCloudPreferredScript(targetLanguage))) {
+                Log.d(TAG, "On-device blocks contain garbled pseudo-Latin ($hasGarbledBlocks) or lack body content; querying Cloud Vision for Russian/Cyrillic/Indic...")
                 CoroutineScope(Dispatchers.IO).launch {
                     val cloudBlocks = performCloudVisionTranslate(screenshot, targetLanguage)
                     Handler(Looper.getMainLooper()).post {
@@ -214,7 +217,11 @@ object ScreenTranslator {
 
     private fun isCloudPreferredScript(language: String?): Boolean {
         val lang = language?.lowercase()?.trim() ?: return false
-        return lang.contains("bengali") || lang == "bn" ||
+        return lang.contains("russian") || lang == "ru" || lang == "rus" ||
+               lang.contains("ukrainian") || lang == "uk" ||
+               lang.contains("belarusian") || lang == "be" ||
+               lang.contains("bulgarian") || lang == "bg" ||
+               lang.contains("bengali") || lang == "bn" ||
                lang.contains("telugu") || lang == "te" ||
                lang.contains("tamil") || lang == "ta" ||
                lang.contains("gujarati") || lang == "gu" ||

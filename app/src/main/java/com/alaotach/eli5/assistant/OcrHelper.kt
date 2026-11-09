@@ -189,11 +189,11 @@ object OcrHelper {
             Log.d(TAG, "On-device cascade complete. Best text: '$currentBestText'")
             val bestScore = evaluateTextQuality(currentBestText)
 
-            // If on-device models found no text or very low score (< 8), this is likely a non-Latin script
-            // like Bengali, Tamil, Telugu, Arabic, Russian, Greek, Thai.
+            // If on-device models found no text, very low score (< 8), or garbled pseudo-Latin,
+            // this is a non-Latin script like Russian, Ukrainian, Bulgarian, Bengali, Tamil, Telugu, Arabic, etc.
             // Seamlessly run Cloud OCR fallback!
-            if (bestScore < 8) {
-                Log.d(TAG, "On-device score is low ($bestScore). Triggering Cloud OCR fallback for Bengali/Arabic/Indic/etc...")
+            if (bestScore < 8 || isLikelyGarbledLatin(currentBestText)) {
+                Log.d(TAG, "On-device score is low ($bestScore) or garbled. Triggering Cloud OCR fallback for Russian/Cyrillic/Indic/etc...")
                 performCloudOcr(bitmap, preferredLanguage) { cloudText ->
                     if (!cloudText.isNullOrBlank()) {
                         Log.d(TAG, "Cloud OCR fallback successfully extracted: '$cloudText'")
@@ -220,10 +220,22 @@ object OcrHelper {
 
                 val updatedBest = if (candidateScore > bestScore) parsedText else currentBestText
 
-                // If candidateScore is very high (>= DECISIVE_SCORE_THRESHOLD: a complete paragraph or multi-sentence),
-                // we have captured the full text and can return immediately.
+                // If candidateScore is high (>= DECISIVE_SCORE_THRESHOLD), verify whether it's genuine Latin
+                // or garbled pseudo-Latin produced by Latin OCR on Russian/Cyrillic text.
                 if (candidateScore >= DECISIVE_SCORE_THRESHOLD) {
-                    onResult(parsedText)
+                    if (isLikelyGarbledLatin(parsedText)) {
+                        Log.d(TAG, "Recognizer [$scriptName] produced garbled pseudo-Latin from Russian/Cyrillic. Invoking Cloud OCR fallback...")
+                        performCloudOcr(bitmap, preferredLanguage) { cloudText ->
+                            if (!cloudText.isNullOrBlank()) {
+                                Log.d(TAG, "Cloud OCR fallback successfully resolved Russian/Cyrillic text: '$cloudText'")
+                                onResult(cloudText)
+                            } else {
+                                onResult(parsedText)
+                            }
+                        }
+                    } else {
+                        onResult(parsedText)
+                    }
                 } else {
                     // Otherwise continue checking remaining recognizers in case another script is a much richer match
                     cascadeRecognition(bitmap, image, pathRegion, recognizers, index + 1, updatedBest, preferredLanguage, onResult)
@@ -345,7 +357,11 @@ object OcrHelper {
      */
     private fun isCloudPreferredScript(language: String?): Boolean {
         val lang = language?.lowercase()?.trim() ?: return false
-        return lang.contains("bengali") || lang == "bn" ||
+        return lang.contains("russian") || lang == "ru" || lang == "rus" ||
+               lang.contains("ukrainian") || lang == "uk" ||
+               lang.contains("belarusian") || lang == "be" ||
+               lang.contains("bulgarian") || lang == "bg" ||
+               lang.contains("bengali") || lang == "bn" ||
                lang.contains("telugu") || lang == "te" ||
                lang.contains("tamil") || lang == "ta" ||
                lang.contains("gujarati") || lang == "gu" ||
@@ -467,5 +483,66 @@ object OcrHelper {
                ub == Character.UnicodeBlock.HANGUL_SYLLABLES ||
                ub == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO ||
                ub == Character.UnicodeBlock.HANGUL_JAMO
+    }
+
+    private val COMMON_LATIN_WORDS = setOf(
+        "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with", "he",
+        "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or",
+        "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about",
+        "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know",
+        "take", "people", "into", "year", "your", "good", "some", "could", "them", "see", "other", "than",
+        "then", "now", "look", "only", "come", "its", "over", "think", "also", "back", "after", "use", "two",
+        "how", "our", "work", "first", "well", "way", "even", "new", "want", "because", "any", "these", "give",
+        "day", "most", "us", "is", "am", "are", "was", "were", "been", "has", "had", "love", "original", "video",
+        "view", "reply", "translation", "hide", "replies", "english", "grammar", "verbs", "hate", "more", "cats",
+        "cat", "rule", "words", "word", "post", "comment", "share", "follow", "story", "like", "reel", "reels",
+        "de", "la", "que", "el", "en", "y", "los", "se", "del", "las", "por", "un", "para", "con", "una",
+        "su", "al", "lo", "como", "le", "et", "les", "des", "est", "une", "dans", "pour", "qui", "der", "die",
+        "das", "und", "nicht", "ist", "in", "zu", "den", "dem", "von", "mit"
+    )
+
+    fun isLikelyGarbledLatin(text: String?): Boolean {
+        if (text.isNullOrBlank() || text.length < 5) return false
+
+        // If text already has native non-Latin characters (Devanagari, CJK, Cyrillic, Arabic, etc.),
+        // it was recognized by a dedicated script model or cloud vision, NOT garbled Latin!
+        if (text.any { ch ->
+            val ub = Character.UnicodeBlock.of(ch)
+            ub == Character.UnicodeBlock.CYRILLIC ||
+            ub == Character.UnicodeBlock.CYRILLIC_SUPPLEMENTARY ||
+            ub == Character.UnicodeBlock.DEVANAGARI ||
+            ub == Character.UnicodeBlock.BENGALI ||
+            ub == Character.UnicodeBlock.ARABIC ||
+            ub == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS ||
+            ub == Character.UnicodeBlock.HIRAGANA ||
+            ub == Character.UnicodeBlock.KATAKANA ||
+            ub == Character.UnicodeBlock.HANGUL_SYLLABLES
+        }) {
+            return false
+        }
+
+        val words = Regex("""[A-Za-z0-9à-ÿ]+""").findAll(text).map { it.value }.toList()
+        if (words.size < 3) return false
+
+        // 1. Digits embedded inside words (e.g., '3TOM', 'o6o', '6onbwe')
+        val digitInWord = words.count { Regex("""[A-Za-z][0-9]|[0-9][A-Za-z]""").containsMatchIn(it) }
+
+        // 2. Unnatural mid-word uppercase (e.g., 'wyTka', 'aHrnu', 'npedMeTOB', 'cnoBa')
+        val midWordUpper = words.count { Regex("""[a-z][A-Z]""").containsMatchIn(it) }
+
+        // 3. Isolated single-letter Latin consonants (common in Cyrillic misreadings: 'B', 'c', 'H', 's')
+        val isolatedSingle = words.count { it.length == 1 && it.lowercase() !in setOf("a", "i") }
+
+        val cleanWords = words.filter { it.length > 1 && !it.any { ch -> ch.isDigit() } }.map { it.lowercase() }
+        val recognizedWords = cleanWords.count { it in COMMON_LATIN_WORDS }
+
+        val irregularCount = digitInWord + midWordUpper + isolatedSingle
+        val recogRatio = if (cleanWords.isNotEmpty()) recognizedWords.toFloat() / cleanWords.size else 0f
+
+        // If substantial text (> 3 words) with irregularities and low recognized common Latin words:
+        if (irregularCount >= 2 && recogRatio < 0.25f) return true
+        if (recogRatio < 0.12f && cleanWords.size >= 5) return true
+
+        return false
     }
 }
