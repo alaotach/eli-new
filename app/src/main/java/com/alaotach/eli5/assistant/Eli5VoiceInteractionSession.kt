@@ -81,7 +81,8 @@ class Eli5VoiceInteractionSession(context: Context) : VoiceInteractionSession(co
     }
 
     private fun processCroppedBitmap(croppedBitmap: Bitmap, localPath: android.graphics.Path?) {
-        OcrHelper.extractText(croppedBitmap, localPath) { extractedText ->
+        val preferredLang = SettingsManager.getLanguage(context)
+        OcrHelper.extractText(croppedBitmap, localPath, preferredLang) { extractedText ->
             if (!extractedText.isNullOrBlank()) {
                 // Launch ExplainOverlayActivity with extracted text
                 val intent = Intent(context, ExplainOverlayActivity::class.java).apply {

@@ -62,7 +62,8 @@ class CircleSnipActivity : ComponentActivity() {
     }
 
     private fun processCroppedBitmap(croppedBitmap: Bitmap, localPath: android.graphics.Path?) {
-        OcrHelper.extractText(croppedBitmap, localPath) { extractedText ->
+        val preferredLang = SettingsManager.getLanguage(this)
+        OcrHelper.extractText(croppedBitmap, localPath, preferredLang) { extractedText ->
             if (!extractedText.isNullOrBlank()) {
                 val intent = Intent(this, ExplainOverlayActivity::class.java).apply {
                     putExtra(ExplainOverlayActivity.EXTRA_TEXT, extractedText)
@@ -154,15 +155,43 @@ class CircleSnipActivity : ComponentActivity() {
         canvas.drawText("such as natural disasters or war.", 100f, 1010f, bodyPaint)
         canvas.drawText("1.2k Replies • Retweet", 100f, 1090f, metaPaint)
 
-        // Card 3: Finance
+        // Card 3: Adaptive localized demo card
         val card3 = RectF(60f, 1100f, width - 60f, 1460f)
         canvas.drawRoundRect(card3, 32f, 32f, cardPaint)
         canvas.drawRoundRect(card3, 32f, 32f, borderPaint)
-        canvas.drawText("FINANCE", 100f, 1170f, tagPaint)
-        canvas.drawText("Stagflation Paradox", 100f, 1240f, titlePaint)
-        canvas.drawText("A rare toxic economic combination of", 100f, 1310f, bodyPaint)
-        canvas.drawText("stagnant growth, high unemployment, and", 100f, 1360f, bodyPaint)
-        canvas.drawText("rapidly escalating consumer inflation.", 100f, 1410f, bodyPaint)
+
+        val lang = SettingsManager.getLanguage(this).lowercase()
+        if (lang.contains("hindi") || lang.contains("marathi") || lang == "hi" || lang == "mr") {
+            canvas.drawText("विज्ञान एवं तकनीक", 100f, 1170f, tagPaint)
+            canvas.drawText("क्वांटम उलझाव", 100f, 1240f, titlePaint)
+            canvas.drawText("जब दो कण एक दूसरे से जुड़े होते हैं,", 100f, 1310f, bodyPaint)
+            canvas.drawText("तो एक की स्थिति बदलने पर दूसरे पर तुरंत", 100f, 1360f, bodyPaint)
+            canvas.drawText("असर होता है, चाहे कितनी भी दूरी हो।", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("japanese") || lang == "ja") {
+            canvas.drawText("テクノロジー", 100f, 1170f, tagPaint)
+            canvas.drawText("量子もつれの原理", 100f, 1240f, titlePaint)
+            canvas.drawText("2つの粒子が強く結びつき、互いの", 100f, 1310f, bodyPaint)
+            canvas.drawText("状態がどれほど離れていても瞬時に", 100f, 1360f, bodyPaint)
+            canvas.drawText("影響し合う物理現象です。", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("chinese") || lang == "zh") {
+            canvas.drawText("科学技术", 100f, 1170f, tagPaint)
+            canvas.drawText("量子纠缠现象", 100f, 1240f, titlePaint)
+            canvas.drawText("当两个微观粒子相互纠缠在一起时，", 100f, 1310f, bodyPaint)
+            canvas.drawText("即使相隔遥远，测量其中一个也会", 100f, 1360f, bodyPaint)
+            canvas.drawText("瞬间影响另一个粒子的状态。", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("spanish") || lang == "es") {
+            canvas.drawText("FINANZAS", 100f, 1170f, tagPaint)
+            canvas.drawText("Paradoja de Estanflación", 100f, 1240f, titlePaint)
+            canvas.drawText("Una combinación de estancamiento económico", 100f, 1310f, bodyPaint)
+            canvas.drawText("con alta inflación y desempleo sostenido,", 100f, 1360f, bodyPaint)
+            canvas.drawText("afectando el poder adquisitivo.", 100f, 1410f, bodyPaint)
+        } else {
+            canvas.drawText("FINANCE", 100f, 1170f, tagPaint)
+            canvas.drawText("Stagflation Paradox", 100f, 1240f, titlePaint)
+            canvas.drawText("A rare toxic economic combination of", 100f, 1310f, bodyPaint)
+            canvas.drawText("stagnant growth, high unemployment, and", 100f, 1360f, bodyPaint)
+            canvas.drawText("rapidly escalating consumer inflation.", 100f, 1410f, bodyPaint)
+        }
 
         return bitmap
     }

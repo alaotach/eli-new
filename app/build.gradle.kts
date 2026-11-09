@@ -99,7 +99,12 @@ dependencies {
     implementation("com.google.zxing:core:3.5.3")
 
     // ML Kit Text Recognition (On-device, 100% offline & free, Play Store compliant)
+    // Supports Latin, Devanagari (Hindi, Marathi, Nepali), Chinese, Japanese, Korean
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition-devanagari:16.0.1")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition-chinese:16.0.1")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition-japanese:16.0.1")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition-korean:16.0.1")
 
     // Firebase Analytics (Live real-time telemetry)
     implementation(platform(libs.firebase.bom))
