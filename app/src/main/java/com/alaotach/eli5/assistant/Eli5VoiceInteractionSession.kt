@@ -50,8 +50,8 @@ class Eli5VoiceInteractionSession(context: Context) : VoiceInteractionSession(co
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
 
-            onSelectionCompleted = { croppedBitmap, _ ->
-                processCroppedBitmap(croppedBitmap)
+            onSelectionCompleted = { croppedBitmap, localPath, _ ->
+                processCroppedBitmap(croppedBitmap, localPath)
             }
 
             onDismissRequested = {
@@ -80,13 +80,14 @@ class Eli5VoiceInteractionSession(context: Context) : VoiceInteractionSession(co
         }
     }
 
-    private fun processCroppedBitmap(croppedBitmap: Bitmap) {
-        OcrHelper.extractText(croppedBitmap) { extractedText ->
+    private fun processCroppedBitmap(croppedBitmap: Bitmap, localPath: android.graphics.Path?) {
+        OcrHelper.extractText(croppedBitmap, localPath) { extractedText ->
             if (!extractedText.isNullOrBlank()) {
                 // Launch ExplainOverlayActivity with extracted text
                 val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
                     putExtra(ExplainOverlayActivity.EXTRA_TEXT, extractedText)
                     putExtra(ExplainOverlayActivity.EXTRA_MODE, SettingsManager.getDefaultMode(context))
+                    putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, true)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 }
                 context.startActivity(intent)

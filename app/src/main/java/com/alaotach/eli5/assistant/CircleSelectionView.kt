@@ -6,9 +6,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.DashPathEffect
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PointF
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
@@ -21,6 +22,7 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 
@@ -32,8 +34,10 @@ class CircleSelectionView @JvmOverloads constructor(
 
     private var screenshot: Bitmap? = null
     private var isAnalyzing = false
+    private var isCircleGesture = false
 
     private val touchPath = Path()
+    private val touchPoints = mutableListOf<PointF>()
     private var lastX = 0f
     private var lastY = 0f
     private var minX = Float.MAX_VALUE
@@ -60,21 +64,14 @@ class CircleSelectionView @JvmOverloads constructor(
         strokeJoin = Paint.Join.ROUND
     }
 
-    // Bounding box highlight paint (after release)
-    private val boundingBoxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeWidth = 4f
-        color = Color.parseColor("#8B5CF6")
-        pathEffect = DashPathEffect(floatArrayOf(20f, 12f), 0f)
-    }
-
     // Dimming overlay paint
     private val dimPaint = Paint().apply {
         color = Color.parseColor("#66000000") // 40% translucent black
     }
 
-    // Clear mode paint to punch out the selected region
+    // Clear mode paint to punch out the selected region inside the circle
     private val clearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
         xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
     }
 
@@ -107,14 +104,16 @@ class CircleSelectionView @JvmOverloads constructor(
     private var pulseAlpha = 255
     private var pulseAnimator: ValueAnimator? = null
 
-    // Callbacks
-    var onSelectionCompleted: ((Bitmap, Rect) -> Unit)? = null
+    // Callbacks: (croppedBitmap, localPathWithinBitmap?, boundingBox)
+    var onSelectionCompleted: ((Bitmap, Path?, Rect) -> Unit)? = null
     var onDismissRequested: (() -> Unit)? = null
 
     init {
-        // Prepare pulse animation for processing state
-        pulseAnimator = ValueAnimator.ofInt(120, 255).apply {
-            duration = 800
+        // Enable software rendering layer so PorterDuff.Mode.CLEAR punches out cleanly
+        setLayerType(LAYER_TYPE_SOFTWARE, null)
+
+        pulseAnimator = ValueAnimator.ofInt(130, 255).apply {
+            duration = 750
             repeatMode = ValueAnimator.REVERSE
             repeatCount = ValueAnimator.INFINITE
             interpolator = AccelerateDecelerateInterpolator()
@@ -133,7 +132,9 @@ class CircleSelectionView @JvmOverloads constructor(
 
     fun resetSelection() {
         isAnalyzing = false
+        isCircleGesture = false
         touchPath.reset()
+        touchPoints.clear()
         selectionRect = null
         minX = Float.MAX_VALUE
         minY = Float.MAX_VALUE
@@ -169,7 +170,7 @@ class CircleSelectionView @JvmOverloads constructor(
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                // If tapped the close area or outside after selection
+                // If tapped the close area on top pill
                 if (y < 220f && x > width - 200f) {
                     onDismissRequested?.invoke()
                     return true
@@ -177,6 +178,7 @@ class CircleSelectionView @JvmOverloads constructor(
 
                 resetSelection()
                 touchPath.moveTo(x, y)
+                touchPoints.add(PointF(x, y))
                 lastX = x
                 lastY = y
                 minX = x
@@ -194,6 +196,7 @@ class CircleSelectionView @JvmOverloads constructor(
                 val dy = kotlin.math.abs(y - lastY)
                 if (dx >= 4f || dy >= 4f) {
                     touchPath.quadTo(lastX, lastY, (x + lastX) / 2, (y + lastY) / 2)
+                    touchPoints.add(PointF(x, y))
                     lastX = x
                     lastY = y
 
@@ -208,7 +211,7 @@ class CircleSelectionView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP -> {
-                if (!hasDrawn) return true
+                if (!hasDrawn || touchPoints.size < 2) return true
 
                 val rectWidth = maxX - minX
                 val rectHeight = maxY - minY
@@ -220,8 +223,29 @@ class CircleSelectionView @JvmOverloads constructor(
                     return true
                 }
 
-                // Add padding around selection
-                val padding = 24f
+                // Determine if gesture is a circle/lasso:
+                // Check if the start and end points are close relative to the total path perimeter
+                val firstPt = touchPoints.first()
+                val lastPt = touchPoints.last()
+                val directDist = hypot((lastPt.x - firstPt.x).toDouble(), (lastPt.y - firstPt.y).toDouble())
+
+                var totalPathLength = 0.0
+                for (i in 1 until touchPoints.size) {
+                    val p1 = touchPoints[i - 1]
+                    val p2 = touchPoints[i]
+                    totalPathLength += hypot((p2.x - p1.x).toDouble(), (p2.y - p1.y).toDouble())
+                }
+
+                // If end point is reasonably close to start point, it's a closed circle/lasso
+                isCircleGesture = (totalPathLength > 80.0 && directDist < totalPathLength * 0.65)
+
+                if (isCircleGesture) {
+                    // Close the path to form a complete polygon
+                    touchPath.close()
+                }
+
+                // Tight padding: 4px only (avoids leaking into adjacent paragraphs/timestamps)
+                val padding = 4f
                 val left = max(0f, minX - padding)
                 val top = max(0f, minY - padding)
                 val right = min(width.toFloat(), maxX + padding)
@@ -234,8 +258,8 @@ class CircleSelectionView @JvmOverloads constructor(
                 pulseAnimator?.start()
                 invalidate()
 
-                // Crop bitmap and pass to listener
-                processSelection(finalRect)
+                // Process selection with polygon masking
+                processSelection(finalRect, isCircleGesture)
                 return true
             }
 
@@ -247,7 +271,7 @@ class CircleSelectionView @JvmOverloads constructor(
         return super.onTouchEvent(event)
     }
 
-    private fun processSelection(rectF: RectF) {
+    private fun processSelection(rectF: RectF, isCircle: Boolean) {
         val bmp = screenshot ?: return
 
         // Scale rect from View coordinates to actual Bitmap coordinates
@@ -261,10 +285,21 @@ class CircleSelectionView @JvmOverloads constructor(
 
         if (cropW > 10 && cropH > 10) {
             try {
-                val cropped = Bitmap.createBitmap(bmp, cropX, cropY, cropW, cropH)
                 val androidRect = Rect(cropX, cropY, cropX + cropW, cropY + cropH)
+                val cropped = Bitmap.createBitmap(bmp, cropX, cropY, cropW, cropH)
+
+                val localPath = if (isCircle) {
+                    val p = Path(touchPath).apply { close() }
+                    val matrix = Matrix().apply {
+                        postScale(scaleX, scaleY)
+                        postTranslate(-cropX.toFloat(), -cropY.toFloat())
+                    }
+                    p.transform(matrix)
+                    p
+                } else null
+
                 post {
-                    onSelectionCompleted?.invoke(cropped, androidRect)
+                    onSelectionCompleted?.invoke(cropped, localPath, androidRect)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -287,16 +322,19 @@ class CircleSelectionView @JvmOverloads constructor(
         // 2. Dim the entire screen
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
 
-        // 3. Draw active drawing path
-        if (hasDrawn && !touchPath.isEmpty) {
-            canvas.drawPath(touchPath, outerGlowPaint)
-            canvas.drawPath(touchPath, coreLinePaint)
+        // 3. If circle gesture during analyzing, punch through the dimming inside the circle!
+        if (isAnalyzing && isCircleGesture) {
+            canvas.drawPath(touchPath, clearPaint)
         }
 
-        // 4. Draw bounding box highlight if analyzing
-        selectionRect?.let { rect ->
-            boundingBoxPaint.alpha = pulseAlpha
-            canvas.drawRoundRect(rect, 20f, 20f, boundingBoxPaint)
+        // 4. Draw glowing path
+        if (hasDrawn && !touchPath.isEmpty) {
+            val alphaGlow = if (isAnalyzing) (pulseAlpha * 0.7f).toInt() else 150
+            outerGlowPaint.alpha = alphaGlow
+            canvas.drawPath(touchPath, outerGlowPaint)
+
+            coreLinePaint.alpha = if (isAnalyzing) pulseAlpha else 255
+            canvas.drawPath(touchPath, coreLinePaint)
         }
 
         // 5. Draw Top Instruction Pill
@@ -320,12 +358,12 @@ class CircleSelectionView @JvmOverloads constructor(
         val centerX = width / 2f
         if (isAnalyzing) {
             textPaint.color = Color.parseColor("#A78BFA")
-            canvas.drawText("✨ Analyzing with ELI5...", centerX, pillTop + 65f, textPaint)
-            canvas.drawText("Reading text on screen", centerX, pillTop + 102f, subTextPaint)
+            canvas.drawText("✨ Analyzing circled text...", centerX, pillTop + 65f, textPaint)
+            canvas.drawText("Focusing on the selected content", centerX, pillTop + 102f, subTextPaint)
         } else {
             textPaint.color = Color.WHITE
             canvas.drawText("⚡ Circle to ELI5", centerX, pillTop + 60f, textPaint)
-            canvas.drawText("Circle or box any text to explain it", centerX, pillTop + 98f, subTextPaint)
+            canvas.drawText("Circle any text or concept to explain", centerX, pillTop + 98f, subTextPaint)
         }
 
         // Close '✕' indicator on top-right

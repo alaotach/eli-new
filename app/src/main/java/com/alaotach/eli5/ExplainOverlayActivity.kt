@@ -47,6 +47,7 @@ class ExplainOverlayActivity : Activity() {
         const val EXTRA_TEXT = "extra_text"
         const val EXTRA_RESULT = "extra_result"
         const val EXTRA_MODE = "extra_mode"
+        const val EXTRA_IS_SNIP = "extra_is_snip"
     }
 
     private lateinit var bottomSheetDialog: BottomSheetDialog
@@ -57,6 +58,8 @@ class ExplainOverlayActivity : Activity() {
     private var retryButton: TextView? = null
     private var tooLongBanner: TextView? = null
     private var footerChipsRow: LinearLayout? = null
+
+    private var isFromSnip: Boolean = false
 
     private var currentJob: Job? = null
     private var typewriterJob: Job? = null
@@ -115,6 +118,8 @@ class ExplainOverlayActivity : Activity() {
             finish()
             return
         }
+
+        isFromSnip = intent?.getBooleanExtra(EXTRA_IS_SNIP, false) ?: false
 
         val cachedResult = intent?.getStringExtra(EXTRA_RESULT)
         val initialMode = intent?.getStringExtra(EXTRA_MODE)
@@ -312,8 +317,16 @@ class ExplainOverlayActivity : Activity() {
             }
 
             var promptText = text
+            if (isFromSnip) {
+                promptText = """
+                    [Context: The user selected this text by circling/snipping on their mobile screen.]
+                    [Instruction: Focus exclusively on explaining the central entity, concept, punchline, jargon, or question the user circled. Disregard any peripheral timestamps, battery/status text, buttons, or accidental edge clippings. Give a clear, direct, and insightful explanation.]
+
+                    $text
+                """.trimIndent()
+            }
             if (!extraModifier.isNullOrEmpty()) {
-                promptText = "$text\n\n[$extraModifier]"
+                promptText = "$promptText\n\n[$extraModifier]"
             }
             if (language.equals("Hindi", ignoreCase = true)) {
                 promptText = "$promptText\n\n[Please explain in clear, natural Hindi]"

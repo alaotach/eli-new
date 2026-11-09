@@ -36,8 +36,8 @@ class CircleSnipActivity : ComponentActivity() {
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
 
-            onSelectionCompleted = { croppedBitmap, _ ->
-                processCroppedBitmap(croppedBitmap)
+            onSelectionCompleted = { croppedBitmap, localPath, _ ->
+                processCroppedBitmap(croppedBitmap, localPath)
             }
 
             onDismissRequested = {
@@ -53,12 +53,13 @@ class CircleSnipActivity : ComponentActivity() {
         selectionView.setScreenshot(demoBitmap)
     }
 
-    private fun processCroppedBitmap(croppedBitmap: Bitmap) {
-        OcrHelper.extractText(croppedBitmap) { extractedText ->
+    private fun processCroppedBitmap(croppedBitmap: Bitmap, localPath: android.graphics.Path?) {
+        OcrHelper.extractText(croppedBitmap, localPath) { extractedText ->
             if (!extractedText.isNullOrBlank()) {
                 val intent = Intent(this, ExplainOverlayActivity::class.java).apply {
                     putExtra(ExplainOverlayActivity.EXTRA_TEXT, extractedText)
                     putExtra(ExplainOverlayActivity.EXTRA_MODE, SettingsManager.getDefaultMode(this@CircleSnipActivity))
+                    putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, true)
                 }
                 startActivity(intent)
                 finish()
@@ -116,25 +117,34 @@ class CircleSnipActivity : ComponentActivity() {
             isFakeBoldText = true
         }
 
+        val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#64748B")
+            textSize = 28f
+        }
+
         // Card 1: Quantum Computing
         val card1 = RectF(60f, 260f, width - 60f, 620f)
         canvas.drawRoundRect(card1, 32f, 32f, cardPaint)
         canvas.drawRoundRect(card1, 32f, 32f, borderPaint)
         canvas.drawText("TECH EXPLAINER", 100f, 330f, tagPaint)
+        canvas.drawText("2h ago", width - 200f, 330f, metaPaint)
         canvas.drawText("Quantum Entanglement", 100f, 400f, titlePaint)
         canvas.drawText("When two particles remain connected so", 100f, 470f, bodyPaint)
         canvas.drawText("actions on one affect the other instantly,", 100f, 520f, bodyPaint)
         canvas.drawText("even across light-years of distance.", 100f, 570f, bodyPaint)
+        canvas.drawText("4.5k Likes • Share", 100f, 650f, metaPaint)
 
         // Card 2: Legal Jargon
-        val card2 = RectF(60f, 680f, width - 60f, 1040f)
+        val card2 = RectF(60f, 700f, width - 60f, 1060f)
         canvas.drawRoundRect(card2, 32f, 32f, cardPaint)
         canvas.drawRoundRect(card2, 32f, 32f, borderPaint)
-        canvas.drawText("LEGAL TERMS", 100f, 750f, tagPaint)
-        canvas.drawText("Force Majeure Clause", 100f, 820f, titlePaint)
-        canvas.drawText("An unforeseeable circumstance preventing", 100f, 890f, bodyPaint)
-        canvas.drawText("someone from fulfilling a contractual pact,", 100f, 940f, bodyPaint)
-        canvas.drawText("such as natural disasters or war.", 100f, 990f, bodyPaint)
+        canvas.drawText("LEGAL TERMS", 100f, 770f, tagPaint)
+        canvas.drawText("Yesterday", width - 240f, 770f, metaPaint)
+        canvas.drawText("Force Majeure Clause", 100f, 840f, titlePaint)
+        canvas.drawText("An unforeseeable circumstance preventing", 100f, 910f, bodyPaint)
+        canvas.drawText("someone from fulfilling a contractual pact,", 100f, 960f, bodyPaint)
+        canvas.drawText("such as natural disasters or war.", 100f, 1010f, bodyPaint)
+        canvas.drawText("1.2k Replies • Retweet", 100f, 1090f, metaPaint)
 
         // Card 3: Finance
         val card3 = RectF(60f, 1100f, width - 60f, 1460f)
