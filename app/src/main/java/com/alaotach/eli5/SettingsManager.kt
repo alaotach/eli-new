@@ -79,6 +79,9 @@ object SettingsManager {
             .edit()
             .putString(KEY_LANGUAGE, language)
             .apply()
+
+        val lang = LanguageManager.getLanguageByEnglishName(language)
+        LanguageManager.applyAppLocale(lang.code)
     }
 
     fun getProofreadDefaultTone(context: Context): String {

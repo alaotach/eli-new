@@ -15,6 +15,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.layout.ContentScale
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,9 +37,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -262,6 +267,8 @@ fun MainScreen(
     var tryItText by remember { mutableStateOf("") }
     var isStatusDismissed by remember { mutableStateOf(SettingsManager.isStatusBannerDismissed(context)) }
     var isTryItDismissed by remember { mutableStateOf(SettingsManager.isTryItDismissed(context)) }
+    var currentLanguage by remember { mutableStateOf(SettingsManager.getLanguage(context)) }
+    var showLanguagePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         history = HistoryManager.getHistory(context)
@@ -298,12 +305,46 @@ fun MainScreen(
                 )
             }
 
-            IconButton(onClick = { showSettingsDialog = true }) {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = primaryTextColor
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Quick Language Switcher Pill
+                val currentLangObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
+                Surface(
+                    modifier = Modifier.clickable { showLanguagePicker = true },
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isDark) Color(0xFF261F36) else PurpleLightBg,
+                    border = BorderStroke(1.dp, if (isDark) Color(0xFF3B2D54) else Color(0xFFDDD6FE))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = currentLangObj.flag, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = currentLangObj.nativeName,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = primaryTextColor
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            Icons.Default.ArrowDropDown,
+                            contentDescription = "Change Language",
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(onClick = { showSettingsDialog = true }) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = primaryTextColor
+                    )
+                }
             }
         }
 
@@ -410,6 +451,97 @@ fun MainScreen(
             secondaryTextColor = secondaryTextColor,
             accent = accent
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 3b. Explanation Language Feature Card (Prominently showcasing multi-language support)
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            shape = RoundedCornerShape(18.dp),
+            color = cardBg,
+            border = BorderStroke(1.dp, cardBorder)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "🌍", fontSize = 22.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Explanation Language",
+                                fontWeight = FontWeight.Bold,
+                                color = primaryTextColor,
+                                fontSize = 15.sp
+                            )
+                            val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
+                            Text(
+                                text = "Default: ${langObj.displayName}",
+                                color = accent,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier.clickable { showLanguagePicker = true },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
+                    ) {
+                        Text(
+                            text = "35+ Langs ▾",
+                            color = accent,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Quick Popular Language Chips
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf("English", "Hindi", "Spanish", "French").forEach { langName ->
+                        val lang = LanguageManager.getLanguageByEnglishName(langName)
+                        val isSelected = currentLanguage.equals(langName, ignoreCase = true)
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable {
+                                    currentLanguage = langName
+                                    SettingsManager.setLanguage(context, langName)
+                                },
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg,
+                            border = if (isSelected) null else BorderStroke(1.dp, cardBorder)
+                        ) {
+                            Text(
+                                text = "${lang.flag} ${lang.nativeName}",
+                                color = if (isSelected) Color.White else primaryTextColor,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -808,39 +940,65 @@ fun MainScreen(
                     }
                 }
 
-                // Explanation Language
+                // Explanation & App Language
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        "Explanation Language",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp,
-                        color = primaryTextColor
-                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        listOf("English", "Hindi").forEach { lang ->
-                            val isSelected = language == lang
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable {
-                                        language = lang
-                                        SettingsManager.setLanguage(context, lang)
-                                    },
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                            ) {
-                                Text(
-                                    text = lang,
-                                    color = if (isSelected) Color.White else primaryTextColor,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(vertical = 9.dp)
-                                )
+                        Text(
+                            "Explanation & App Language",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp,
+                            color = primaryTextColor
+                        )
+                        Text(
+                            text = "35+ available",
+                            color = secondaryTextColor,
+                            fontSize = 11.sp
+                        )
+                    }
+
+                    val activeLang = LanguageManager.getLanguageByEnglishName(language)
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showLanguagePicker = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg,
+                        border = BorderStroke(1.dp, cardBorder)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = activeLang.flag, fontSize = 20.sp)
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = activeLang.displayName,
+                                        fontWeight = FontWeight.Bold,
+                                        color = primaryTextColor,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = "Default for explanations and app",
+                                        color = secondaryTextColor,
+                                        fontSize = 11.sp
+                                    )
+                                }
                             }
+                            Text(
+                                text = "Change ▾",
+                                color = accent,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
                         }
                     }
                 }
@@ -1086,6 +1244,24 @@ fun MainScreen(
             }
         }
     }
+
+    if (showLanguagePicker) {
+        LanguagePickerDialog(
+            currentLanguage = currentLanguage,
+            onSelectLanguage = { selected ->
+                currentLanguage = selected
+                SettingsManager.setLanguage(context, selected)
+                showLanguagePicker = false
+            },
+            onDismiss = { showLanguagePicker = false },
+            isDark = isDark,
+            accent = accent,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            cardBg = if (isDark) CardDarkBg else Color.White,
+            cardBorder = cardBorder
+        )
+    }
 }
 
 @Composable
@@ -1223,6 +1399,159 @@ fun CircleToEli5Card(
                         fontSize = 12.5.sp,
                         fontWeight = FontWeight.Bold
                     )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LanguagePickerDialog(
+    currentLanguage: String,
+    onSelectLanguage: (String) -> Unit,
+    onDismiss: () -> Unit,
+    isDark: Boolean,
+    accent: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    cardBg: Color,
+    cardBorder: Color
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredLanguages = remember(searchQuery) {
+        LanguageManager.searchLanguages(searchQuery)
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = cardBg,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
+                .padding(horizontal = 20.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Explanation Language",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = primaryTextColor
+                    )
+                    Text(
+                        text = "35+ Languages supported with live auto-detect",
+                        color = secondaryTextColor,
+                        fontSize = 12.sp
+                    )
+                }
+                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = secondaryTextColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Search language or country...", color = secondaryTextColor, fontSize = 14.sp) },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Search", tint = accent, modifier = Modifier.size(20.dp))
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = secondaryTextColor, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = accent,
+                    unfocusedBorderColor = cardBorder,
+                    focusedTextColor = primaryTextColor,
+                    unfocusedTextColor = primaryTextColor,
+                    cursorColor = accent
+                )
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Language List
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                items(filteredLanguages) { lang ->
+                    val isSelected = currentLanguage.equals(lang.englishName, ignoreCase = true)
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelectLanguage(lang.englishName) },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isSelected) (if (isDark) Color(0xFF2E1065) else Color(0xFFEDE9FE)) else Color.Transparent,
+                        border = if (isSelected) BorderStroke(1.5.dp, accent) else null
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = lang.flag, fontSize = 22.sp)
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column {
+                                    Text(
+                                        text = lang.nativeName,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                        fontSize = 15.sp,
+                                        color = if (isSelected) accent else primaryTextColor
+                                    )
+                                    Text(
+                                        text = lang.englishName,
+                                        fontSize = 12.sp,
+                                        color = secondaryTextColor
+                                    )
+                                }
+                            }
+
+                            if (isSelected) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = "Selected",
+                                    tint = accent,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

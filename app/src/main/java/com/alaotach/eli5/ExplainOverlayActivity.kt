@@ -17,10 +17,13 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.text.Editable
 import android.text.TextUtils
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -72,6 +75,13 @@ class ExplainOverlayActivity : Activity() {
     private var targetExplanationText: String = ""
     private var displayedExplanationText: String = ""
     private var currentActiveMode: String = "Direct"
+    private var userDefaultLanguage: String = "English"
+    private var currentActiveLanguage: String = "English"
+    private var secondaryLanguage: String = "Hindi"
+
+    private var primaryLangBtn: TextView? = null
+    private var secondaryLangBtn: TextView? = null
+    private var moreLangBtn: TextView? = null
 
     private val activityScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -155,8 +165,12 @@ class ExplainOverlayActivity : Activity() {
             cachedExplanations[currentActiveMode] = cachedResult
         }
 
+        userDefaultLanguage = SettingsManager.getLanguage(this)
+        currentActiveLanguage = userDefaultLanguage
+        secondaryLanguage = if (userDefaultLanguage.equals("English", ignoreCase = true)) "Hindi" else "English"
+
         showBottomSheet()
-        requestExplanation(currentActiveMode)
+        requestExplanation(currentActiveMode, currentActiveLanguage)
     }
 
     private fun isNetworkAvailable(): Boolean {
@@ -195,14 +209,19 @@ class ExplainOverlayActivity : Activity() {
         errorText?.text = message
     }
 
-    private fun requestExplanation(mode: String, extraModifier: String? = null) {
+    private fun requestExplanation(
+        mode: String,
+        language: String = currentActiveLanguage,
+        extraModifier: String? = null
+    ) {
         currentActiveMode = mode
+        currentActiveLanguage = language
         SettingsManager.setLastMode(this, mode)
 
         currentJob?.cancel()
         typewriterJob?.cancel()
 
-        val cacheKey = if (extraModifier.isNullOrEmpty()) mode else "$mode:$extraModifier"
+        val cacheKey = "$mode:$language" + if (extraModifier.isNullOrEmpty()) "" else ":$extraModifier"
 
         if (cachedExplanations.containsKey(cacheKey)) {
             val cached = cachedExplanations[cacheKey]!!
@@ -260,7 +279,6 @@ class ExplainOverlayActivity : Activity() {
                 }
             }
 
-            val language = SettingsManager.getLanguage(this@ExplainOverlayActivity)
             val explanation = fetchExplanation(processedText, mode, language, extraModifier) { partialText ->
                 withContext(Dispatchers.Main) {
                     if (firstChunk) {
@@ -328,8 +346,8 @@ class ExplainOverlayActivity : Activity() {
             if (!extraModifier.isNullOrEmpty()) {
                 promptText = "$promptText\n\n[$extraModifier]"
             }
-            if (language.equals("Hindi", ignoreCase = true)) {
-                promptText = "$promptText\n\n[Please explain in clear, natural Hindi]"
+            if (!language.equals("English", ignoreCase = true)) {
+                promptText = "$promptText\n\n[Please explain in clear, natural $language]"
             }
 
             val payload = JSONObject().apply {
@@ -566,7 +584,7 @@ class ExplainOverlayActivity : Activity() {
                 tv.setTextColor(Color.WHITE)
                 (tv.background as? GradientDrawable)?.setColor(purpleAccent)
 
-                requestExplanation(modeName)
+                requestExplanation(modeName, currentActiveLanguage)
             }
         }
 
@@ -582,6 +600,81 @@ class ExplainOverlayActivity : Activity() {
             }
         }
         root.addView(modeRow)
+
+        // 4b. Language Switcher Row (Always quick toggle: English <-> Default Language, plus 35+ languages)
+        val languageRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = GradientDrawable().apply {
+                setColor(tabsBgColor)
+                cornerRadius = 12 * dp
+                setStroke((dp * 1.0f).toInt(), purpleBorderColor)
+            }
+            setPadding((dp * 4).toInt(), (dp * 4).toInt(), (dp * 4).toInt(), (dp * 4).toInt())
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                bottomMargin = (dp * 12).toInt()
+            }
+        }
+
+        primaryLangBtn = TextView(this).apply {
+            gravity = Gravity.CENTER
+            textSize = 13.0f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(0, (dp * 6).toInt(), 0, (dp * 6).toInt())
+            background = GradientDrawable().apply {
+                setColor(Color.TRANSPARENT)
+                cornerRadius = dp * 8
+            }
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
+            setOnClickListener {
+                requestExplanation(currentActiveMode, userDefaultLanguage)
+                updateLanguageButtonsUi()
+            }
+        }
+        languageRow.addView(primaryLangBtn)
+
+        secondaryLangBtn = TextView(this).apply {
+            gravity = Gravity.CENTER
+            textSize = 13.0f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(0, (dp * 6).toInt(), 0, (dp * 6).toInt())
+            background = GradientDrawable().apply {
+                setColor(Color.TRANSPARENT)
+                cornerRadius = dp * 8
+            }
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
+            setOnClickListener {
+                requestExplanation(currentActiveMode, secondaryLanguage)
+                updateLanguageButtonsUi()
+            }
+        }
+        languageRow.addView(secondaryLangBtn)
+
+        moreLangBtn = TextView(this).apply {
+            text = "🌐 ▾"
+            gravity = Gravity.CENTER
+            textSize = 13.0f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding((dp * 10).toInt(), (dp * 6).toInt(), (dp * 10).toInt(), (dp * 6).toInt())
+            background = GradientDrawable().apply {
+                setColor(Color.TRANSPARENT)
+                cornerRadius = dp * 8
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            setOnClickListener {
+                showLanguagePickerDialog { selected ->
+                    if (!selected.englishName.equals(userDefaultLanguage, ignoreCase = true)) {
+                        secondaryLanguage = selected.englishName
+                    }
+                    requestExplanation(currentActiveMode, selected.englishName)
+                    updateLanguageButtonsUi()
+                }
+            }
+        }
+        languageRow.addView(moreLangBtn)
+
+        updateLanguageButtonsUi()
+        root.addView(languageRow)
 
         // 5. Answer Area Container
         val contentBox = LinearLayout(this).apply {
@@ -743,5 +836,156 @@ class ExplainOverlayActivity : Activity() {
             pulseAnim.start()
         }
         return container
+    }
+
+    private fun updateLanguageButtonsUi() {
+        val defaultLangObj = LanguageManager.getLanguageByEnglishName(userDefaultLanguage)
+        val secLangObj = LanguageManager.getLanguageByEnglishName(secondaryLanguage)
+
+        val isPrimaryActive = currentActiveLanguage.equals(userDefaultLanguage, ignoreCase = true)
+        val isSecondaryActive = currentActiveLanguage.equals(secondaryLanguage, ignoreCase = true)
+
+        primaryLangBtn?.apply {
+            text = "${defaultLangObj.flag} ${defaultLangObj.nativeName}"
+            if (isPrimaryActive) {
+                setTextColor(Color.WHITE)
+                (background as? GradientDrawable)?.setColor(purpleAccent)
+            } else {
+                setTextColor(textMutedColor)
+                (background as? GradientDrawable)?.setColor(Color.TRANSPARENT)
+            }
+        }
+
+        secondaryLangBtn?.apply {
+            text = "${secLangObj.flag} ${secLangObj.nativeName}"
+            if (isSecondaryActive) {
+                setTextColor(Color.WHITE)
+                (background as? GradientDrawable)?.setColor(purpleAccent)
+            } else {
+                setTextColor(textMutedColor)
+                (background as? GradientDrawable)?.setColor(Color.TRANSPARENT)
+            }
+        }
+
+        moreLangBtn?.apply {
+            if (!isPrimaryActive && !isSecondaryActive) {
+                val currentObj = LanguageManager.getLanguageByEnglishName(currentActiveLanguage)
+                text = "${currentObj.flag} ${currentObj.nativeName} ▾"
+                setTextColor(Color.WHITE)
+                (background as? GradientDrawable)?.setColor(purpleAccent)
+            } else {
+                text = "🌐 ▾"
+                setTextColor(textMutedColor)
+                (background as? GradientDrawable)?.setColor(Color.TRANSPARENT)
+            }
+        }
+    }
+
+    private fun showLanguagePickerDialog(onLanguageSelected: (Language) -> Unit) {
+        val dialog = BottomSheetDialog(this)
+        val dialogRoot = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(cardBgColor)
+            setPadding((dp * 20).toInt(), (dp * 16).toInt(), (dp * 20).toInt(), (dp * 24).toInt())
+        }
+
+        val titleTv = TextView(this).apply {
+            text = "Select Language / भाषा चुनें"
+            textSize = 18f
+            setTextColor(textPrimaryColor)
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(0, 0, 0, (dp * 12).toInt())
+        }
+        dialogRoot.addView(titleTv)
+
+        val searchBox = EditText(this).apply {
+            hint = "Search 35+ languages..."
+            setHintTextColor(textMutedColor)
+            setTextColor(textPrimaryColor)
+            textSize = 14f
+            background = GradientDrawable().apply {
+                setColor(contentBoxBgColor)
+                cornerRadius = dp * 10
+                setStroke((dp * 1).toInt(), purpleBorderColor)
+            }
+            setPadding((dp * 12).toInt(), (dp * 10).toInt(), (dp * 12).toInt(), (dp * 10).toInt())
+        }
+        dialogRoot.addView(searchBox)
+
+        val scroll = ScrollView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                (dp * 360).toInt()
+            ).apply {
+                topMargin = (dp * 12).toInt()
+            }
+        }
+
+        val langListContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        scroll.addView(langListContainer)
+        dialogRoot.addView(scroll)
+
+        fun renderLanguages(query: String = "") {
+            langListContainer.removeAllViews()
+            val filtered = if (query.isBlank()) {
+                LanguageManager.SUPPORTED_LANGUAGES
+            } else {
+                LanguageManager.SUPPORTED_LANGUAGES.filter {
+                    it.englishName.contains(query, ignoreCase = true) ||
+                    it.nativeName.contains(query, ignoreCase = true) ||
+                    it.code.contains(query, ignoreCase = true)
+                }
+            }
+
+            for (lang in filtered) {
+                val row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding((dp * 10).toInt(), (dp * 12).toInt(), (dp * 10).toInt(), (dp * 12).toInt())
+                    background = GradientDrawable().apply {
+                        setColor(Color.TRANSPARENT)
+                        cornerRadius = dp * 8
+                    }
+                    isClickable = true
+                    isFocusable = true
+                    setOnClickListener {
+                        onLanguageSelected(lang)
+                        dialog.dismiss()
+                    }
+                }
+
+                val flagTv = TextView(this).apply {
+                    text = lang.flag
+                    textSize = 18f
+                    setPadding(0, 0, (dp * 12).toInt(), 0)
+                }
+                val nameTv = TextView(this).apply {
+                    text = lang.displayName
+                    textSize = 15f
+                    setTextColor(if (lang.englishName.equals(currentActiveLanguage, ignoreCase = true)) purpleAccent else textPrimaryColor)
+                    if (lang.englishName.equals(currentActiveLanguage, ignoreCase = true)) {
+                        setTypeface(typeface, Typeface.BOLD)
+                    }
+                }
+                row.addView(flagTv)
+                row.addView(nameTv)
+                langListContainer.addView(row)
+            }
+        }
+
+        renderLanguages()
+
+        searchBox.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                renderLanguages(s?.toString() ?: "")
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
+        dialog.setContentView(dialogRoot)
+        dialog.show()
     }
 }
