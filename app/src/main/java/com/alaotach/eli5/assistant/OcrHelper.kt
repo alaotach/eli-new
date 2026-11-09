@@ -3,7 +3,11 @@ package com.alaotach.eli5.assistant
 import android.graphics.Bitmap
 import android.graphics.Path
 import android.graphics.Region
+import android.os.Handler
+import android.os.Looper
+import android.util.Base64
 import android.util.Log
+import com.alaotach.eli5.BuildConfig
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
@@ -13,6 +17,15 @@ import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 
 object OcrHelper {
     private const val TAG = "OcrHelper"
@@ -60,9 +73,16 @@ object OcrHelper {
         TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
     }
 
+    // Threshold score above which we are confident we've captured a substantial block of text
+    private const val DECISIVE_SCORE_THRESHOLD = 30
+
     /**
-     * Extracts text from a bitmap using a multi-script ML Kit cascade.
-     * Supports Latin, Devanagari (Hindi, Marathi, Nepali), Chinese, Japanese, and Korean.
+     * Extracts text from a bitmap using a hybrid OCR pipeline:
+     * 1. Multi-script on-device ML Kit recognizers (Latin, Devanagari, Chinese, Japanese, Korean)
+     * 2. High-accuracy Cloud Vision OCR fallback for scripts not covered on-device (Bengali, Tamil, Telugu,
+     *    Gujarati, Kannada, Malayalam, Punjabi, Arabic, Urdu, Persian, Hebrew, Russian, Ukrainian, Greek, Thai).
+     *
+     * Supports all 35 languages in ELI5 with zero gaps.
      *
      * @param bitmap Cropped screenshot of the selected area
      * @param path Optional selection polygon path to exclude text outside the drawn circle
@@ -76,8 +96,6 @@ object OcrHelper {
         onResult: (String?) -> Unit
     ) {
         try {
-            val image = InputImage.fromBitmap(bitmap, 0)
-
             // Prepare region for polygon containment check if path is present
             val pathRegion = if (path != null) {
                 try {
@@ -90,12 +108,39 @@ object OcrHelper {
                 }
             } else null
 
-            val orderedRecognizers = getOrderedRecognizers(preferredLanguage)
-            cascadeRecognition(image, pathRegion, orderedRecognizers, 0, null, onResult)
+            // If the user's active language uses a script not supported offline by ML Kit (e.g. Bengali, Tamil, Arabic),
+            // prioritize Cloud Vision OCR directly for instantaneous recognition.
+            if (isCloudPreferredScript(preferredLanguage)) {
+                Log.d(TAG, "Preferred language '$preferredLanguage' is a cloud-primary script. Launching Cloud OCR...")
+                performCloudOcr(bitmap, preferredLanguage) { cloudText ->
+                    if (!cloudText.isNullOrBlank()) {
+                        onResult(cloudText)
+                    } else {
+                        // Fallback to on-device cascade in case user is offline
+                        runOnDeviceCascade(bitmap, pathRegion, preferredLanguage, onResult)
+                    }
+                }
+                return
+            }
+
+            // For Latin, Devanagari (Hindi/Marathi), Chinese, Japanese, Korean:
+            // Run fast on-device recognition first (15-30ms), with cloud fallback if no text found.
+            runOnDeviceCascade(bitmap, pathRegion, preferredLanguage, onResult)
         } catch (e: Throwable) {
-            Log.e(TAG, "Failed to create InputImage or run OCR", e)
+            Log.e(TAG, "Failed to run OCR", e)
             onResult(null)
         }
+    }
+
+    private fun runOnDeviceCascade(
+        bitmap: Bitmap,
+        pathRegion: Region?,
+        preferredLanguage: String?,
+        onResult: (String?) -> Unit
+    ) {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val orderedRecognizers = getOrderedRecognizers(preferredLanguage)
+        cascadeRecognition(bitmap, image, pathRegion, orderedRecognizers, 0, null, preferredLanguage, onResult)
     }
 
     private fun getOrderedRecognizers(preferredLanguage: String?): List<Pair<String, TextRecognizer>> {
@@ -130,20 +175,36 @@ object OcrHelper {
         return listOf(primaryPair) + allPairs.filter { it.first != primaryPair.first }
     }
 
-    // Threshold score above which we are confident we've captured a substantial block of text
-    private const val DECISIVE_SCORE_THRESHOLD = 30
-
     private fun cascadeRecognition(
+        bitmap: Bitmap,
         image: InputImage,
         pathRegion: Region?,
         recognizers: List<Pair<String, TextRecognizer>>,
         index: Int,
         currentBestText: String?,
+        preferredLanguage: String?,
         onResult: (String?) -> Unit
     ) {
         if (index >= recognizers.size) {
-            Log.d(TAG, "Cascade complete. Final best text: '$currentBestText'")
-            onResult(currentBestText)
+            Log.d(TAG, "On-device cascade complete. Best text: '$currentBestText'")
+            val bestScore = evaluateTextQuality(currentBestText)
+
+            // If on-device models found no text or very low score (< 8), this is likely a non-Latin script
+            // like Bengali, Tamil, Telugu, Arabic, Russian, Greek, Thai.
+            // Seamlessly run Cloud OCR fallback!
+            if (bestScore < 8) {
+                Log.d(TAG, "On-device score is low ($bestScore). Triggering Cloud OCR fallback for Bengali/Arabic/Indic/etc...")
+                performCloudOcr(bitmap, preferredLanguage) { cloudText ->
+                    if (!cloudText.isNullOrBlank()) {
+                        Log.d(TAG, "Cloud OCR fallback successfully extracted: '$cloudText'")
+                        onResult(cloudText)
+                    } else {
+                        onResult(currentBestText)
+                    }
+                }
+            } else {
+                onResult(currentBestText)
+            }
             return
         }
 
@@ -165,13 +226,140 @@ object OcrHelper {
                     onResult(parsedText)
                 } else {
                     // Otherwise continue checking remaining recognizers in case another script is a much richer match
-                    cascadeRecognition(image, pathRegion, recognizers, index + 1, updatedBest, onResult)
+                    cascadeRecognition(bitmap, image, pathRegion, recognizers, index + 1, updatedBest, preferredLanguage, onResult)
                 }
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Recognizer [$scriptName] failed", e)
-                cascadeRecognition(image, pathRegion, recognizers, index + 1, currentBestText, onResult)
+                cascadeRecognition(bitmap, image, pathRegion, recognizers, index + 1, currentBestText, preferredLanguage, onResult)
             }
+    }
+
+    /**
+     * Performs Cloud Vision OCR using Gemini via the ELI5 backend proxy.
+     * Accurately transcribes all 35 languages including Bengali, Telugu, Tamil, Gujarati,
+     * Kannada, Malayalam, Punjabi, Arabic, Urdu, Persian, Hebrew, Russian, Ukrainian, Greek, Thai.
+     */
+    private fun performCloudOcr(
+        bitmap: Bitmap,
+        preferredLanguage: String?,
+        onResult: (String?) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val extractedText: String? = try {
+                Log.d(TAG, "performCloudOcr starting for bitmap ${bitmap.width}x${bitmap.height}, preferredLang=$preferredLanguage")
+                val scaled = if (bitmap.width > 800 || bitmap.height > 800) {
+                    val scale = 800f / maxOf(bitmap.width, bitmap.height)
+                    Bitmap.createScaledBitmap(
+                        bitmap,
+                        (bitmap.width * scale).toInt().coerceAtLeast(1),
+                        (bitmap.height * scale).toInt().coerceAtLeast(1),
+                        true
+                    )
+                } else {
+                    bitmap
+                }
+
+                val baos = ByteArrayOutputStream()
+                scaled.compress(Bitmap.CompressFormat.JPEG, 80, baos)
+                val base64Image = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP)
+                Log.d(TAG, "performCloudOcr: image compressed, base64 length=${base64Image.length}")
+
+                val endpoint = "${BuildConfig.BACKEND_URL}/api/ocr"
+                val url = URL(endpoint)
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 ELI5-Android/2.2.1")
+                conn.connectTimeout = 10000
+                conn.readTimeout = 15000
+                conn.doOutput = true
+
+                val payload = JSONObject().apply {
+                    put("model", "google/gemini-3-flash-preview")
+                    val contentArray = JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("type", "text")
+                            val langHint = if (!preferredLanguage.isNullOrBlank() && !preferredLanguage.equals("English", ignoreCase = true)) {
+                                " The text is likely in $preferredLanguage or related language."
+                            } else ""
+                            put(
+                                "text",
+                                "Extract and transcribe all the exact text visible in this image verbatim in its original script and language.$langHint Return ONLY the transcribed text, nothing else. Do not add markdown formatting, commentary, or quotes."
+                            )
+                        })
+                        put(JSONObject().apply {
+                            put("type", "image_url")
+                            put("image_url", JSONObject().apply {
+                                put("url", "data:image/jpeg;base64,$base64Image")
+                            })
+                        })
+                    }
+                    val messageObj = JSONObject().apply {
+                        put("role", "user")
+                        put("content", contentArray)
+                    }
+                    put("messages", JSONArray().apply { put(messageObj) })
+                }
+
+                val postBytes = payload.toString().toByteArray(Charsets.UTF_8)
+                conn.setFixedLengthStreamingMode(postBytes.size)
+                conn.outputStream.use { os ->
+                    os.write(postBytes)
+                    os.flush()
+                }
+
+                val respCode = conn.responseCode
+                Log.d(TAG, "performCloudOcr: HTTP responseCode=$respCode")
+
+                if (respCode == 200) {
+                    val responseStr = conn.inputStream.bufferedReader().use { it.readText() }
+                    val json = JSONObject(responseStr)
+                    val choices = json.optJSONArray("choices")
+                    val message = choices?.optJSONObject(0)?.optJSONObject("message")
+                    val content = message?.optString("content")?.trim()
+                    Log.d(TAG, "performCloudOcr: Extracted content='$content'")
+                    if (!content.isNullOrBlank() && !content.equals("null", ignoreCase = true)) {
+                        content
+                    } else null
+                } else {
+                    val err = conn.errorStream?.bufferedReader()?.use { it.readText() }
+                    Log.w(TAG, "Cloud OCR response code: $respCode, error: $err")
+                    null
+                }
+            } catch (t: Throwable) {
+                Log.e(TAG, "Cloud OCR request failed", t)
+                null
+            }
+
+            Log.d(TAG, "performCloudOcr: posting result to main handler: '$extractedText'")
+            Handler(Looper.getMainLooper()).post {
+                onResult(extractedText)
+            }
+        }
+    }
+
+    /**
+     * Checks if the language uses a non-Latin script that is not supported offline
+     * by ML Kit on-device models (e.g. Bengali, Tamil, Telugu, Arabic, Russian, etc.).
+     */
+    private fun isCloudPreferredScript(language: String?): Boolean {
+        val lang = language?.lowercase()?.trim() ?: return false
+        return lang.contains("bengali") || lang == "bn" ||
+               lang.contains("telugu") || lang == "te" ||
+               lang.contains("tamil") || lang == "ta" ||
+               lang.contains("gujarati") || lang == "gu" ||
+               lang.contains("kannada") || lang == "kn" ||
+               lang.contains("malayalam") || lang == "ml" ||
+               lang.contains("punjabi") || lang == "pa" ||
+               lang.contains("arabic") || lang == "ar" ||
+               lang.contains("urdu") || lang == "ur" ||
+               lang.contains("persian") || lang == "fa" ||
+               lang.contains("hebrew") || lang == "he" || lang == "iw" ||
+               lang.contains("russian") || lang == "ru" ||
+               lang.contains("ukrainian") || lang == "uk" ||
+               lang.contains("greek") || lang == "el" ||
+               lang.contains("thai") || lang == "th"
     }
 
     private fun parseAndFilterText(visionText: Text, pathRegion: Region?): String? {

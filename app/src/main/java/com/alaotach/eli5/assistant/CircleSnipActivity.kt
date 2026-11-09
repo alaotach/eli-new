@@ -161,7 +161,37 @@ class CircleSnipActivity : ComponentActivity() {
         canvas.drawRoundRect(card3, 32f, 32f, borderPaint)
 
         val lang = SettingsManager.getLanguage(this).lowercase()
-        if (lang.contains("hindi") || lang.contains("marathi") || lang == "hi" || lang == "mr") {
+        if (lang.contains("bengali") || lang == "bn") {
+            canvas.drawText("বিজ্ঞান ও প্রযুক্তি", 100f, 1170f, tagPaint)
+            canvas.drawText("কোয়ান্টাম এন্ট্যাঙ্গলমেন্ট", 100f, 1240f, titlePaint)
+            canvas.drawText("যখন দুটি কণা এমনভাবে সংযুক্ত থাকে যে", 100f, 1310f, bodyPaint)
+            canvas.drawText("একটির অবস্থা পরিবর্তনের সাথে সাথেই", 100f, 1360f, bodyPaint)
+            canvas.drawText("দূরত্ব নির্বিশেষে অন্যটিতে প্রভাব পড়ে।", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("tamil") || lang == "ta") {
+            canvas.drawText("அறிவியல் & தொழில்நுட்பம்", 100f, 1170f, tagPaint)
+            canvas.drawText("குவாண்டம் பின்னல்", 100f, 1240f, titlePaint)
+            canvas.drawText("இரண்டு துகள்கள் மிகத் தொலைவில் இருந்தாலும்,", 100f, 1310f, bodyPaint)
+            canvas.drawText("ஒன்றின் மாற்றம் உடனடியாக மற்றொன்றை", 100f, 1360f, bodyPaint)
+            canvas.drawText("பாதிக்கும் விசித்திரமான நிகழ்வு.", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("telugu") || lang == "te") {
+            canvas.drawText("సైన్స్ & టెక్నాలజీ", 100f, 1170f, tagPaint)
+            canvas.drawText("క్వాంటమ్ ఎంటాంగిల్మెంట్", 100f, 1240f, titlePaint)
+            canvas.drawText("రెండు కణాలు ఎంత దూరంలో ఉన్నప్పటికీ,", 100f, 1310f, bodyPaint)
+            canvas.drawText("ఒకదానిలో మార్పు వెంటనే రెండవదానిపై", 100f, 1360f, bodyPaint)
+            canvas.drawText("ప్రభావం చూపే భౌతిక దృగ్విషయం.", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("arabic") || lang == "ar") {
+            canvas.drawText("العلوم والتكنولوجيا", 100f, 1170f, tagPaint)
+            canvas.drawText("التشابك الكمي", 100f, 1240f, titlePaint)
+            canvas.drawText("عندما يرتبط جسيمان بحيث تؤثر التغيرات", 100f, 1310f, bodyPaint)
+            canvas.drawText("في أحدهما فوراً على الآخر بغض النظر", 100f, 1360f, bodyPaint)
+            canvas.drawText("عن المسافة الفاصلة بينهما.", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("russian") || lang == "ru") {
+            canvas.drawText("НАУКА И ТЕХНОЛОГИИ", 100f, 1170f, tagPaint)
+            canvas.drawText("Квантовая запутанность", 100f, 1240f, titlePaint)
+            canvas.drawText("Явление, при котором квантовые состояния", 100f, 1310f, bodyPaint)
+            canvas.drawText("двух частиц оказываются взаимосвязанными", 100f, 1360f, bodyPaint)
+            canvas.drawText("даже на колоссальных расстояниях.", 100f, 1410f, bodyPaint)
+        } else if (lang.contains("hindi") || lang.contains("marathi") || lang == "hi" || lang == "mr") {
             canvas.drawText("विज्ञान एवं तकनीक", 100f, 1170f, tagPaint)
             canvas.drawText("क्वांटम उलझाव", 100f, 1240f, titlePaint)
             canvas.drawText("जब दो कण एक दूसरे से जुड़े होते हैं,", 100f, 1310f, bodyPaint)
