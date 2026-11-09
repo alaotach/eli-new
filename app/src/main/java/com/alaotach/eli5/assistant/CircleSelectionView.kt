@@ -6,7 +6,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
@@ -15,7 +14,6 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Shader
 import android.graphics.Typeface
 import android.os.Build
 import android.os.VibrationEffect
@@ -25,8 +23,6 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import androidx.core.content.ContextCompat
-import com.alaotach.eli5.R
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
@@ -53,47 +49,39 @@ class CircleSelectionView @JvmOverloads constructor(
     private var maxY = Float.MIN_VALUE
     private var hasDrawn = false
 
-    // Authentic Google Circle to Search vector icons
-    private val iconGoogleG = ContextCompat.getDrawable(context, R.drawable.ic_google_g)
-    private val iconGoogleMic = ContextCompat.getDrawable(context, R.drawable.ic_google_mic)
-    private val iconGoogleLens = ContextCompat.getDrawable(context, R.drawable.ic_google_lens)
-
-    // Google-style luminous white stroke
-    private val strokeOuterGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    // Signature ELI5 Luminous Neon Stroke
+    private val outerGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = 14f * dp
-        color = Color.parseColor("#4DFFFFFF") // Soft luminous ambient aura
+        strokeWidth = 10f * dp
+        color = Color.parseColor("#808B5CF6") // 50% Translucent Neon Purple Glow
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
     }
 
-    private val strokeCorePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val coreLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeWidth = 4f * dp
-        color = Color.WHITE // Pure crisp white core
+        strokeWidth = 3.5f * dp
+        color = Color.parseColor("#FFF5F3FF") // Crisp White with faint Lavender warmth
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
     }
 
-    // Circular start handle / orb (iconic Google Lens touch puck)
+    // Touch anchor orb at start point
     private val orbCorePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         color = Color.WHITE
-        setShadowLayer(8f * dp, 0f, 2f * dp, Color.parseColor("#4D000000"))
+        setShadowLayer(6f * dp, 0f, 2f * dp, Color.parseColor("#668B5CF6"))
     }
 
     private val orbGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = Color.parseColor("#33FFFFFF")
+        color = Color.parseColor("#4D8B5CF6")
     }
 
-    // Base light scrim and gradient shaders
-    private val scrimBasePaint = Paint().apply {
-        color = Color.parseColor("#26000000") // ~15% subtle translucent black
+    // Background Dimming Scrim
+    private val dimPaint = Paint().apply {
+        color = Color.parseColor("#59000000") // 35% translucent dark scrim
     }
-
-    private val topVignettePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val bottomVignettePaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     // Clear mode paint to punch out the selected region inside the circle
     private val clearPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -101,40 +89,46 @@ class CircleSelectionView @JvmOverloads constructor(
         xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
     }
 
-    // Top Header: Minimal clean glyphs matching Google Circle to Search
-    private val headerIconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        textSize = 21f * dp
-        textAlign = Paint.Align.CENTER
-        typeface = Typeface.create("sans-serif", Typeface.NORMAL)
-        setShadowLayer(8f * dp, 0f, 2f * dp, Color.parseColor("#80000000"))
-    }
-
-    private val headerBrandPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        textSize = 23f * dp
-        typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-        textAlign = Paint.Align.CENTER
-        setShadowLayer(8f * dp, 0f, 2f * dp, Color.parseColor("#80000000"))
-    }
-
-    // Bottom Google Search Bar Stadium Capsule
-    private val bottomPillBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+    // ELI5 Floating Island Header
+    private val pillBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#F20F172A") // Deep frosted slate / dark violet
         style = Paint.Style.FILL
-        setShadowLayer(14f * dp, 0f, 3f * dp, Color.parseColor("#33000000"))
+        setShadowLayer(16f * dp, 0f, 6f * dp, Color.parseColor("#80000000"))
     }
 
-    private val bottomPillTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#70757A") // Official Google search bar hint color
-        textSize = 15f * dp
+    private val pillBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#668B5CF6") // Neon violet border
+        style = Paint.Style.STROKE
+        strokeWidth = 1.5f * dp
+    }
+
+    private val pillIconBadgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#7C3AED") // Vibrant violet badge
+        style = Paint.Style.FILL
+    }
+
+    private val pillIconTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = 16f * dp
+        textAlign = Paint.Align.CENTER
+    }
+
+    private val titleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = 14.5f * dp
+        typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+    }
+
+    private val subtitleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#C4B5FD") // Light lavender
+        textSize = 11.5f * dp
         typeface = Typeface.create("sans-serif", Typeface.NORMAL)
     }
 
-    private val bottomPillAnalyzingTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A73E8") // Google Blue
-        textSize = 15f * dp
-        typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+    private val closeButtonPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#C4B5FD")
+        textSize = 18f * dp
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.DEFAULT_BOLD
     }
 
     private var selectionRect: RectF? = null
@@ -148,7 +142,7 @@ class CircleSelectionView @JvmOverloads constructor(
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)
 
-        pulseAnimator = ValueAnimator.ofInt(140, 255).apply {
+        pulseAnimator = ValueAnimator.ofInt(130, 255).apply {
             duration = 750
             repeatMode = ValueAnimator.REVERSE
             repeatCount = ValueAnimator.INFINITE
@@ -157,22 +151,6 @@ class CircleSelectionView @JvmOverloads constructor(
                 pulseAlpha = it.animatedValue as Int
                 invalidate()
             }
-        }
-    }
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        if (w > 0 && h > 0) {
-            topVignettePaint.shader = LinearGradient(
-                0f, 0f, 0f, 150f * dp,
-                Color.parseColor("#73000000"), Color.TRANSPARENT,
-                Shader.TileMode.CLAMP
-            )
-            bottomVignettePaint.shader = LinearGradient(
-                0f, h - 170f * dp, 0f, h.toFloat(),
-                Color.TRANSPARENT, Color.parseColor("#73000000"),
-                Shader.TileMode.CLAMP
-            )
         }
     }
 
@@ -220,33 +198,26 @@ class CircleSelectionView @JvmOverloads constructor(
         val x = event.x
         val y = event.y
 
-        val topBarY = 62f * dp
-        val closeBtnCx = 32f * dp
-        val closeBtnCy = topBarY
+        val pillHeight = 56f * dp
+        val pillWidth = min(width * 0.88f, 380f * dp)
+        val pillLeft = (width - pillWidth) / 2f
+        val pillTop = 48f * dp
+        val pillRight = pillLeft + pillWidth
+        val pillBottom = pillTop + pillHeight
+        val centerY = pillTop + (pillHeight / 2f)
+        val closeCenterX = pillRight - 24f * dp
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                // Check if tapped the top-left '✕' button
-                val distToClose = hypot((x - closeBtnCx).toDouble(), (y - closeBtnCy).toDouble())
-                if (distToClose <= 32f * dp) {
+                // Check if tapped the '✕' close button
+                val distToClose = hypot((x - closeCenterX).toDouble(), (y - centerY).toDouble())
+                if (distToClose <= 28f * dp) {
                     onDismissRequested?.invoke()
                     return true
                 }
 
-                // Check if tapped the top-right '⋮' button
-                val menuBtnCx = width - 32f * dp
-                val distToMenu = hypot((x - menuBtnCx).toDouble(), (y - topBarY).toDouble())
-                if (distToMenu <= 32f * dp) {
-                    onDismissRequested?.invoke()
-                    return true
-                }
-
-                // Check if tapped the bottom pill area
-                val pillHeight = 52f * dp
-                val pillBottom = height - 28f * dp
-                val pillTop = pillBottom - pillHeight
-                if (y in pillTop..pillBottom && x in (20f * dp)..(width - 20f * dp)) {
-                    // Tap on bottom bar
+                // Check if tapped the pill body
+                if (x in pillLeft..pillRight && y in pillTop..pillBottom) {
                     return true
                 }
 
@@ -313,13 +284,10 @@ class CircleSelectionView @JvmOverloads constructor(
                     totalPathLength += hypot((p2.x - p1.x).toDouble(), (p2.y - p1.y).toDouble())
                 }
 
-                isCircleGesture = (totalPathLength > 80.0 && directDist < totalPathLength * 0.65)
-                if (isCircleGesture) {
-                    touchPath.close()
-                }
+                val diagonal = hypot(rectWidth.toDouble(), rectHeight.toDouble())
+                isCircleGesture = directDist < (diagonal * 0.5) || totalPathLength > (diagonal * 1.8)
 
-                // Tight padding: 4px only
-                val padding = 4f
+                val padding = 20f * dp
                 val left = max(0f, minX - padding)
                 val top = max(0f, minY - padding)
                 val right = min(width.toFloat(), maxX + padding)
@@ -332,7 +300,7 @@ class CircleSelectionView @JvmOverloads constructor(
                 pulseAnimator?.start()
                 invalidate()
 
-                processSelection(finalRect, isCircleGesture)
+                processSelection(finalRect)
                 return true
             }
 
@@ -344,7 +312,7 @@ class CircleSelectionView @JvmOverloads constructor(
         return super.onTouchEvent(event)
     }
 
-    private fun processSelection(rectF: RectF, isCircle: Boolean) {
+    private fun processSelection(rectF: RectF) {
         val bmp = screenshot ?: return
 
         val scaleX = bmp.width.toFloat() / width.toFloat()
@@ -357,17 +325,17 @@ class CircleSelectionView @JvmOverloads constructor(
 
         if (cropW > 10 && cropH > 10) {
             try {
-                val androidRect = Rect(cropX, cropY, cropX + cropW, cropY + cropH)
                 val cropped = Bitmap.createBitmap(bmp, cropX, cropY, cropW, cropH)
+                val androidRect = Rect(cropX, cropY, cropX + cropW, cropY + cropH)
 
-                val localPath = if (isCircle) {
-                    val p = Path(touchPath).apply { close() }
+                val localPath = if (isCircleGesture) {
                     val matrix = Matrix().apply {
                         postScale(scaleX, scaleY)
                         postTranslate(-cropX.toFloat(), -cropY.toFloat())
                     }
-                    p.transform(matrix)
-                    p
+                    val transformed = Path()
+                    touchPath.transform(matrix, transformed)
+                    transformed
                 } else null
 
                 post {
@@ -385,105 +353,85 @@ class CircleSelectionView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        // 1. Draw the screenshot underneath
+        // 1. Draw the screenshot if available
         screenshot?.let {
             val destRect = Rect(0, 0, width, height)
             canvas.drawBitmap(it, null, destRect, null)
         }
 
-        // 2. Cinematic dimming scrim: light base dim + top and bottom soft vignettes
-        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), scrimBasePaint)
-        canvas.drawRect(0f, 0f, width.toFloat(), 150f * dp, topVignettePaint)
-        canvas.drawRect(0f, height - 170f * dp, width.toFloat(), height.toFloat(), bottomVignettePaint)
+        // 2. Dim the background with subtle scrim
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), dimPaint)
 
-        // 3. Clear the area inside the circle so selected text illuminates brightly!
-        if (isAnalyzing && isCircleGesture) {
-            canvas.drawPath(touchPath, clearPaint)
+        // 3. Punch out the selected region inside the user's circle
+        if (hasDrawn && touchPoints.size > 2) {
+            val closedPath = Path(touchPath).apply { close() }
+            canvas.drawPath(closedPath, clearPaint)
         }
 
-        // 4. Draw Google-style glowing white path & handle orb
+        // 4. Draw signature ELI5 glowing stroke & touch orb
         if (hasDrawn && !touchPath.isEmpty) {
-            val alphaGlow = if (isAnalyzing) (pulseAlpha * 0.6f).toInt() else 120
-            strokeOuterGlowPaint.alpha = alphaGlow
-            canvas.drawPath(touchPath, strokeOuterGlowPaint)
+            val alphaGlow = if (isAnalyzing) pulseAlpha else 180
+            outerGlowPaint.alpha = alphaGlow
+            canvas.drawPath(touchPath, outerGlowPaint)
 
-            strokeCorePaint.alpha = if (isAnalyzing) pulseAlpha else 255
-            canvas.drawPath(touchPath, strokeCorePaint)
+            coreLinePaint.alpha = if (isAnalyzing) pulseAlpha else 255
+            canvas.drawPath(touchPath, coreLinePaint)
 
-            // Draw start-point handle orb (iconic Google Lens touch handle)
+            // Draw start-point handle orb
             val firstPt = touchPoints.firstOrNull()
             if (firstPt != null) {
                 orbGlowPaint.alpha = alphaGlow
-                canvas.drawCircle(firstPt.x, firstPt.y, 18f * dp, orbGlowPaint)
-                canvas.drawCircle(firstPt.x, firstPt.y, 11f * dp, orbCorePaint)
+                canvas.drawCircle(firstPt.x, firstPt.y, 14f * dp, orbGlowPaint)
+                canvas.drawCircle(firstPt.x, firstPt.y, 7f * dp, orbCorePaint)
             }
         }
 
-        // 5. Draw minimal floating Header (Google style)
-        drawGoogleStyleHeader(canvas)
-
-        // 6. Draw floating bottom capsule search bar (Google style)
-        drawGoogleStyleBottomBar(canvas)
+        // 5. Draw the ELI5 Floating Island Header Pill
+        drawInstructionPill(canvas)
     }
 
-    private fun drawGoogleStyleHeader(canvas: Canvas) {
-        val topBarY = 62f * dp
+    private fun drawInstructionPill(canvas: Canvas) {
+        val pillHeight = 56f * dp
+        val pillWidth = min(width * 0.88f, 380f * dp)
+        val pillLeft = (width - pillWidth) / 2f
+        val pillTop = 48f * dp
+        val pillRight = pillLeft + pillWidth
+        val pillBottom = pillTop + pillHeight
+        val pillRect = RectF(pillLeft, pillTop, pillRight, pillBottom)
+        val cornerRadius = 28f * dp
 
-        // Top-left Close '✕' minimal icon with soft shadow
-        val closeBtnCx = 32f * dp
-        canvas.drawText("✕", closeBtnCx, topBarY + 7f * dp, headerIconPaint)
-
-        // Centered Brand Title "Google"
-        val centerCx = width / 2f
-        canvas.drawText("Google", centerCx, topBarY + 8f * dp, headerBrandPaint)
-
-        // Top-right Menu '⋮' minimal icon with soft shadow
-        val menuBtnCx = width - 32f * dp
-        canvas.drawText("⋮", menuBtnCx, topBarY + 7f * dp, headerIconPaint)
-    }
-
-    private fun drawGoogleStyleBottomBar(canvas: Canvas) {
-        val pillHeight = 52f * dp
-        val pillMarginHorizontal = 20f * dp
-        val pillBottom = height - 28f * dp
-        val pillTop = pillBottom - pillHeight
-        val pillRect = RectF(pillMarginHorizontal, pillTop, width - pillMarginHorizontal, pillBottom)
-        val cornerRadius = 26f * dp
-
-        // Floating White Stadium Pill with Material elevation drop shadow
-        canvas.drawRoundRect(pillRect, cornerRadius, cornerRadius, bottomPillBgPaint)
+        // Island Background & Border
+        canvas.drawRoundRect(pillRect, cornerRadius, cornerRadius, pillBgPaint)
+        canvas.drawRoundRect(pillRect, cornerRadius, cornerRadius, pillBorderPaint)
 
         val centerY = pillTop + (pillHeight / 2f)
 
-        // 1. Left: Google 'G' 4-color authentic vector icon
-        val iconGSize = (24f * dp).toInt()
-        val gLeft = (pillMarginHorizontal + 16f * dp).toInt()
-        val gTop = (centerY - iconGSize / 2f).toInt()
-        iconGoogleG?.setBounds(gLeft, gTop, gLeft + iconGSize, gTop + iconGSize)
-        iconGoogleG?.draw(canvas)
+        // Left Icon Badge
+        val badgeSize = 36f * dp
+        val badgeLeft = pillLeft + 10f * dp
+        val badgeRect = RectF(badgeLeft, centerY - (badgeSize / 2f), badgeLeft + badgeSize, centerY + (badgeSize / 2f))
+        canvas.drawRoundRect(badgeRect, 18f * dp, 18f * dp, pillIconBadgePaint)
 
-        // 2. Right: Google Lens & Google Mic vector icons
-        val lensSize = (22f * dp).toInt()
-        val lensRight = (width - pillMarginHorizontal - 16f * dp).toInt()
-        val lensLeft = lensRight - lensSize
-        val lensTop = (centerY - lensSize / 2f).toInt()
-        iconGoogleLens?.setBounds(lensLeft, lensTop, lensRight, lensTop + lensSize)
-        iconGoogleLens?.draw(canvas)
+        val iconSymbol = if (isAnalyzing) "✨" else "⚡"
+        canvas.drawText(iconSymbol, badgeRect.centerX(), centerY + 5.5f * dp, pillIconTextPaint)
 
-        val micSize = (22f * dp).toInt()
-        val micRight = (lensLeft - 18f * dp).toInt()
-        val micLeft = micRight - micSize
-        val micTop = (centerY - micSize / 2f).toInt()
-        iconGoogleMic?.setBounds(micLeft, micTop, micRight, micTop + micSize)
-        iconGoogleMic?.draw(canvas)
-
-        // 3. Center: Subtle Google search hint placeholder
-        val textStartX = pillMarginHorizontal + 52f * dp
+        // Center Title & Subtitle
+        val textStartX = badgeLeft + badgeSize + 12f * dp
         if (isAnalyzing) {
-            canvas.drawText("Searching…", textStartX, centerY + 5.5f * dp, bottomPillAnalyzingTextPaint)
+            titleTextPaint.color = Color.parseColor("#A78BFA")
+            canvas.drawText("Analyzing with ELI5…", textStartX, centerY - 2f * dp, titleTextPaint)
+            subtitleTextPaint.color = Color.parseColor("#E2E8F0")
+            canvas.drawText("Focusing on circled content", textStartX, centerY + 14f * dp, subtitleTextPaint)
         } else {
-            canvas.drawText("Search or circle screen", textStartX, centerY + 5.5f * dp, bottomPillTextPaint)
+            titleTextPaint.color = Color.WHITE
+            canvas.drawText("Circle to ELI5", textStartX, centerY - 2f * dp, titleTextPaint)
+            subtitleTextPaint.color = Color.parseColor("#C4B5FD")
+            canvas.drawText("Circle or box anything to explain", textStartX, centerY + 14f * dp, subtitleTextPaint)
         }
+
+        // Right Close '✕' Button
+        val closeCenterX = pillRight - 24f * dp
+        canvas.drawText("✕", closeCenterX, centerY + 6f * dp, closeButtonPaint)
     }
 
     override fun onDetachedFromWindow() {
