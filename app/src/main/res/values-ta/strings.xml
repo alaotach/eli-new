@@ -101,4 +101,23 @@
     <string name="overlay_btn_simpler">✨ எளிமையானது</string>
     <string name="overlay_btn_example">💡 உதாரணம் கொடுங்கள்</string>
     <string name="overlay_select_lang_title">மொழியைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="proofread_title">சரிபார்த்தல்…</string>
+    <string name="proofread_accept">ஏற்கவும் ✓</string>
+    <string name="proofread_copy">நகலெடு ↗</string>
+    <string name="proofread_adjust">சரிசெய்யவும்</string>
+    <string name="proofread_cancel">ரத்து செய்</string>
+    <string name="proofread_hint_ask_ai">சரிசெய்ய AI ஐக் கேளுங்கள்…</string>
+    <string name="proofread_send">அனுப்பு ↑</string>
+    <string name="proofread_suggestions">பரிந்துரைகள்</string>
+    <string name="proofread_back">← மீண்டும்</string>
+    <string name="proofread_wait">காத்திருங்கள்…</string>
+    <string name="proofread_loading_preview">முன்னோட்டத்தை ஏற்றுகிறது…</string>
+    <string name="proofread_chip_formal">முறையான</string>
+    <string name="proofread_chip_casual">சாதாரண</string>
+    <string name="proofread_chip_urgent">அவசரம்</string>
+    <string name="proofread_chip_concise">சுருக்கமான</string>
+    <string name="proofread_chip_translate">மொழிபெயர்</string>
+    <string name="proofread_more_languages">🌐 மொழி ▾</string>
+    <string name="proofread_copied_toast">கிளிப்போர்டுக்கு நகலெடுக்கப்பட்டது</string>
+    <string name="proofread_choose_target_lang">இலக்கு மொழியைத் தேர்ந்தெடுக்கவும்</string>
 </resources>

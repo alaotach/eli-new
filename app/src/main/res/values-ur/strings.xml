@@ -101,4 +101,23 @@
     <string name="overlay_btn_simpler">✨ آسان</string>
     <string name="overlay_btn_example">💡 ایک مثال دیں۔</string>
     <string name="overlay_select_lang_title">زبان منتخب کریں۔</string>
+    <string name="proofread_title">پروف ریڈنگ…</string>
+    <string name="proofread_accept">قبول کریں ✓</string>
+    <string name="proofread_copy">کاپی کریں ↗</string>
+    <string name="proofread_adjust">ایڈجسٹ کریں۔</string>
+    <string name="proofread_cancel">منسوخ کریں۔</string>
+    <string name="proofread_hint_ask_ai">AI سے ایڈجسٹ کرنے کو کہو…</string>
+    <string name="proofread_send">↑ بھیجیں۔</string>
+    <string name="proofread_suggestions">تجاویز</string>
+    <string name="proofread_back">← واپس</string>
+    <string name="proofread_wait">انتظار کرو…</string>
+    <string name="proofread_loading_preview">پیش منظر لوڈ ہو رہا ہے…</string>
+    <string name="proofread_chip_formal">رسمی</string>
+    <string name="proofread_chip_casual">آرام دہ اور پرسکون</string>
+    <string name="proofread_chip_urgent">ارجنٹ</string>
+    <string name="proofread_chip_concise">اختصار</string>
+    <string name="proofread_chip_translate">ترجمہ کریں۔</string>
+    <string name="proofread_more_languages">🌐 زبان ▾</string>
+    <string name="proofread_copied_toast">کلپ بورڈ پر کاپی ہو گیا۔</string>
+    <string name="proofread_choose_target_lang">ہدف کی زبان منتخب کریں۔</string>
 </resources>

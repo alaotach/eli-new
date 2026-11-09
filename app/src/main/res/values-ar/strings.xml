@@ -101,4 +101,23 @@
     <string name="overlay_btn_simpler">✨ بسّط أكثر</string>
     <string name="overlay_btn_example">💡 أعطني مثالاً</string>
     <string name="overlay_select_lang_title">اختر اللغة</string>
+    <string name="proofread_title">التدقيق اللغوي…</string>
+    <string name="proofread_accept">قبول ✓</string>
+    <string name="proofread_copy">انسخ ↗</string>
+    <string name="proofread_adjust">ضبط</string>
+    <string name="proofread_cancel">إلغاء</string>
+    <string name="proofread_hint_ask_ai">اطلب من الذكاء الاصطناعي التعديل...</string>
+    <string name="proofread_send">أرسل ↑</string>
+    <string name="proofread_suggestions">اقتراحات</string>
+    <string name="proofread_back">← العودة</string>
+    <string name="proofread_wait">انتظر…</string>
+    <string name="proofread_loading_preview">جارٍ تحميل المعاينة…</string>
+    <string name="proofread_chip_formal">رسمي</string>
+    <string name="proofread_chip_casual">عادية</string>
+    <string name="proofread_chip_urgent">عاجل</string>
+    <string name="proofread_chip_concise">موجزة</string>
+    <string name="proofread_chip_translate">ترجمة</string>
+    <string name="proofread_more_languages">🌐 اللغة ▾</string>
+    <string name="proofread_copied_toast">تم النسخ إلى الحافظة</string>
+    <string name="proofread_choose_target_lang">حدد اللغة الهدف</string>
 </resources>

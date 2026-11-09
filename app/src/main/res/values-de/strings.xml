@@ -101,4 +101,23 @@
     <string name="overlay_btn_simpler">✨ Einfacher</string>
     <string name="overlay_btn_example">💡 Beispiel geben</string>
     <string name="overlay_select_lang_title">Sprache wählen</string>
+    <string name="proofread_title">Korrekturlesen…</string>
+    <string name="proofread_accept">Akzeptieren ✓</string>
+    <string name="proofread_copy">Kopieren ↗</string>
+    <string name="proofread_adjust">Anpassen</string>
+    <string name="proofread_cancel">Abbrechen</string>
+    <string name="proofread_hint_ask_ai">Fordern Sie die KI auf, sich anzupassen …</string>
+    <string name="proofread_send">Senden ↑</string>
+    <string name="proofread_suggestions">Vorschläge</string>
+    <string name="proofread_back">← zurück</string>
+    <string name="proofread_wait">Warte…</string>
+    <string name="proofread_loading_preview">Vorschau wird geladen…</string>
+    <string name="proofread_chip_formal">Formell</string>
+    <string name="proofread_chip_casual">Lässig</string>
+    <string name="proofread_chip_urgent">Dringend</string>
+    <string name="proofread_chip_concise">Prägnant</string>
+    <string name="proofread_chip_translate">Übersetzen</string>
+    <string name="proofread_more_languages">🌐 Sprache ▾</string>
+    <string name="proofread_copied_toast">In die Zwischenablage kopiert</string>
+    <string name="proofread_choose_target_lang">Wählen Sie Zielsprache aus</string>
 </resources>

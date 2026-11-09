@@ -101,4 +101,23 @@
     <string name="overlay_btn_simpler">✨ Eenvoudiger</string>
     <string name="overlay_btn_example">💡Geef een voorbeeld</string>
     <string name="overlay_select_lang_title">Selecteer Taal</string>
+    <string name="proofread_title">Proeflezen…</string>
+    <string name="proofread_accept">Accepteer ✓</string>
+    <string name="proofread_copy">Kopieer ↗</string>
+    <string name="proofread_adjust">Aanpassen</string>
+    <string name="proofread_cancel">Annuleer</string>
+    <string name="proofread_hint_ask_ai">Vraag AI om aan te passen…</string>
+    <string name="proofread_send">Verzend ↑</string>
+    <string name="proofread_suggestions">suggesties</string>
+    <string name="proofread_back">← terug</string>
+    <string name="proofread_wait">Wacht...</string>
+    <string name="proofread_loading_preview">Voorbeeld laden…</string>
+    <string name="proofread_chip_formal">Formeel</string>
+    <string name="proofread_chip_casual">Casual</string>
+    <string name="proofread_chip_urgent">Dringend</string>
+    <string name="proofread_chip_concise">Beknopt</string>
+    <string name="proofread_chip_translate">Vertalen</string>
+    <string name="proofread_more_languages">🌐 Taal ▾</string>
+    <string name="proofread_copied_toast">Gekopieerd naar klembord</string>
+    <string name="proofread_choose_target_lang">Selecteer Doeltaal</string>
 </resources>

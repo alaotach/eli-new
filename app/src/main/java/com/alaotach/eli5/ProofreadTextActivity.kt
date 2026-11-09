@@ -119,6 +119,16 @@ class ProofreadTextActivity : Activity() {
     private val dp: Float
         get() = resources.displayMetrics.density
 
+    override fun attachBaseContext(newBase: Context) {
+        val lang = SettingsManager.getLanguage(newBase)
+        val langObj = LanguageManager.getLanguageByEnglishName(lang)
+        val locale = java.util.Locale.forLanguageTag(langObj.code)
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val localizedContext = newBase.createConfigurationContext(config)
+        super.attachBaseContext(localizedContext)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setSoftInputMode(
@@ -133,7 +143,7 @@ class ProofreadTextActivity : Activity() {
         originalText = textFromProcess ?: textFromSend ?: ""
 
         if (originalText.isBlank()) {
-            Toast.makeText(this, "No text selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_text_selected), Toast.LENGTH_SHORT).show()
             finish()
         } else {
             setupUI()
@@ -200,7 +210,7 @@ class ProofreadTextActivity : Activity() {
         }
 
         titleText = TextView(this).apply {
-            text = "✨ Proofreading..."
+            text = "✨ " + getString(R.string.proofread_title)
             setTextColor(textMainPrimary)
             textSize = 14.0f
             isClickable = true
@@ -212,12 +222,12 @@ class ProofreadTextActivity : Activity() {
             setPadding(0, (dp * 8).toInt(), (dp * 8).toInt(), (dp * 8).toInt())
             setOnClickListener {
                 if (currentText.isBlank()) return@setOnClickListener
-                if (submitBtn.text.toString() == "Wait...") return@setOnClickListener
+                if (submitBtn.text.toString() == getString(R.string.proofread_wait)) return@setOnClickListener
 
                 if (previewContainer.visibility == View.VISIBLE) {
                     previewContainer.visibility = View.GONE
                 } else {
-                    fullTextView.text = "Loading preview..."
+                    fullTextView.text = getString(R.string.proofread_loading_preview)
                     previewContainer.visibility = View.VISIBLE
                     activityScope.launch(Dispatchers.Default) {
                         val spannable = generateDiffSpannable(originalText, currentText)
@@ -231,14 +241,14 @@ class ProofreadTextActivity : Activity() {
         }
 
         val acceptBtn = createButton(
-            text = if (isReadOnly) "Copy ↗" else "Accept ✓",
+            text = if (isReadOnly) getString(R.string.proofread_copy) else getString(R.string.proofread_accept),
             bgColor = Color.parseColor(modeActiveBgStr),
             isPrimary = true
         ) {
             if (isReadOnly) {
                 val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 cm.setPrimaryClip(ClipData.newPlainText("Proofread Text", currentText))
-                Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.proofread_copied_toast), Toast.LENGTH_SHORT).show()
                 setResult(RESULT_CANCELED)
             } else {
                 val intent = Intent().apply {
@@ -249,7 +259,7 @@ class ProofreadTextActivity : Activity() {
             finish()
         }
 
-        val adjustBtn = createButton(text = "Adjust", bgColor = 0, isPrimary = false) {
+        val adjustBtn = createButton(text = getString(R.string.proofread_adjust), bgColor = 0, isPrimary = false) {
             actionLayout.visibility = View.GONE
             promptLayout.visibility = View.VISIBLE
             previewContainer.visibility = View.GONE
@@ -258,7 +268,7 @@ class ProofreadTextActivity : Activity() {
             imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
         }
 
-        val cancelBtn = createButton(text = "Cancel", bgColor = 0, isPrimary = false) {
+        val cancelBtn = createButton(text = getString(R.string.proofread_cancel), bgColor = 0, isPrimary = false) {
             setResult(RESULT_CANCELED)
             finish()
         }
@@ -269,7 +279,7 @@ class ProofreadTextActivity : Activity() {
         actionLayout.addView(cancelBtn)
 
         input = EditText(this).apply {
-            hint = "Ask AI to adjust..."
+            hint = getString(R.string.proofread_hint_ask_ai)
             setHintTextColor(0xFF888888.toInt())
             setTextColor(textMainPrimary)
             textSize = 14.0f
@@ -290,7 +300,7 @@ class ProofreadTextActivity : Activity() {
             }
         }
 
-        submitBtn = createButton(text = "Send ↑", bgColor = Color.parseColor(modeActiveBgStr), isPrimary = true) {
+        submitBtn = createButton(text = getString(R.string.proofread_send), bgColor = Color.parseColor(modeActiveBgStr), isPrimary = true) {
             val str = input.text.toString()
             if (str.isNotBlank()) {
                 submitPrompt(str)
@@ -311,7 +321,7 @@ class ProofreadTextActivity : Activity() {
         }
 
         val suggestionLabel = TextView(this).apply {
-            text = "suggestions"
+            text = getString(R.string.proofread_suggestions)
             setTextColor(0xFF888888.toInt())
             textSize = 12.0f
             setPadding((dp * 4).toInt(), (dp * 12).toInt(), 0, (dp * 8).toInt())
@@ -326,10 +336,16 @@ class ProofreadTextActivity : Activity() {
         }
         suggestionsScroll.addView(suggestionsRow)
 
-        val toneChips = listOf("Formal", "Casual", "Urgent", "Translate")
-        for (chip in toneChips) {
+        // 1. Tone Chips
+        val toneChips = listOf(
+            "Formal" to "👔 " + getString(R.string.proofread_chip_formal),
+            "Casual" to "☕ " + getString(R.string.proofread_chip_casual),
+            "Urgent" to "⚡ " + getString(R.string.proofread_chip_urgent),
+            "Concise" to "✂️ " + getString(R.string.proofread_chip_concise)
+        )
+        for ((toneKey, chipLabel) in toneChips) {
             val chipView = TextView(this).apply {
-                text = chip
+                text = chipLabel
                 setTextColor(if (isDark) Color.parseColor("#DDD6FE") else Color.parseColor("#6D28D9"))
                 textSize = 13.0f
                 setTypeface(typeface, Typeface.BOLD)
@@ -343,12 +359,12 @@ class ProofreadTextActivity : Activity() {
                     rightMargin = (dp * 8).toInt()
                 }
                 setOnClickListener {
-                    val prompt = when (chip) {
-                        "Formal" -> "make it formal and professional"
-                        "Casual" -> "make it casual and natural"
-                        "Urgent" -> "make it sound urgent"
-                        "Translate" -> "translate to English"
-                        else -> chip
+                    val prompt = when (toneKey) {
+                        "Formal" -> "Make it formal, polished, and professional. Preserve the original language of the text."
+                        "Casual" -> "Make it casual, friendly, and natural. Preserve the original language of the text."
+                        "Urgent" -> "Make it sound urgent, decisive, and time-sensitive. Preserve the original language of the text."
+                        "Concise" -> "Make it concise, crisp, and to the point. Preserve the original language of the text."
+                        else -> "Make it $toneKey. Preserve the original language of the text."
                     }
                     input.setText(prompt)
                     submitPrompt(prompt)
@@ -357,7 +373,65 @@ class ProofreadTextActivity : Activity() {
             suggestionsRow.addView(chipView)
         }
 
-        val backBtn = createButton(text = "← back", bgColor = 0, isPrimary = false) {
+        // 2. Language Quick Chips
+        val prefLangName = SettingsManager.getLanguage(this)
+        val prefLang = LanguageManager.getLanguageByEnglishName(prefLangName)
+        val langChips = mutableListOf<Pair<String, String>>()
+        if (!prefLang.code.equals("en", ignoreCase = true)) {
+            langChips.add("${prefLang.flag} To ${prefLang.englishName}" to prefLang.englishName)
+            langChips.add("🇺🇸 To English" to "English")
+        } else {
+            langChips.add("🇪🇸 To Spanish" to "Spanish")
+            langChips.add("🇮🇳 To Hindi" to "Hindi")
+            langChips.add("🇫🇷 To French" to "French")
+        }
+
+        for ((chipLabel, targetLang) in langChips) {
+            val chipView = TextView(this).apply {
+                text = chipLabel
+                setTextColor(if (isDark) Color.parseColor("#93C5FD") else Color.parseColor("#1D4ED8"))
+                textSize = 13.0f
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding((dp * 14).toInt(), (dp * 6).toInt(), (dp * 14).toInt(), (dp * 6).toInt())
+                background = GradientDrawable().apply {
+                    setColor(if (isDark) Color.parseColor("#1E293B") else Color.parseColor("#EFF6FF"))
+                    cornerRadius = dp * 14f
+                    setStroke((dp * 1.0f).toInt(), Color.argb((255 * 0.35f).toInt(), 59, 130, 246))
+                }
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    rightMargin = (dp * 8).toInt()
+                }
+                setOnClickListener {
+                    val prompt = "Translate to $targetLang and polish naturally"
+                    input.setText(prompt)
+                    submitPrompt(prompt, targetLanguage = targetLang)
+                }
+            }
+            suggestionsRow.addView(chipView)
+        }
+
+        // 3. More Languages Selector Chip (All 35 supported languages)
+        val moreLangChip = TextView(this).apply {
+            text = getString(R.string.proofread_more_languages)
+            setTextColor(if (isDark) Color.parseColor("#FDE047") else Color.parseColor("#B45309"))
+            textSize = 13.0f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding((dp * 14).toInt(), (dp * 6).toInt(), (dp * 14).toInt(), (dp * 6).toInt())
+            background = GradientDrawable().apply {
+                setColor(if (isDark) Color.parseColor("#292524") else Color.parseColor("#FEF3C7"))
+                cornerRadius = dp * 14f
+                setStroke((dp * 1.0f).toInt(), Color.argb((255 * 0.35f).toInt(), 245, 158, 11))
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                rightMargin = (dp * 8).toInt()
+            }
+            setOnClickListener {
+                showLanguagePickerDialog()
+            }
+        }
+        suggestionsRow.addView(moreLangChip)
+
+        val backBtn = createButton(text = getString(R.string.proofread_back), bgColor = 0, isPrimary = false) {
             promptLayout.visibility = View.GONE
             input.text.clear()
             actionLayout.visibility = View.VISIBLE
@@ -510,11 +584,99 @@ class ProofreadTextActivity : Activity() {
         return btn
     }
 
-    private fun submitPrompt(instruction: String) {
+    private fun showLanguagePickerDialog() {
+        val dialogView = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding((dp * 20).toInt(), (dp * 16).toInt(), (dp * 20).toInt(), (dp * 16).toInt())
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor(bgMainStr))
+                cornerRadius = dp * 16f
+            }
+        }
+
+        val title = TextView(this).apply {
+            text = getString(R.string.proofread_choose_target_lang)
+            setTextColor(textMainPrimary)
+            textSize = 16f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(0, 0, 0, (dp * 12).toInt())
+        }
+        dialogView.addView(title)
+
+        val searchInput = EditText(this).apply {
+            hint = getString(R.string.picker_search_hint)
+            setHintTextColor(0xFF888888.toInt())
+            setTextColor(textMainPrimary)
+            textSize = 14f
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor(bgContentStr))
+                cornerRadius = dp * 8f
+                setStroke((dp * 1f).toInt(), Color.parseColor(hintColor))
+            }
+            setPadding((dp * 12).toInt(), (dp * 8).toInt(), (dp * 12).toInt(), (dp * 8).toInt())
+        }
+        dialogView.addView(searchInput)
+
+        val listScroll = ScrollView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (dp * 320).toInt()).apply {
+                topMargin = (dp * 12).toInt()
+            }
+        }
+        val listContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        listScroll.addView(listContainer)
+        dialogView.addView(listScroll)
+
+        var dialog: android.app.AlertDialog? = null
+
+        fun populateList(query: String) {
+            listContainer.removeAllViews()
+            val filtered = LanguageManager.searchLanguages(query)
+            for (lang in filtered) {
+                val row = TextView(this).apply {
+                    text = "${lang.flag}  ${lang.displayName}"
+                    setTextColor(textMainPrimary)
+                    textSize = 14.5f
+                    setPadding((dp * 12).toInt(), (dp * 12).toInt(), (dp * 12).toInt(), (dp * 12).toInt())
+                    background = GradientDrawable().apply {
+                        cornerRadius = dp * 8f
+                    }
+                    isClickable = true
+                    isFocusable = true
+                    setOnClickListener {
+                        dialog?.dismiss()
+                        val prompt = "Translate to ${lang.englishName} and polish naturally"
+                        input.setText(prompt)
+                        submitPrompt(prompt, targetLanguage = lang.englishName)
+                    }
+                }
+                listContainer.addView(row)
+            }
+        }
+
+        populateList("")
+
+        searchInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                populateList(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        dialog = android.app.AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.show()
+    }
+
+    private fun submitPrompt(instruction: String, targetLanguage: String? = null) {
         val isFirstTime = instruction.isEmpty()
         if (!isFirstTime) {
             input.isEnabled = false
-            submitBtn.text = "Wait..."
+            submitBtn.text = getString(R.string.proofread_wait)
         }
 
         actionLayout.visibility = View.VISIBLE
@@ -536,7 +698,34 @@ class ProofreadTextActivity : Activity() {
             var firstChunk = true
             val baseText = if (isFirstTime) originalText else currentText
 
-            val newText = fetchRefinement(baseText, instruction) { partialText ->
+            val defaultTone = SettingsManager.getProofreadDefaultTone(this@ProofreadTextActivity)
+            val effectiveInstruction = if (isFirstTime) {
+                val toneDesc = when (defaultTone.lowercase()) {
+                    "formal" -> "Make it formal, polished, and professional."
+                    "urgent" -> "Make it concise, urgent, and time-sensitive."
+                    else -> "Make it clear, natural, and friendly."
+                }
+                """
+                Fix all grammar, spelling, typos, punctuation, and wording. $toneDesc
+                CRITICAL LANGUAGE RULE:
+                - Detect the language of the source text.
+                - Preserve and output in the EXACT SAME LANGUAGE as the source text (e.g. if the input is in Spanish, output in Spanish; if in Hindi/Hinglish, output in Hindi/Hinglish; if in French, output in French; if in German, output in German; if in Japanese, output in Japanese).
+                - Never translate to English unless explicitly requested.
+                - Output ONLY the proofread text, with no preamble, markdown wrapping, or explanations.
+                """.trimIndent()
+            } else {
+                instruction
+            }
+
+            AnalyticsManager.logExplainRequest(
+                this@ProofreadTextActivity,
+                if (isFirstTime) "proofread_initial" else "proofread_adjust",
+                targetLanguage ?: "auto",
+                false,
+                baseText.length
+            )
+
+            val newText = fetchRefinement(baseText, effectiveInstruction, targetLanguage) { partialText ->
                 withContext(Dispatchers.Main) {
                     if (firstChunk) {
                         firstChunk = false
@@ -558,7 +747,7 @@ class ProofreadTextActivity : Activity() {
                 currentText = newText
                 if (!isFirstTime) {
                     input.isEnabled = true
-                    submitBtn.text = "Submit"
+                    submitBtn.text = getString(R.string.proofread_send)
                     input.text.clear()
                 }
 
@@ -568,6 +757,13 @@ class ProofreadTextActivity : Activity() {
 
                 val finalPreview = currentText.take(25).replace("\n", " ") + (if (currentText.length > 25) "..." else "")
                 titleText.text = "✨ \"$finalPreview\""
+
+                AnalyticsManager.logExplainSuccess(
+                    this@ProofreadTextActivity,
+                    if (isFirstTime) "proofread_initial" else "proofread_adjust",
+                    targetLanguage ?: "auto",
+                    false
+                )
 
                 val tag = if (isFirstTime) "Proofread" else "Proofread ($instruction)"
                 HistoryManager.saveItem(
@@ -698,6 +894,7 @@ class ProofreadTextActivity : Activity() {
     private suspend fun fetchRefinement(
         baseText: String,
         customInstructions: String,
+        targetLanguage: String? = null,
         onChunk: suspend (String) -> Unit
     ): String = withContext(Dispatchers.IO) {
         try {
@@ -706,11 +903,17 @@ class ProofreadTextActivity : Activity() {
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
             conn.setRequestProperty("Content-Type", "application/json")
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 ELI5-Android/2.2.1")
+            conn.connectTimeout = 15000
+            conn.readTimeout = 30000
             conn.doOutput = true
 
             val payload = JSONObject().apply {
                 put("text", baseText)
                 put("instructions", customInstructions)
+                if (!targetLanguage.isNullOrEmpty()) {
+                    put("language", targetLanguage)
+                }
             }
 
             OutputStreamWriter(conn.outputStream).use { writer ->
