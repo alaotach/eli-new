@@ -23,6 +23,8 @@ import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.core.content.ContextCompat
+import com.alaotach.eli5.R
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
@@ -48,6 +50,9 @@ class CircleSelectionView @JvmOverloads constructor(
     private var maxX = Float.MIN_VALUE
     private var maxY = Float.MIN_VALUE
     private var hasDrawn = false
+
+    // Authentic ELI5 App Logo
+    private val eli5Logo = ContextCompat.getDrawable(context, R.drawable.ic_eli5_logo)
 
     // Signature ELI5 Luminous Neon Stroke
     private val outerGlowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -406,17 +411,17 @@ class CircleSelectionView @JvmOverloads constructor(
 
         val centerY = pillTop + (pillHeight / 2f)
 
-        // Left Icon Badge
-        val badgeSize = 36f * dp
-        val badgeLeft = pillLeft + 10f * dp
-        val badgeRect = RectF(badgeLeft, centerY - (badgeSize / 2f), badgeLeft + badgeSize, centerY + (badgeSize / 2f))
-        canvas.drawRoundRect(badgeRect, 18f * dp, 18f * dp, pillIconBadgePaint)
-
-        val iconSymbol = if (isAnalyzing) "✨" else "⚡"
-        canvas.drawText(iconSymbol, badgeRect.centerX(), centerY + 5.5f * dp, pillIconTextPaint)
+        // Left ELI5 App Logo
+        val logoSize = 34f * dp
+        val logoLeft = pillLeft + 12f * dp
+        val logoTop = centerY - (logoSize / 2f)
+        val logoRight = logoLeft + logoSize
+        val logoBottom = logoTop + logoSize
+        eli5Logo?.setBounds(logoLeft.toInt(), logoTop.toInt(), logoRight.toInt(), logoBottom.toInt())
+        eli5Logo?.draw(canvas)
 
         // Center Title & Subtitle
-        val textStartX = badgeLeft + badgeSize + 12f * dp
+        val textStartX = logoRight + 12f * dp
         if (isAnalyzing) {
             titleTextPaint.color = Color.parseColor("#A78BFA")
             canvas.drawText("Analyzing with ELI5…", textStartX, centerY - 2f * dp, titleTextPaint)
