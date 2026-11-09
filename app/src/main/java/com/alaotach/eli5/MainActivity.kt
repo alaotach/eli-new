@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -116,6 +117,16 @@ class MainActivity : ComponentActivity() {
         if (state.installStatus() == InstallStatus.DOWNLOADED) {
             appUpdateManager.completeUpdate()
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val lang = SettingsManager.getLanguage(newBase)
+        val langObj = LanguageManager.getLanguageByEnglishName(lang)
+        val locale = java.util.Locale.forLanguageTag(langObj.code)
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val localizedContext = newBase.createConfigurationContext(config)
+        super.attachBaseContext(localizedContext)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -329,7 +340,7 @@ fun MainScreen(
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             Icons.Default.ArrowDropDown,
-                            contentDescription = "Change Language",
+                            contentDescription = stringResource(R.string.header_change_lang),
                             tint = secondaryTextColor,
                             modifier = Modifier.size(16.dp)
                         )
@@ -341,7 +352,7 @@ fun MainScreen(
                 IconButton(onClick = { showSettingsDialog = true }) {
                     Icon(
                         Icons.Default.Settings,
-                        contentDescription = "Settings",
+                        contentDescription = stringResource(R.string.header_settings),
                         tint = primaryTextColor
                     )
                 }
@@ -398,13 +409,13 @@ fun MainScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = if (hasOverlayPermission) "ELI5 is on" else "Permission needed",
+                                text = if (hasOverlayPermission) stringResource(R.string.status_on) else stringResource(R.string.status_permission_needed),
                                 fontWeight = FontWeight.Bold,
                                 color = primaryTextColor,
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = if (hasOverlayPermission) "Ready in any app" else "Tap here to allow overlay card",
+                                text = if (hasOverlayPermission) stringResource(R.string.status_ready) else stringResource(R.string.status_tap_to_allow),
                                 color = secondaryTextColor,
                                 fontSize = 12.sp
                             )
@@ -430,7 +441,7 @@ fun MainScreen(
                         ) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Dismiss",
+                                contentDescription = stringResource(R.string.status_dismiss),
                                 tint = if (hasOverlayPermission) (if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)) else Color(0xFFEF6C00),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -477,14 +488,14 @@ fun MainScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Explanation Language",
+                                text = stringResource(R.string.lang_card_title),
                                 fontWeight = FontWeight.Bold,
                                 color = primaryTextColor,
                                 fontSize = 15.sp
                             )
                             val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
                             Text(
-                                text = "Default: ${langObj.displayName}",
+                                text = stringResource(R.string.lang_card_default_prefix, langObj.displayName),
                                 color = accent,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 12.sp
@@ -498,7 +509,7 @@ fun MainScreen(
                         color = if (isDark) Color(0xFF261F36) else PurpleLightBg
                     ) {
                         Text(
-                            text = "35+ Langs ▾",
+                            text = stringResource(R.string.lang_card_btn_more),
                             color = accent,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
@@ -524,6 +535,7 @@ fun MainScreen(
                                     currentLanguage = langName
                                     SettingsManager.setLanguage(context, langName)
                                     AnalyticsManager.logLanguageChanged(context, langName, "home_chip")
+                                    (context as? ComponentActivity)?.recreate()
                                 },
                             shape = RoundedCornerShape(10.dp),
                             color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg,
@@ -563,7 +575,7 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Try ELI5 directly",
+                            text = stringResource(R.string.try_card_title),
                             fontWeight = FontWeight.Bold,
                             color = primaryTextColor,
                             fontSize = 15.sp
@@ -577,14 +589,14 @@ fun MainScreen(
                         ) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Dismiss",
+                                contentDescription = stringResource(R.string.close),
                                 tint = secondaryTextColor,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                     }
                     Text(
-                        text = "Paste or type any complex text to test the explanation card:",
+                        text = stringResource(R.string.try_card_desc),
                         color = secondaryTextColor,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
@@ -593,7 +605,7 @@ fun MainScreen(
                     OutlinedTextField(
                         value = tryItText,
                         onValueChange = { tryItText = it },
-                        placeholder = { Text("e.g. Quantum entanglement occurs when particles...", fontSize = 13.sp, color = secondaryTextColor) },
+                        placeholder = { Text(stringResource(R.string.try_card_placeholder), fontSize = 13.sp, color = secondaryTextColor) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -607,15 +619,16 @@ fun MainScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    val sampleText = stringResource(R.string.try_card_sample_text)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         TextButton(onClick = {
-                            tryItText = "A blockchain is a decentralized distributed ledger that records transactions across a network of computers."
+                            tryItText = sampleText
                         }) {
-                            Text("Insert sample", color = accent, fontSize = 12.sp)
+                            Text(stringResource(R.string.try_card_insert_sample), color = accent, fontSize = 12.sp)
                         }
 
                         Button(
@@ -632,7 +645,7 @@ fun MainScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = accent),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Explain ✨", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.try_card_btn_explain), color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -650,7 +663,7 @@ fun MainScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Recent Activity",
+                text = stringResource(R.string.history_title),
                 fontWeight = FontWeight.Bold,
                 color = primaryTextColor,
                 style = MaterialTheme.typography.titleMedium
@@ -661,7 +674,7 @@ fun MainScreen(
                     HistoryManager.clearHistory(context)
                     history = emptyList()
                 }) {
-                    Text("Clear All", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                    Text(stringResource(R.string.history_clear_all), color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                 }
             }
         }
@@ -674,14 +687,14 @@ fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "No recent explanations",
+                    text = stringResource(R.string.history_empty_title),
                     fontWeight = FontWeight.Bold,
                     color = primaryTextColor,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Highlight text in any app and select ELI5 to start.",
+                    text = stringResource(R.string.history_empty_desc),
                     color = secondaryTextColor,
                     textAlign = TextAlign.Center,
                     fontSize = 13.sp
@@ -692,7 +705,7 @@ fun MainScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = accent),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Interactive Guide", color = Color.White)
+                    Text(stringResource(R.string.history_interactive_guide), color = Color.White)
                 }
             }
         } else {
@@ -777,7 +790,7 @@ fun MainScreen(
                             .align(Alignment.CenterHorizontally)
                             .padding(vertical = 12.dp)
                     ) {
-                        Text("Load More", color = accent)
+                        Text(stringResource(R.string.history_load_more), color = accent)
                     }
                 }
             }
@@ -792,23 +805,23 @@ fun MainScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Visual Guide",
+                    text = stringResource(R.string.guide_title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = primaryTextColor
                 )
                 TextButton(onClick = onShowTutorial) {
-                    Text("Interactive Tour →", color = accent, fontSize = 12.sp)
+                    Text(stringResource(R.string.guide_tour_btn), color = accent, fontSize = 12.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
             val guideSteps = listOf(
-                Triple(R.drawable.tutorial_img_6, "Highlight Text", "Select text in any app (Chrome, WhatsApp) & tap ⋮"),
-                Triple(R.drawable.tutorial_img_7, "Choose ELI5", "Select 'Explain with ELI5' from the popup"),
-                Triple(R.drawable.tutorial_img_4, "Instant Card", "Read concise explanation without leaving your app"),
-                Triple(R.drawable.tutorial_img_8, "Proofread", "Auto-correct mistakes and adjust tone in 1 tap")
+                Triple(R.drawable.tutorial_img_6, stringResource(R.string.guide_step1_title), stringResource(R.string.guide_step1_desc)),
+                Triple(R.drawable.tutorial_img_7, stringResource(R.string.guide_step2_title), stringResource(R.string.guide_step2_desc)),
+                Triple(R.drawable.tutorial_img_4, stringResource(R.string.guide_step3_title), stringResource(R.string.guide_step3_desc)),
+                Triple(R.drawable.tutorial_img_8, stringResource(R.string.guide_step4_title), stringResource(R.string.guide_step4_desc))
             )
 
             LazyRow(
@@ -886,7 +899,7 @@ fun MainScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Settings",
+                        text = stringResource(R.string.settings_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = primaryTextColor
@@ -897,7 +910,7 @@ fun MainScreen(
                     ) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.close),
                             tint = secondaryTextColor,
                             modifier = Modifier.size(20.dp)
                         )
@@ -907,7 +920,7 @@ fun MainScreen(
                 // Default Mode
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "Default Explanation Mode",
+                        stringResource(R.string.settings_default_mode),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 13.sp,
                         color = primaryTextColor
@@ -949,7 +962,7 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Explanation & App Language",
+                            stringResource(R.string.settings_exp_lang),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 13.sp,
                             color = primaryTextColor
@@ -988,7 +1001,7 @@ fun MainScreen(
                                         fontSize = 14.sp
                                     )
                                     Text(
-                                        text = "Default for explanations and app",
+                                        text = stringResource(R.string.settings_exp_lang_desc),
                                         color = secondaryTextColor,
                                         fontSize = 11.sp
                                     )
@@ -1007,7 +1020,7 @@ fun MainScreen(
                 // Proofread Tone
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "Proofread Tone Default",
+                        stringResource(R.string.settings_proofread_tone),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 13.sp,
                         color = primaryTextColor
@@ -1044,7 +1057,7 @@ fun MainScreen(
                 // Theme
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "Theme",
+                        stringResource(R.string.settings_theme),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 13.sp,
                         color = primaryTextColor
@@ -1086,13 +1099,13 @@ fun MainScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Save History",
+                            stringResource(R.string.settings_save_history),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 13.sp,
                             color = primaryTextColor
                         )
                         Text(
-                            "Keep recent explanations for quick access",
+                            stringResource(R.string.settings_save_history_desc),
                             fontSize = 11.5.sp,
                             color = secondaryTextColor
                         )
@@ -1126,7 +1139,7 @@ fun MainScreen(
                                     SettingsManager.setTryItDismissed(context, false)
                                     isStatusDismissed = false
                                     isTryItDismissed = false
-                                    Toast.makeText(context, "Home cards restored", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.settings_restored_toast), Toast.LENGTH_SHORT).show()
                                 },
                             shape = RoundedCornerShape(12.dp),
                             color = if (isDark) Color(0xFF261F36) else PurpleLightBg
@@ -1139,7 +1152,7 @@ fun MainScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    "Restore hidden home cards",
+                                    stringResource(R.string.settings_restore_cards),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = accent
@@ -1167,7 +1180,7 @@ fun MainScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "⚡ Circle to ELI5 Assistant Setup",
+                                stringResource(R.string.settings_assistant_setup),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = accent
@@ -1191,7 +1204,7 @@ fun MainScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Check for Updates",
+                                stringResource(R.string.settings_check_updates),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = primaryTextColor
@@ -1218,7 +1231,7 @@ fun MainScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Privacy Policy",
+                                stringResource(R.string.settings_privacy_policy),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = secondaryTextColor
@@ -1238,7 +1251,7 @@ fun MainScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = accent),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Done", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(stringResource(R.string.settings_btn_done), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -1254,6 +1267,7 @@ fun MainScreen(
                 SettingsManager.setLanguage(context, selected)
                 AnalyticsManager.logLanguageChanged(context, selected, "home_picker_dialog")
                 showLanguagePicker = false
+                (context as? ComponentActivity)?.recreate()
             },
             onDismiss = { showLanguagePicker = false },
             isDark = isDark,
@@ -1324,13 +1338,13 @@ fun CircleToEli5Card(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Circle to ELI5",
+                            text = stringResource(R.string.circle_card_title),
                             fontWeight = FontWeight.Bold,
                             color = primaryTextColor,
                             fontSize = 15.sp
                         )
                         Text(
-                            text = if (isAssistant) "Active (Long-press Home)" else "Circle text anywhere without selecting",
+                            text = if (isAssistant) stringResource(R.string.circle_card_active) else stringResource(R.string.circle_card_inactive),
                             color = if (isAssistant) Color(0xFF10B981) else secondaryTextColor,
                             fontSize = 12.sp,
                             fontWeight = if (isAssistant) FontWeight.SemiBold else FontWeight.Normal
@@ -1344,7 +1358,7 @@ fun CircleToEli5Card(
                     border = BorderStroke(1.dp, if (isAssistant) Color(0xFF10B981) else Color(0xFF8B5CF6))
                 ) {
                     Text(
-                        text = if (isAssistant) "✓ ACTIVE" else "NEW",
+                        text = if (isAssistant) stringResource(R.string.circle_card_badge_active) else stringResource(R.string.circle_card_badge_new),
                         color = if (isAssistant) Color(0xFF10B981) else Color(0xFF8B5CF6),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -1356,7 +1370,7 @@ fun CircleToEli5Card(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Hold Home or bottom nav bar to circle any text on screen — works on Instagram, Twitter, videos, memes, or unselectable apps.",
+                text = stringResource(R.string.circle_card_desc),
                 color = secondaryTextColor,
                 fontSize = 12.5.sp,
                 lineHeight = 17.sp
@@ -1381,7 +1395,7 @@ fun CircleToEli5Card(
                     ),
                     contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
-                    Text("Try Gesture Demo", fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.circle_card_btn_demo), fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
                 }
 
                 Button(
@@ -1397,7 +1411,7 @@ fun CircleToEli5Card(
                     contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
                     Text(
-                        text = if (isAssistant) "Assistant Settings" else "Set as Assistant",
+                        text = if (isAssistant) stringResource(R.string.circle_card_btn_settings) else stringResource(R.string.circle_card_btn_set_assistant),
                         fontSize = 12.5.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -1446,13 +1460,13 @@ fun LanguagePickerDialog(
             ) {
                 Column {
                     Text(
-                        text = "Explanation Language",
+                        text = stringResource(R.string.picker_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = primaryTextColor
                     )
                     Text(
-                        text = "35+ Languages supported with live auto-detect",
+                        text = stringResource(R.string.picker_subtitle),
                         color = secondaryTextColor,
                         fontSize = 12.sp
                     )
@@ -1460,7 +1474,7 @@ fun LanguagePickerDialog(
                 IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                     Icon(
                         Icons.Default.Close,
-                        contentDescription = "Close",
+                        contentDescription = stringResource(R.string.close),
                         tint = secondaryTextColor,
                         modifier = Modifier.size(20.dp)
                     )
@@ -1474,7 +1488,7 @@ fun LanguagePickerDialog(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search language or country...", color = secondaryTextColor, fontSize = 14.sp) },
+                placeholder = { Text(stringResource(R.string.picker_search_hint), color = secondaryTextColor, fontSize = 14.sp) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = "Search", tint = accent, modifier = Modifier.size(20.dp))
                 },

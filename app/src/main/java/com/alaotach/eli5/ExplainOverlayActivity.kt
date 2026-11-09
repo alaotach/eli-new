@@ -116,6 +116,16 @@ class ExplainOverlayActivity : Activity() {
     private val handleColor: Int
         get() = Color.parseColor(if (isDark) "#443E54" else "#DCD8E8")
 
+    override fun attachBaseContext(newBase: Context) {
+        val lang = SettingsManager.getLanguage(newBase)
+        val langObj = LanguageManager.getLanguageByEnglishName(lang)
+        val locale = java.util.Locale.forLanguageTag(langObj.code)
+        val config = newBase.resources.configuration
+        config.setLocale(locale)
+        val localizedContext = newBase.createConfigurationContext(config)
+        super.attachBaseContext(localizedContext)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val root = FrameLayout(this).apply {
@@ -474,7 +484,7 @@ class ExplainOverlayActivity : Activity() {
 
         // Copy button
         val copyBtn = TextView(this).apply {
-            text = "Copy"
+            text = getString(R.string.overlay_copy)
             setTextColor(purpleAccent)
             textSize = 14.0f
             setTypeface(typeface, Typeface.BOLD)
@@ -484,7 +494,7 @@ class ExplainOverlayActivity : Activity() {
                     val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     cm.setPrimaryClip(ClipData.newPlainText("ELI5 Explanation", currentExplanationText))
                     AnalyticsManager.logCopyResult(this@ExplainOverlayActivity, currentActiveMode, currentActiveLanguage)
-                    Toast.makeText(this@ExplainOverlayActivity, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ExplainOverlayActivity, getString(R.string.overlay_copied_toast), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -492,7 +502,7 @@ class ExplainOverlayActivity : Activity() {
 
         // Share button
         val shareBtn = TextView(this).apply {
-            text = "Share"
+            text = getString(R.string.overlay_share)
             setTextColor(purpleAccent)
             textSize = 14.0f
             setTypeface(typeface, Typeface.BOLD)
@@ -755,10 +765,10 @@ class ExplainOverlayActivity : Activity() {
             setPadding(0, (dp * 10).toInt(), 0, 0)
         }
 
-        val simplerChip = createChip("✨ Simpler") {
+        val simplerChip = createChip(getString(R.string.overlay_btn_simpler)) {
             requestExplanation(currentActiveMode, extraModifier = "Explain this even simpler with fun analogies.")
         }
-        val exampleChip = createChip("💡 Give an example") {
+        val exampleChip = createChip(getString(R.string.overlay_btn_example)) {
             requestExplanation(currentActiveMode, extraModifier = "Provide a real-world, concrete example.")
         }
         footerChipsRow?.addView(simplerChip)
@@ -897,7 +907,7 @@ class ExplainOverlayActivity : Activity() {
         }
 
         val titleTv = TextView(this).apply {
-            text = "Select Language / भाषा चुनें"
+            text = getString(R.string.overlay_select_lang_title)
             textSize = 18f
             setTextColor(textPrimaryColor)
             setTypeface(typeface, Typeface.BOLD)
@@ -906,7 +916,7 @@ class ExplainOverlayActivity : Activity() {
         dialogRoot.addView(titleTv)
 
         val searchBox = EditText(this).apply {
-            hint = "Search 35+ languages..."
+            hint = getString(R.string.picker_search_hint)
             setHintTextColor(textMutedColor)
             setTextColor(textPrimaryColor)
             textSize = 14f

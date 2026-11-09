@@ -78,5 +78,9 @@ object LanguageManager {
             val localeList = LocaleListCompat.forLanguageTags(languageCode)
             AppCompatDelegate.setApplicationLocales(localeList)
         } catch (_: Exception) {}
+        try {
+            val locale = java.util.Locale.forLanguageTag(languageCode)
+            java.util.Locale.setDefault(locale)
+        } catch (_: Exception) {}
     }
 }
