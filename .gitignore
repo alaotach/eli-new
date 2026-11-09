@@ -29,3 +29,7 @@ local.properties
 KEYSTORE_CREDENTIALS.txt
 .kotlin/
 *.aab
+
+# Firebase credentials
+google-services.json
+**/google-services.json
