@@ -22,4 +22,5 @@
     <string name="selected_text">Selected text</string>
     <string name="explain_with_eli5">Explain with ELI5</string>
     <string name="proofread_eli5">Proofread (ELI5)</string>
+    <string name="circle_to_eli5">Circle to ELI5</string>
 </resources>

@@ -22,6 +22,13 @@
 -keep class com.google.android.play.core.** { *; }
 -dontwarn com.google.android.play.core.**
 
+# Android Assistant & Voice Interaction (Circle to ELI5)
+-keep class com.alaotach.eli5.assistant.** { *; }
+
+# ML Kit Text Recognition
+-keep class com.google.mlkit.vision.text.** { *; }
+-dontwarn com.google.mlkit.vision.text.**
+
 # Android Jetpack Compose & Material 3
 -keepclassmembers class * extends androidx.compose.ui.Modifier { *; }
 -dontwarn androidx.compose.**

@@ -97,6 +97,9 @@ dependencies {
     // QR Code Generation for Branded Share Cards
     implementation("com.google.zxing:core:3.5.3")
 
+    // ML Kit Text Recognition (On-device, 100% offline & free, Play Store compliant)
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

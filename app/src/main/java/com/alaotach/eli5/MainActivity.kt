@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,12 +63,19 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.alaotach.eli5.assistant.CircleSnipActivity
+import com.alaotach.eli5.assistant.Eli5AssistantManager
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -393,7 +401,19 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // 3. Try-It Text Box
+        // 3. Circle to ELI5 (Screen Snip / Assistant Feature)
+        CircleToEli5Card(
+            isDark = isDark,
+            cardBg = cardBg,
+            cardBorder = cardBorder,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            accent = accent
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 4. Try-It Text Box
         if (!isTryItDismissed) {
             Surface(
                 modifier = Modifier
@@ -973,6 +993,33 @@ fun MainScreen(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable {
+                                showSettingsDialog = false
+                                Eli5AssistantManager.openAssistantSettings(context)
+                            },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "⚡ Circle to ELI5 Assistant Setup",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = accent
+                            )
+                            Text("⚙", fontSize = 14.sp, color = accent)
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .clickable { onCheckUpdates() },
                         shape = RoundedCornerShape(12.dp),
                         color = if (isDark) Color(0xFF261F36) else PurpleLightBg
@@ -1036,6 +1083,147 @@ fun MainScreen(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun CircleToEli5Card(
+    isDark: Boolean,
+    cardBg: Color,
+    cardBorder: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accent: Color
+) {
+    val context = LocalContext.current
+    var isAssistant by remember { mutableStateOf(Eli5AssistantManager.isDefaultAssistant(context)) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isAssistant = Eli5AssistantManager.isDefaultAssistant(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = cardBg,
+        border = BorderStroke(
+            1.dp,
+            if (isAssistant) (if (isDark) Color(0xFF1E462B) else Color(0xFFA5D6A7)) else cardBorder
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isDark) Color(0xFF2E1065) else Color(0xFFEDE9FE)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("⚡", fontSize = 18.sp)
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Circle to ELI5",
+                            fontWeight = FontWeight.Bold,
+                            color = primaryTextColor,
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            text = if (isAssistant) "Active (Long-press Home)" else "Circle text anywhere without selecting",
+                            color = if (isAssistant) Color(0xFF10B981) else secondaryTextColor,
+                            fontSize = 12.sp,
+                            fontWeight = if (isAssistant) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (isAssistant) (if (isDark) Color(0xFF064E3B) else Color(0xFFD1FAE5)) else (if (isDark) Color(0xFF3B0764) else Color(0xFFF3E8FF)),
+                    border = BorderStroke(1.dp, if (isAssistant) Color(0xFF10B981) else Color(0xFF8B5CF6))
+                ) {
+                    Text(
+                        text = if (isAssistant) "✓ ACTIVE" else "NEW",
+                        color = if (isAssistant) Color(0xFF10B981) else Color(0xFF8B5CF6),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Hold Home or bottom nav bar to circle any text on screen — works on Instagram, Twitter, videos, memes, or unselectable apps.",
+                color = secondaryTextColor,
+                fontSize = 12.5.sp,
+                lineHeight = 17.sp
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        val intent = Intent(context, CircleSnipActivity::class.java)
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, if (isDark) Color(0xFF4C1D95) else Color(0xFFDDD6FE)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = accent
+                    ),
+                    contentPadding = PaddingValues(vertical = 10.dp)
+                ) {
+                    Text("Try Gesture Demo", fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                }
+
+                Button(
+                    onClick = {
+                        Eli5AssistantManager.openAssistantSettings(context)
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isAssistant) (if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9)) else accent,
+                        contentColor = if (isAssistant) primaryTextColor else Color.White
+                    ),
+                    contentPadding = PaddingValues(vertical = 10.dp)
+                ) {
+                    Text(
+                        text = if (isAssistant) "Assistant Settings" else "Set as Assistant",
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
