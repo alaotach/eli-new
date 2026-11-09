@@ -100,6 +100,7 @@
         <service
             android:name=".assistant.Eli5VoiceInteractionService"
             android:exported="true"
+            android:label="@string/app_name"
             android:permission="android.permission.BIND_VOICE_INTERACTION">
             <meta-data
                 android:name="android.voice_interaction"
@@ -114,6 +115,21 @@
             android:name=".assistant.Eli5VoiceInteractionSessionService"
             android:exported="true"
             android:permission="android.permission.BIND_VOICE_INTERACTION" />
+
+        <!-- Speech Recognition Service required by Android VoiceInteractionManagerService -->
+        <service
+            android:name=".assistant.Eli5RecognitionService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_RECOGNITION_SERVICE">
+            <intent-filter>
+                <action android:name="android.speech.RecognitionService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.speech"
+                android:resource="@xml/recognition_service" />
+        </service>
 
         <!-- Quick Settings Tile for 1-tap Circle to ELI5 -->
         <service

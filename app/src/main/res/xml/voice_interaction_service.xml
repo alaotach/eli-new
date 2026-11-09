@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <voice-interaction-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:sessionService="com.alaotach.eli5.assistant.Eli5VoiceInteractionSessionService"
+    android:recognitionService="com.alaotach.eli5.assistant.Eli5RecognitionService"
+    android:settingsActivity="com.alaotach.eli5.MainActivity"
     android:supportsAssist="true"
     android:supportsLaunchVoiceAssistFromKeyguard="true" />
