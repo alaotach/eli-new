@@ -515,20 +515,14 @@ fun HomeScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "ELI5 Logo",
                     modifier = Modifier
-                        .size(38.dp)
+                        .size(40.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(accentPurple),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.AutoAwesome,
-                        contentDescription = "ELI5",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
+                        .background(if (isDark) Color(0xFF261F36) else Color(0xFFEDE9FE))
+                )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "ELI5",
@@ -708,21 +702,26 @@ fun HomeScreen(
                 }
             }
 
-            // Prominent Purple "✦ Explain" button
-            Button(
-                onClick = {
-                    if (inputText.isNotBlank()) {
-                        onExplainText(inputText.trim())
-                    } else {
-                        Toast.makeText(context, "Please enter or paste text to explain", Toast.LENGTH_SHORT).show()
-                    }
-                },
+            // Prominent Gradient Purple "✦ Explain" button
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
-                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(18.dp)),
-                shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = accentPurple)
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(18.dp))
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFF6A0DAD), Color(0xFF8B5CF6))
+                        )
+                    )
+                    .clickable {
+                        if (inputText.isNotBlank()) {
+                            onExplainText(inputText.trim())
+                        } else {
+                            Toast.makeText(context, "Please enter or paste text to explain", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                contentAlignment = Alignment.Center
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -1697,28 +1696,34 @@ fun ActivityHistoryScreen(
                 // Stats on Right
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     StatRow(
                         emoji = "🔥",
                         countText = streak.toString(),
                         labelText = "Day Streak",
                         primaryText = primaryText,
-                        secondaryText = secondaryText
+                        secondaryText = secondaryText,
+                        isDark = isDark,
+                        borderColor = borderColor
                     )
                     StatRow(
                         emoji = "⭐",
                         countText = points.toString(),
                         labelText = "Points",
                         primaryText = primaryText,
-                        secondaryText = secondaryText
+                        secondaryText = secondaryText,
+                        isDark = isDark,
+                        borderColor = borderColor
                     )
                     StatRow(
                         emoji = "📖",
                         countText = topics.toString(),
                         labelText = "Topics",
                         primaryText = primaryText,
-                        secondaryText = secondaryText
+                        secondaryText = secondaryText,
+                        isDark = isDark,
+                        borderColor = borderColor
                     )
                 }
             }
@@ -1825,15 +1830,41 @@ fun CircularStatsIndicator(
     }
 
     Box(
-        modifier = Modifier.size(118.dp),
+        modifier = Modifier.size(126.dp),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.size(118.dp)) {
-            val strokeWidth = 11.dp.toPx()
+        // Floating decorative sparkle stars around the ring (matching reference image)
+        Text(
+            text = "✦",
+            fontSize = 14.sp,
+            color = PurpleSecondary,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 2.dp, top = 2.dp)
+        )
+        Text(
+            text = "✦",
+            fontSize = 11.sp,
+            color = Color(0xFFC084FC),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 0.dp)
+        )
+        Text(
+            text = "✦",
+            fontSize = 13.sp,
+            color = PurpleSecondary,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 6.dp, bottom = 4.dp)
+        )
+
+        Canvas(modifier = Modifier.size(116.dp)) {
+            val strokeWidth = 12.dp.toPx()
 
             // Background track
             drawArc(
-                color = lightLavender.copy(alpha = 0.6f),
+                color = lightLavender,
                 startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
@@ -1855,13 +1886,13 @@ fun CircularStatsIndicator(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = count.toString(),
-                fontSize = 24.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = primaryText
             )
             Text(
                 text = "Explanations",
-                fontSize = 11.sp,
+                fontSize = 11.5.sp,
                 fontWeight = FontWeight.Medium,
                 color = secondaryText
             )
@@ -1875,27 +1906,38 @@ fun StatRow(
     countText: String,
     labelText: String,
     primaryText: Color,
-    secondaryText: Color
+    secondaryText: Color,
+    isDark: Boolean,
+    borderColor: Color
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = if (isDark) Color(0xFF221733) else Color(0xFFFAF7FD),
+        border = BorderStroke(1.dp, if (isDark) Color(0xFF35234E) else Color(0xFFF0E8FA)),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(text = emoji, fontSize = 18.sp)
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = countText,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = primaryText,
-            modifier = Modifier.width(42.dp)
-        )
-        Text(
-            text = labelText,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            color = secondaryText
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = emoji, fontSize = 16.sp)
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = countText,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryText
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = labelText,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.Medium,
+                color = secondaryText
+            )
+        }
     }
 }
 
@@ -2355,32 +2397,37 @@ fun Eli5BottomNavigationBar(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 8.dp),
+            .shadow(elevation = 10.dp),
         color = surfaceColor,
         border = BorderStroke(1.dp, borderColor)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 10.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { (index, label, icon) ->
                 val isSelected = selectedTab == index
 
-                if (isSelected) {
-                    // Active Pill Background
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(lightLavender.copy(alpha = if (isDark) 0.6f else 0.85f))
-                            .padding(horizontal = 22.dp, vertical = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                Column(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .clickable { onTabSelected(index) }
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    if (isSelected) {
+                        // Wide capsule pill indicator from reference image
+                        Box(
+                            modifier = Modifier
+                                .width(68.dp)
+                                .height(32.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(lightLavender),
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = icon,
@@ -2388,38 +2435,31 @@ fun Eli5BottomNavigationBar(
                                 tint = accentPurple,
                                 modifier = Modifier.size(22.dp)
                             )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = label,
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = accentPurple
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .width(68.dp)
+                                .height(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                tint = if (isDark) TextSecondaryDark else TextSecondary,
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(24.dp))
-                            .clickable { onTabSelected(index) }
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = label,
-                            tint = if (isDark) TextSecondaryDark else TextSecondary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = label,
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isDark) TextSecondaryDark else TextSecondary
-                        )
-                    }
+
+                    Spacer(modifier = Modifier.height(3.dp))
+
+                    Text(
+                        text = label,
+                        fontSize = 11.5.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isSelected) accentPurple else (if (isDark) TextSecondaryDark else TextSecondary)
+                    )
                 }
             }
         }

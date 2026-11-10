@@ -36,8 +36,8 @@ import kotlinx.coroutines.launch
 
 val ONBOARDING_BG: Int = Color.parseColor("#120F1D")
 val ONBOARDING_CARD_BG: Int = Color.parseColor("#1C172B")
-val ONBOARDING_PURPLE: Int = Color.parseColor("#7C3AED")
-val ONBOARDING_PURPLE_LIGHT: Int = Color.parseColor("#8B5CF6")
+val ONBOARDING_PURPLE: Int = Color.parseColor("#6A0DAD")
+val ONBOARDING_PURPLE_LIGHT: Int = Color.parseColor("#A855F7")
 val ONBOARDING_TEXT_PRIMARY: Int = Color.parseColor("#FFFFFF")
 val ONBOARDING_TEXT_MUTED: Int = Color.parseColor("#9E9AA8")
 

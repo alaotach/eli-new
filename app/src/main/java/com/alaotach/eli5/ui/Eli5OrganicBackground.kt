@@ -9,9 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import com.alaotach.eli5.ui.theme.LavenderBackground
-import com.alaotach.eli5.ui.theme.LavenderLight
-import com.alaotach.eli5.ui.theme.PurplePrimary
-import com.alaotach.eli5.ui.theme.PurpleSecondary
 
 @Composable
 fun Eli5OrganicBackground(
@@ -20,9 +17,14 @@ fun Eli5OrganicBackground(
     content: @Composable () -> Unit
 ) {
     val bgColor = if (isDark) Color(0xFF120E1A) else LavenderBackground
-    val outerBlobColor = if (isDark) Color(0xFF231835) else LavenderLight.copy(alpha = 0.85f)
-    val innerBlobColor = if (isDark) Color(0xFF352054) else PurplePrimary.copy(alpha = 0.28f)
-    val deepAccentColor = if (isDark) PurpleSecondary.copy(alpha = 0.35f) else PurplePrimary.copy(alpha = 0.65f)
+
+    // Solid rich colors matching the design reference image exactly
+    val topOuterWaveColor = if (isDark) Color(0xFF261938) else Color(0xFFE9D5FF)
+    val topMidWaveColor = if (isDark) Color(0xFF3B2256) else Color(0xFFD8B4FE).copy(alpha = 0.65f)
+    val topCornerDarkBlobColor = if (isDark) Color(0xFF4C1D95) else Color(0xFF581C87)
+
+    val bottomOuterWaveColor = if (isDark) Color(0xFF261938) else Color(0xFFE9D5FF)
+    val bottomDarkWaveColor = if (isDark) Color(0xFF4C1D95) else Color(0xFF581C87)
 
     Box(
         modifier = modifier
@@ -33,70 +35,80 @@ fun Eli5OrganicBackground(
             val w = size.width
             val h = size.height
 
-            // --- Top-Right Organic Blobs ---
-            // Outer sweeping lavender wave
+            // =========================================================================
+            // TOP-RIGHT LAYERED ORGANIC WAVES
+            // Matches the curved purple accent in the top right of the reference image
+            // =========================================================================
+
+            // 1. Outer broad lavender sweep
             val pathTopOuter = Path().apply {
-                moveTo(w * 0.45f, 0f)
+                moveTo(w * 0.38f, 0f)
                 cubicTo(
-                    w * 0.60f, h * 0.04f,
-                    w * 0.70f, h * 0.12f,
-                    w, h * 0.14f
+                    w * 0.52f, h * 0.04f,
+                    w * 0.65f, h * 0.14f,
+                    w, h * 0.15f
                 )
                 lineTo(w, 0f)
                 close()
             }
-            drawPath(pathTopOuter, outerBlobColor)
+            drawPath(pathTopOuter, topOuterWaveColor)
 
-            // Inner vibrant purple curve
-            val pathTopInner = Path().apply {
-                moveTo(w * 0.68f, 0f)
+            // 2. Middle violet transition curve
+            val pathTopMid = Path().apply {
+                moveTo(w * 0.52f, 0f)
                 cubicTo(
-                    w * 0.76f, h * 0.05f,
-                    w * 0.84f, h * 0.09f,
-                    w, h * 0.09f
+                    w * 0.62f, h * 0.04f,
+                    w * 0.72f, h * 0.11f,
+                    w, h * 0.115f
                 )
                 lineTo(w, 0f)
                 close()
             }
-            drawPath(pathTopInner, innerBlobColor)
+            drawPath(pathTopMid, topMidWaveColor)
 
-            // Top-right corner deep accent pill/blob
+            // 3. Deep rich royal purple corner blob
             val pathTopCorner = Path().apply {
-                moveTo(w * 0.82f, 0f)
+                moveTo(w * 0.66f, 0f)
                 cubicTo(
-                    w * 0.88f, h * 0.03f,
-                    w * 0.94f, h * 0.05f,
-                    w, h * 0.05f
+                    w * 0.75f, h * 0.035f,
+                    w * 0.82f, h * 0.075f,
+                    w, h * 0.08f
                 )
                 lineTo(w, 0f)
                 close()
             }
-            drawPath(pathTopCorner, deepAccentColor)
+            drawPath(pathTopCorner, topCornerDarkBlobColor)
 
-            // --- Bottom-Left / Footer Organic Waves ---
+            // =========================================================================
+            // BOTTOM ORGANIC CURVED FOOTER WAVES
+            // Matches the sweeping dark purple and lavender curves at the bottom of the screens
+            // =========================================================================
+
+            // 1. Broad lavender bottom wave
             val pathBottomOuter = Path().apply {
-                moveTo(0f, h * 0.88f)
+                moveTo(0f, h * 0.84f)
                 cubicTo(
-                    w * 0.20f, h * 0.86f,
-                    w * 0.35f, h * 0.94f,
-                    w * 0.55f, h
+                    w * 0.22f, h * 0.82f,
+                    w * 0.45f, h * 0.92f,
+                    w * 0.75f, h
                 )
                 lineTo(0f, h)
                 close()
             }
-            drawPath(pathBottomOuter, outerBlobColor.copy(alpha = if (isDark) 0.5f else 0.7f))
+            drawPath(pathBottomOuter, bottomOuterWaveColor)
 
-            val pathBottomInner = Path().apply {
-                moveTo(0f, h * 0.93f)
+            // 2. Rich royal purple bottom wave crest
+            val pathBottomDark = Path().apply {
+                moveTo(0f, h * 0.89f)
                 cubicTo(
-                    w * 0.15f, h * 0.92f,
-                    w * 0.28f, h * 0.97f,
-                    w * 0.38f, h
+                    w * 0.18f, h * 0.88f,
+                    w * 0.36f, h * 0.94f,
+                    w * 0.58f, h
                 )
                 lineTo(0f, h)
                 close()
             }
-            drawPath(pathBottomInner, innerBlobColor)
+            drawPath(pathBottomDark, bottomDarkWaveColor)
         }
 
         content()
