@@ -292,14 +292,15 @@ object ShareImageGenerator {
     }
 
     fun grantPermissionsToReceivers(context: Context, shareIntent: Intent, uri: Uri) {
+        val appContext = context.applicationContext ?: context
         try {
-            val resolveInfoList = context.packageManager.queryIntentActivities(
+            val resolveInfoList = appContext.packageManager.queryIntentActivities(
                 shareIntent,
                 PackageManager.MATCH_DEFAULT_ONLY
             )
             for (resolveInfo in resolveInfoList) {
                 val packageName = resolveInfo.activityInfo.packageName
-                context.grantUriPermission(
+                appContext.grantUriPermission(
                     packageName,
                     uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -320,7 +321,7 @@ object ShareImageGenerator {
         )
         for (pkg in knownPackages) {
             try {
-                context.grantUriPermission(pkg, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                appContext.grantUriPermission(pkg, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } catch (_: Exception) {}
         }
     }

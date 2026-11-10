@@ -11,6 +11,8 @@ import java.io.File
 
 class ShareTransparentActivity : ComponentActivity() {
 
+    private var isPaused = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         @Suppress("DEPRECATION")
@@ -53,7 +55,24 @@ class ShareTransparentActivity : ComponentActivity() {
         }
 
         startActivity(chooserIntent)
-        finish()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isPaused = true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isPaused) {
+            finish()
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
+        }
+    }
+
+    override fun finish() {
+        super.finish()
         @Suppress("DEPRECATION")
         overridePendingTransition(0, 0)
     }
