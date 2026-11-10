@@ -1,31 +1,30 @@
 package com.alaotach.eli5
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,67 +32,109 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.BarChart
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.ContentPaste
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Layers
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.ThumbDown
+import androidx.compose.material.icons.rounded.ThumbUp
+import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.core.text.TextUtilsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.alaotach.eli5.assistant.CircleSnipActivity
 import com.alaotach.eli5.assistant.Eli5AssistantManager
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.alaotach.eli5.ui.Eli5OrganicBackground
+import com.alaotach.eli5.ui.theme.AccentOrange
+import com.alaotach.eli5.ui.theme.CardBorderDark
+import com.alaotach.eli5.ui.theme.CardBorderLight
 import com.alaotach.eli5.ui.theme.Eli5Theme
+import com.alaotach.eli5.ui.theme.LavenderLight
+import com.alaotach.eli5.ui.theme.PurplePrimary
+import com.alaotach.eli5.ui.theme.PurpleSecondary
+import com.alaotach.eli5.ui.theme.SuccessGreen
+import com.alaotach.eli5.ui.theme.SurfaceDark
+import com.alaotach.eli5.ui.theme.SurfaceWhite
+import com.alaotach.eli5.ui.theme.TextPrimary
+import com.alaotach.eli5.ui.theme.TextPrimaryDark
+import com.alaotach.eli5.ui.theme.TextSecondary
+import com.alaotach.eli5.ui.theme.TextSecondaryDark
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
@@ -101,14 +142,7 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
-val PurpleAccent = Color(0xFF7C3AED)
-val PurpleAccentDark = Color(0xFF8B5CF6)
-val PurpleLightBg = Color(0xFFF5F3FF)
-val CardDarkBg = Color(0xFF1C1826)
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -142,14 +176,19 @@ class MainActivity : ComponentActivity() {
                 nightMask == android.content.res.Configuration.UI_MODE_NIGHT_YES
             }
         }
-        window.setBackgroundDrawable(ColorDrawable(if (initialDark) 0xFF13101C.toInt() else 0xFFF9FAFB.toInt()))
+        window.setBackgroundDrawable(ColorDrawable(if (initialDark) 0xFF120E1A.toInt() else 0xFFF8F5FF.toInt()))
 
         enableEdgeToEdge()
-
         checkForAppUpdates()
 
         setContent {
             val context = LocalContext.current
+            val lang = SettingsManager.getLanguage(context)
+            val langObj = LanguageManager.getLanguageByEnglishName(lang)
+            val locale = java.util.Locale.forLanguageTag(langObj.code)
+            val isRtl = TextUtilsCompat.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL
+            val layoutDir = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+
             var themePreference by remember {
                 mutableStateOf(SettingsManager.getTheme(this@MainActivity))
             }
@@ -166,34 +205,22 @@ class MainActivity : ComponentActivity() {
                 return@setContent
             }
 
-            val lang = SettingsManager.getLanguage(context)
-            val langObj = LanguageManager.getLanguageByEnglishName(lang)
-            val locale = java.util.Locale.forLanguageTag(langObj.code)
-            val isRtl = androidx.core.text.TextUtilsCompat.getLayoutDirectionFromLocale(locale) == android.view.View.LAYOUT_DIRECTION_RTL
-            val layoutDir = if (isRtl) androidx.compose.ui.unit.LayoutDirection.Rtl else androidx.compose.ui.unit.LayoutDirection.Ltr
-
-            androidx.compose.runtime.CompositionLocalProvider(
-                androidx.compose.ui.platform.LocalLayoutDirection provides layoutDir
+            CompositionLocalProvider(
+                LocalLayoutDirection provides layoutDir
             ) {
                 Eli5Theme(darkTheme = isDark, dynamicColor = false) {
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        containerColor = if (isDark) Color(0xFF13101C) else Color(0xFFF9FAFB)
-                    ) { innerPadding ->
-                        MainScreen(
-                            themePref = themePreference,
-                            isDark = isDark,
-                            onThemeChange = {
-                                SettingsManager.setTheme(this@MainActivity, it)
-                                themePreference = it
-                            },
-                            onCheckUpdates = { triggerManualUpdateCheck() },
-                            onShowTutorial = {
-                                startActivity(Intent(this@MainActivity, HowToUseActivity::class.java))
-                            },
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }
+                    Eli5App(
+                        themePref = themePreference,
+                        isDark = isDark,
+                        onThemeChange = {
+                            SettingsManager.setTheme(this@MainActivity, it)
+                            themePreference = it
+                        },
+                        onCheckUpdates = { triggerManualUpdateCheck() },
+                        onShowTutorial = {
+                            startActivity(Intent(this@MainActivity, HowToUseActivity::class.java))
+                        }
+                    )
                 }
             }
         }
@@ -211,34 +238,36 @@ class MainActivity : ComponentActivity() {
                     appUpdateManager.startUpdateFlow(
                         appUpdateInfo,
                         this,
-                        AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
+                        AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE)
                     )
                 } catch (_: Exception) {}
-            } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
-                appUpdateManager.completeUpdate()
             }
         }
     }
 
     private fun triggerManualUpdateCheck() {
+        if (!::appUpdateManager.isInitialized) {
+            appUpdateManager = AppUpdateManagerFactory.create(this)
+        }
         appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                val updateType = if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
-                    AppUpdateType.FLEXIBLE
-                } else {
-                    AppUpdateType.IMMEDIATE
+            when (appUpdateInfo.updateAvailability()) {
+                UpdateAvailability.UPDATE_AVAILABLE -> {
+                    if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                        appUpdateManager.startUpdateFlow(
+                            appUpdateInfo,
+                            this,
+                            AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE)
+                        )
+                    } else {
+                        Toast.makeText(this, "An update is available on Play Store", Toast.LENGTH_SHORT).show()
+                    }
                 }
-                try {
-                    appUpdateManager.startUpdateFlow(
-                        appUpdateInfo,
-                        this,
-                        AppUpdateOptions.newBuilder(updateType).build()
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Could not start update: ${e.message}", Toast.LENGTH_SHORT).show()
+                UpdateAvailability.UPDATE_NOT_AVAILABLE -> {
+                    Toast.makeText(this, "You're using the latest version of ELI5!", Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(this, "ELI5 is up to date!", Toast.LENGTH_SHORT).show()
+                else -> {
+                    Toast.makeText(this, "Unable to check updates right now", Toast.LENGTH_SHORT).show()
+                }
             }
         }.addOnFailureListener {
             Toast.makeText(this, "Check failed: Play Store not available", Toast.LENGTH_SHORT).show()
@@ -264,1008 +293,159 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// -------------------------------------------------------------------------------------------------
+// ELI5 App Container & Navigation
+// -------------------------------------------------------------------------------------------------
+
 @Composable
-fun MainScreen(
+fun Eli5App(
     themePref: String,
     isDark: Boolean,
     onThemeChange: (String) -> Unit,
     onCheckUpdates: () -> Unit,
-    onShowTutorial: () -> Unit,
-    modifier: Modifier = Modifier
+    onShowTutorial: () -> Unit
 ) {
     val context = LocalContext.current
-    var history by remember { mutableStateOf<List<HistoryItem>>(emptyList()) }
-    var itemsToShow by remember { mutableStateOf(10) }
-    var showSettingsDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val ttsHelper = remember { TtsHelper(context) }
 
-    val accent = if (isDark) PurpleAccentDark else PurpleAccent
-    val cardBg = if (isDark) CardDarkBg else Color(0xFFFFFFFF)
-    val cardBorder = if (isDark) Color(0xFF2C243B) else Color(0xFFE9E5F2)
-    val primaryTextColor = if (isDark) Color.White else Color(0xFF1C1826)
-    val secondaryTextColor = if (isDark) Color(0xFF9E9AA8) else Color(0xFF6B6678)
-
-    var hasOverlayPermission by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    var tryItText by remember { mutableStateOf("") }
-    var isStatusDismissed by remember { mutableStateOf(SettingsManager.isStatusBannerDismissed(context)) }
-    var isTryItDismissed by remember { mutableStateOf(SettingsManager.isTryItDismissed(context)) }
+    var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: History, 2: More
+    var activeExplanationItem by remember { mutableStateOf<HistoryItem?>(null) }
     var currentLanguage by remember { mutableStateOf(SettingsManager.getLanguage(context)) }
     var showLanguagePicker by remember { mutableStateOf(false) }
+    var history by remember { mutableStateOf<List<HistoryItem>>(emptyList()) }
+
+    // Color tokens
+    val primaryText = if (isDark) TextPrimaryDark else TextPrimary
+    val secondaryText = if (isDark) TextSecondaryDark else TextSecondary
+    val surfaceColor = if (isDark) SurfaceDark else SurfaceWhite
+    val borderColor = if (isDark) CardBorderDark else CardBorderLight
+    val accentPurple = if (isDark) PurpleSecondary else PurplePrimary
+    val lightLavender = if (isDark) Color(0xFF2E2245) else LavenderLight
 
     LaunchedEffect(Unit) {
         history = HistoryManager.getHistory(context)
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        // 1. Header Row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
-                    contentDescription = "ELI5 Logo",
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(if (isDark) Color(0xFF261F36) else PurpleLightBg)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "ELI5",
-                    fontWeight = FontWeight.Bold,
-                    color = primaryTextColor,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Quick Language Switcher Pill
-                val currentLangObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
-                Surface(
-                    modifier = Modifier.clickable { showLanguagePicker = true },
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (isDark) Color(0xFF261F36) else PurpleLightBg,
-                    border = BorderStroke(1.dp, if (isDark) Color(0xFF3B2D54) else Color(0xFFDDD6FE))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = currentLangObj.flag, fontSize = 14.sp)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = currentLangObj.nativeName,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            color = primaryTextColor
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Default.ArrowDropDown,
-                            contentDescription = stringResource(R.string.header_change_lang),
-                            tint = secondaryTextColor,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                IconButton(onClick = { showSettingsDialog = true }) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.header_settings),
-                        tint = primaryTextColor
-                    )
-                }
-            }
+    DisposableEffect(Unit) {
+        onDispose {
+            ttsHelper.shutdown()
         }
-
-        // 2. Status Banner: "ELI5 is on" or "Permission needed"
-        if (!isStatusDismissed) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .clickable {
-                        if (!hasOverlayPermission) {
-                            val intent = Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:${context.packageName}")
-                            )
-                            context.startActivity(intent)
-                        }
-                    },
-                shape = RoundedCornerShape(16.dp),
-                color = if (hasOverlayPermission) {
-                    if (isDark) Color(0xFF13271B) else Color(0xFFE8F5E9)
-                } else {
-                    if (isDark) Color(0xFF332014) else Color(0xFFFFF3E0)
-                },
-                border = BorderStroke(
-                    1.dp,
-                    if (hasOverlayPermission) {
-                        if (isDark) Color(0xFF1E462B) else Color(0xFFA5D6A7)
-                    } else {
-                        if (isDark) Color(0xFF593318) else Color(0xFFFFCC80)
-                    }
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = if (hasOverlayPermission) Icons.Default.CheckCircle else Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = if (hasOverlayPermission) Color(0xFF2E7D32) else Color(0xFFEF6C00),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = if (hasOverlayPermission) stringResource(R.string.status_on) else stringResource(R.string.status_permission_needed),
-                                fontWeight = FontWeight.Bold,
-                                color = primaryTextColor,
-                                fontSize = 14.sp
-                            )
-                            Text(
-                                text = if (hasOverlayPermission) stringResource(R.string.status_ready) else stringResource(R.string.status_tap_to_allow),
-                                color = secondaryTextColor,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (!hasOverlayPermission) {
-                            Text(
-                                text = "Fix →",
-                                color = Color(0xFFEF6C00),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                isStatusDismissed = true
-                                SettingsManager.setStatusBannerDismissed(context, true)
-                            },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = stringResource(R.string.status_dismiss),
-                                tint = if (hasOverlayPermission) (if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)) else Color(0xFFEF6C00),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // 3. Circle to ELI5 (Screen Snip / Assistant Feature)
-        CircleToEli5Card(
-            isDark = isDark,
-            cardBg = cardBg,
-            cardBorder = cardBorder,
-            primaryTextColor = primaryTextColor,
-            secondaryTextColor = secondaryTextColor,
-            accent = accent
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 3b. Explanation Language Feature Card (Prominently showcasing multi-language support)
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            shape = RoundedCornerShape(18.dp),
-            color = cardBg,
-            border = BorderStroke(1.dp, cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "🌍", fontSize = 22.sp)
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = stringResource(R.string.lang_card_title),
-                                fontWeight = FontWeight.Bold,
-                                color = primaryTextColor,
-                                fontSize = 15.sp
-                            )
-                            val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
-                            Text(
-                                text = stringResource(R.string.lang_card_default_prefix, langObj.displayName),
-                                color = accent,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier.clickable { showLanguagePicker = true },
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
-                    ) {
-                        Text(
-                            text = stringResource(R.string.lang_card_btn_more),
-                            color = accent,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Quick Popular Language Chips
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    listOf("English", "Hindi", "Hinglish", "Spanish").forEach { langName ->
-                        val lang = LanguageManager.getLanguageByEnglishName(langName)
-                        val isSelected = currentLanguage.equals(langName, ignoreCase = true)
-                        Surface(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    currentLanguage = langName
-                                    SettingsManager.setLanguage(context, langName)
-                                    AnalyticsManager.logLanguageChanged(context, langName, "home_chip")
-                                    (context as? ComponentActivity)?.recreate()
-                                },
-                            shape = RoundedCornerShape(10.dp),
-                            color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg,
-                            border = if (isSelected) null else BorderStroke(1.dp, cardBorder)
-                        ) {
-                            Text(
-                                text = "${lang.flag} ${lang.nativeName}",
-                                color = if (isSelected) Color.White else primaryTextColor,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 4. Try-It Text Box
-        if (!isTryItDismissed) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(18.dp),
-                color = cardBg,
-                border = BorderStroke(1.dp, cardBorder)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.try_card_title),
-                            fontWeight = FontWeight.Bold,
-                            color = primaryTextColor,
-                            fontSize = 15.sp
-                        )
-                        IconButton(
-                            onClick = {
-                                isTryItDismissed = true
-                                SettingsManager.setTryItDismissed(context, true)
-                            },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = stringResource(R.string.close),
-                                tint = secondaryTextColor,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                    Text(
-                        text = stringResource(R.string.try_card_desc),
-                        color = secondaryTextColor,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
-                    )
-
-                    OutlinedTextField(
-                        value = tryItText,
-                        onValueChange = { tryItText = it },
-                        placeholder = { Text(stringResource(R.string.try_card_placeholder), fontSize = 13.sp, color = secondaryTextColor) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = accent,
-                            unfocusedBorderColor = cardBorder,
-                            focusedTextColor = primaryTextColor,
-                            unfocusedTextColor = primaryTextColor
-                        ),
-                        maxLines = 4
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    val sampleText = stringResource(R.string.try_card_sample_text)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(onClick = {
-                            tryItText = sampleText
-                        }) {
-                            Text(stringResource(R.string.try_card_insert_sample), color = accent, fontSize = 12.sp)
-                        }
-
-                        Button(
-                            onClick = {
-                                if (tryItText.isNotBlank()) {
-                                    val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
-                                        putExtra(ExplainOverlayActivity.EXTRA_TEXT, tryItText.trim())
-                                    }
-                                    context.startActivity(intent)
-                                } else {
-                                    Toast.makeText(context, "Please enter some text first", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = accent),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text(stringResource(R.string.try_card_btn_explain), color = Color.White, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-
-        // 4. Recent Activity Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.history_title),
-                fontWeight = FontWeight.Bold,
-                color = primaryTextColor,
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            if (history.isNotEmpty()) {
-                TextButton(onClick = {
-                    HistoryManager.clearHistory(context)
-                    history = emptyList()
-                }) {
-                    Text(stringResource(R.string.history_clear_all), color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-                }
-            }
-        }
-
-        if (history.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(R.string.history_empty_title),
-                    fontWeight = FontWeight.Bold,
-                    color = primaryTextColor,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = stringResource(R.string.history_empty_desc),
-                    color = secondaryTextColor,
-                    textAlign = TextAlign.Center,
-                    fontSize = 13.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = onShowTutorial,
-                    colors = ButtonDefaults.buttonColors(containerColor = accent),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text(stringResource(R.string.history_interactive_guide), color = Color.White)
-                }
-            }
-        } else {
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                history.take(itemsToShow).forEach { item ->
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .clickable {
-                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
-                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, item.originalText)
-                                    putExtra(ExplainOverlayActivity.EXTRA_RESULT, item.resultText)
-                                    putExtra(ExplainOverlayActivity.EXTRA_MODE, item.mode)
-                                }
-                                context.startActivity(intent)
-                            },
-                        shape = RoundedCornerShape(14.dp),
-                        color = cardBg,
-                        border = BorderStroke(1.dp, cardBorder)
-                    ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = if (isDark) Color(0xFF261F36) else PurpleLightBg
-                                ) {
-                                    Text(
-                                        text = item.mode,
-                                        color = accent,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.sp,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                    )
-                                }
-
-                                IconButton(
-                                    onClick = {
-                                        HistoryManager.deleteItem(context, item)
-                                        history = HistoryManager.getHistory(context)
-                                    },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = secondaryTextColor,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = item.originalText.replace('\n', ' '),
-                                fontWeight = FontWeight.SemiBold,
-                                color = primaryTextColor,
-                                fontSize = 14.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = item.resultText.replace('\n', ' '),
-                                color = secondaryTextColor,
-                                fontSize = 13.sp,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-
-                if (history.size > itemsToShow) {
-                    TextButton(
-                        onClick = { itemsToShow += 10 },
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(vertical = 12.dp)
-                    ) {
-                        Text(stringResource(R.string.history_load_more), color = accent)
-                    }
-                }
-            }
-        }
-
-        // 4b. Visual Tutorial Guide Section
-        Spacer(modifier = Modifier.height(24.dp))
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.guide_title),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = primaryTextColor
-                )
-                TextButton(onClick = onShowTutorial) {
-                    Text(stringResource(R.string.guide_tour_btn), color = accent, fontSize = 12.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            val guideSteps = listOf(
-                Triple(R.drawable.tutorial_img_6, stringResource(R.string.guide_step1_title), stringResource(R.string.guide_step1_desc)),
-                Triple(R.drawable.tutorial_img_7, stringResource(R.string.guide_step2_title), stringResource(R.string.guide_step2_desc)),
-                Triple(R.drawable.tutorial_img_4, stringResource(R.string.guide_step3_title), stringResource(R.string.guide_step3_desc)),
-                Triple(R.drawable.tutorial_img_8, stringResource(R.string.guide_step4_title), stringResource(R.string.guide_step4_desc))
-            )
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(guideSteps) { (imageRes, titleText, descText) ->
-                    Surface(
-                        modifier = Modifier
-                            .width(200.dp)
-                            .clickable { onShowTutorial() },
-                        shape = RoundedCornerShape(14.dp),
-                        color = cardBg,
-                        border = BorderStroke(1.dp, cardBorder)
-                    ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            Image(
-                                painter = painterResource(imageRes),
-                                contentDescription = titleText,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(230.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = titleText,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.5.sp,
-                                color = primaryTextColor
-                            )
-                            Spacer(modifier = Modifier.height(3.dp))
-                            Text(
-                                text = descText,
-                                fontSize = 11.5.sp,
-                                color = secondaryTextColor,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
     }
 
-    // 5. Settings Bottom Sheet
-    if (showSettingsDialog) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        var defaultMode by remember { mutableStateOf(SettingsManager.getDefaultMode(context)) }
-        var language by remember { mutableStateOf(SettingsManager.getLanguage(context)) }
-        var proofreadTone by remember { mutableStateOf(SettingsManager.getProofreadDefaultTone(context)) }
-        var historyEnabled by remember { mutableStateOf(SettingsManager.isHistoryEnabled(context)) }
-        var currentTheme by remember { mutableStateOf(SettingsManager.getTheme(context)) }
-
-        ModalBottomSheet(
-            onDismissRequest = { showSettingsDialog = false },
-            sheetState = sheetState,
-            containerColor = if (isDark) CardDarkBg else Color.White,
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-        ) {
-            Column(
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
+        bottomBar = {
+            if (activeExplanationItem == null) {
+                Eli5BottomNavigationBar(
+                    selectedTab = selectedTab,
+                    onTabSelected = { selectedTab = it },
+                    isDark = isDark,
+                    surfaceColor = surfaceColor,
+                    borderColor = borderColor,
+                    accentPurple = accentPurple,
+                    lightLavender = lightLavender
+                )
+            }
+        }
+    ) { innerPadding ->
+        Eli5OrganicBackground(isDark = isDark) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
-                // Header Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.settings_title),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = primaryTextColor
+                if (activeExplanationItem != null) {
+                    ExplanationScreen(
+                        item = activeExplanationItem!!,
+                        language = currentLanguage,
+                        isDark = isDark,
+                        surfaceColor = surfaceColor,
+                        borderColor = borderColor,
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        accentPurple = accentPurple,
+                        lightLavender = lightLavender,
+                        ttsHelper = ttsHelper,
+                        onBack = { activeExplanationItem = null }
                     )
-                    IconButton(
-                        onClick = { showSettingsDialog = false },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = stringResource(R.string.close),
-                            tint = secondaryTextColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                // Default Mode
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.settings_default_mode),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp,
-                        color = primaryTextColor
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("ELI5", "Direct", "Detailed").forEach { mode ->
-                            val isSelected = defaultMode == mode
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable {
-                                        defaultMode = mode
-                                        SettingsManager.setDefaultMode(context, mode)
-                                    },
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                            ) {
-                                Text(
-                                    text = mode,
-                                    color = if (isSelected) Color.White else primaryTextColor,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(vertical = 9.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Explanation & App Language
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            stringResource(R.string.settings_exp_lang),
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp,
-                            color = primaryTextColor
-                        )
-                        Text(
-                            text = "35+ available",
-                            color = secondaryTextColor,
-                            fontSize = 11.sp
-                        )
-                    }
-
-                    val activeLang = LanguageManager.getLanguageByEnglishName(language)
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showLanguagePicker = true },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg,
-                        border = BorderStroke(1.dp, cardBorder)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = activeLang.flag, fontSize = 20.sp)
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(
-                                        text = activeLang.displayName,
-                                        fontWeight = FontWeight.Bold,
-                                        color = primaryTextColor,
-                                        fontSize = 14.sp
+                } else {
+                    when (selectedTab) {
+                        0 -> HomeScreen(
+                            history = history,
+                            currentLanguage = currentLanguage,
+                            isDark = isDark,
+                            surfaceColor = surfaceColor,
+                            borderColor = borderColor,
+                            primaryText = primaryText,
+                            secondaryText = secondaryText,
+                            accentPurple = accentPurple,
+                            lightLavender = lightLavender,
+                            onOpenLanguagePicker = { showLanguagePicker = true },
+                            onOpenSettings = { selectedTab = 2 },
+                            onOpenHistory = { selectedTab = 1 },
+                            onSelectHistoryItem = { activeExplanationItem = it },
+                            onClearHistory = {
+                                HistoryManager.clearHistory(context)
+                                history = emptyList()
+                            },
+                            onExplainText = { text ->
+                                scope.launch {
+                                    val item = HistoryItem(
+                                        timestamp = System.currentTimeMillis(),
+                                        originalText = text,
+                                        resultText = "",
+                                        mode = "ELI5"
                                     )
-                                    Text(
-                                        text = stringResource(R.string.settings_exp_lang_desc),
-                                        color = secondaryTextColor,
-                                        fontSize = 11.sp
-                                    )
+                                    activeExplanationItem = item
                                 }
                             }
-                            Text(
-                                text = "Change ▾",
-                                color = accent,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            )
-                        }
-                    }
-                }
-
-                // Proofread Tone
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.settings_proofread_tone),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp,
-                        color = primaryTextColor
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        listOf("Casual", "Formal", "Urgent", "Translate").forEach { tone ->
-                            val isSelected = proofreadTone == tone
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable {
-                                        proofreadTone = tone
-                                        SettingsManager.setProofreadDefaultTone(context, tone)
-                                    },
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                            ) {
-                                Text(
-                                    text = tone,
-                                    color = if (isSelected) Color.White else primaryTextColor,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Theme
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        stringResource(R.string.settings_theme),
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp,
-                        color = primaryTextColor
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("System" to "system", "Light" to "light", "Dark" to "dark").forEach { (label, valStr) ->
-                            val isSelected = currentTheme == valStr
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable {
-                                        currentTheme = valStr
-                                        onThemeChange(valStr)
-                                    },
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) accent else if (isDark) Color(0xFF261F36) else PurpleLightBg
-                            ) {
-                                Text(
-                                    text = label,
-                                    color = if (isSelected) Color.White else primaryTextColor,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(vertical = 9.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // History Privacy Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            stringResource(R.string.settings_save_history),
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp,
-                            color = primaryTextColor
                         )
-                        Text(
-                            stringResource(R.string.settings_save_history_desc),
-                            fontSize = 11.5.sp,
-                            color = secondaryTextColor
-                        )
-                    }
-                    Switch(
-                        checked = historyEnabled,
-                        onCheckedChange = {
-                            historyEnabled = it
-                            SettingsManager.setHistoryEnabled(context, it)
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = accent
-                        )
-                    )
-                }
 
-                HorizontalDivider(
-                    color = cardBorder,
-                    thickness = 1.dp
-                )
-
-                // Actions List
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (isStatusDismissed || isTryItDismissed) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    SettingsManager.setStatusBannerDismissed(context, false)
-                                    SettingsManager.setTryItDismissed(context, false)
-                                    isStatusDismissed = false
-                                    isTryItDismissed = false
-                                    Toast.makeText(context, context.getString(R.string.settings_restored_toast), Toast.LENGTH_SHORT).show()
-                                },
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isDark) Color(0xFF261F36) else PurpleLightBg
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    stringResource(R.string.settings_restore_cards),
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = accent
-                                )
-                                Text("↺", fontSize = 14.sp, color = accent, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showSettingsDialog = false
-                                Eli5AssistantManager.openAssistantSettings(context)
+                        1 -> ActivityHistoryScreen(
+                            history = history,
+                            isDark = isDark,
+                            surfaceColor = surfaceColor,
+                            borderColor = borderColor,
+                            primaryText = primaryText,
+                            secondaryText = secondaryText,
+                            accentPurple = accentPurple,
+                            lightLavender = lightLavender,
+                            onBack = { selectedTab = 0 },
+                            onClearHistory = {
+                                HistoryManager.clearHistory(context)
+                                history = emptyList()
                             },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                stringResource(R.string.settings_assistant_setup),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = accent
-                            )
-                            Text("⚙", fontSize = 14.sp, color = accent)
-                        }
-                    }
+                            onSelectHistoryItem = { activeExplanationItem = it },
+                            onDeleteItem = { item ->
+                                HistoryManager.deleteItem(context, item)
+                                history = HistoryManager.getHistory(context)
+                            }
+                        )
 
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onCheckUpdates() },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                stringResource(R.string.settings_check_updates),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = primaryTextColor
-                            )
-                            Text("→", fontSize = 13.sp, color = accent)
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(SettingsManager.PRIVACY_URL))
-                                context.startActivity(intent)
-                            },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isDark) Color(0xFF261F36) else PurpleLightBg
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                stringResource(R.string.settings_privacy_policy),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = secondaryTextColor
-                            )
-                            Text("↗", fontSize = 13.sp, color = secondaryTextColor)
-                        }
+                        2 -> MoreScreen(
+                            themePref = themePref,
+                            isDark = isDark,
+                            currentLanguage = currentLanguage,
+                            surfaceColor = surfaceColor,
+                            borderColor = borderColor,
+                            primaryText = primaryText,
+                            secondaryText = secondaryText,
+                            accentPurple = accentPurple,
+                            lightLavender = lightLavender,
+                            onThemeChange = onThemeChange,
+                            onOpenLanguagePicker = { showLanguagePicker = true },
+                            onShowTutorial = onShowTutorial,
+                            onCheckUpdates = onCheckUpdates,
+                            onClearAllData = {
+                                HistoryManager.clearHistory(context)
+                                history = emptyList()
+                                Toast.makeText(context, "All history cleared", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Button(
-                    onClick = { showSettingsDialog = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = accent),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(stringResource(R.string.settings_btn_done), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -1276,29 +456,518 @@ fun MainScreen(
             onSelectLanguage = { selected ->
                 currentLanguage = selected
                 SettingsManager.setLanguage(context, selected)
-                AnalyticsManager.logLanguageChanged(context, selected, "home_picker_dialog")
+                AnalyticsManager.logLanguageChanged(context, selected, "app_picker_dialog")
                 showLanguagePicker = false
                 (context as? ComponentActivity)?.recreate()
             },
             onDismiss = { showLanguagePicker = false },
             isDark = isDark,
-            accent = accent,
-            primaryTextColor = primaryTextColor,
-            secondaryTextColor = secondaryTextColor,
-            cardBg = if (isDark) CardDarkBg else Color.White,
-            cardBorder = cardBorder
+            accent = accentPurple,
+            primaryTextColor = primaryText,
+            secondaryTextColor = secondaryText,
+            cardBg = surfaceColor,
+            cardBorder = borderColor
         )
     }
 }
 
+// -------------------------------------------------------------------------------------------------
+// SCREEN 1: Home Screen (Follows Left Screen of Reference)
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun HomeScreen(
+    history: List<HistoryItem>,
+    currentLanguage: String,
+    isDark: Boolean,
+    surfaceColor: Color,
+    borderColor: Color,
+    primaryText: Color,
+    secondaryText: Color,
+    accentPurple: Color,
+    lightLavender: Color,
+    onOpenLanguagePicker: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenHistory: () -> Unit,
+    onSelectHistoryItem: (HistoryItem) -> Unit,
+    onClearHistory: () -> Unit,
+    onExplainText: (String) -> Unit
+) {
+    val context = LocalContext.current
+    var inputText by remember { mutableStateOf("") }
+    val currentLangObj = remember(currentLanguage) {
+        LanguageManager.getLanguageByEnglishName(currentLanguage)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // 1. Header: ELI5 Icon + Name on left; Language Pill + Settings on right
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(accentPurple),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = "ELI5",
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "ELI5",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryText
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Language pill
+                Surface(
+                    modifier = Modifier.clickable { onOpenLanguagePicker() },
+                    shape = RoundedCornerShape(20.dp),
+                    color = lightLavender.copy(alpha = if (isDark) 0.5f else 0.8f),
+                    border = BorderStroke(1.dp, borderColor)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = currentLangObj.flag, fontSize = 13.sp)
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = currentLangObj.nativeName,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            color = primaryText
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = secondaryText,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.size(38.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Settings,
+                        contentDescription = "Settings",
+                        tint = primaryText,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        // 2. Hero Section: "Understand anything, instantly." + Document Illustration
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1.15f)
+                    .padding(end = 8.dp)
+            ) {
+                Text(
+                    text = "Understand\nanything,",
+                    fontSize = 26.sp,
+                    lineHeight = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryText
+                )
+                Text(
+                    text = "instantly.",
+                    fontSize = 28.sp,
+                    lineHeight = 34.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic,
+                    color = accentPurple
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Select, circle or paste any text and get a simple explanation — in your language.",
+                    fontSize = 12.5.sp,
+                    lineHeight = 17.sp,
+                    color = secondaryText
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(0.85f)
+                    .height(130.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.hero_document_illustration),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        // 3. Circle to ELI5 Card
+        CircleToEli5Card(
+            isDark = isDark,
+            surfaceColor = surfaceColor,
+            borderColor = borderColor,
+            primaryText = primaryText,
+            secondaryText = secondaryText,
+            accentPurple = accentPurple,
+            lightLavender = lightLavender
+        )
+
+        // 4. Direct Explanation: Input + Explain button
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(18.dp)),
+                shape = RoundedCornerShape(18.dp),
+                color = surfaceColor,
+                border = BorderStroke(1.dp, borderColor)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (inputText.isEmpty()) {
+                            Text(
+                                text = "Paste or type any text...",
+                                color = secondaryText,
+                                fontSize = 14.sp
+                            )
+                        }
+                        BasicTextField(
+                            value = inputText,
+                            onValueChange = { inputText = it },
+                            textStyle = TextStyle(
+                                color = primaryText,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal
+                            ),
+                            cursorBrush = SolidColor(accentPurple),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    IconButton(
+                        onClick = {
+                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = cm.primaryClip
+                            if (clip != null && clip.itemCount > 0) {
+                                val pasted = clip.getItemAt(0).text?.toString() ?: ""
+                                if (pasted.isNotBlank()) {
+                                    inputText = pasted
+                                    Toast.makeText(context, "Pasted from clipboard", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentPaste,
+                            contentDescription = "Paste",
+                            tint = secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            // Prominent Purple "✦ Explain" button
+            Button(
+                onClick = {
+                    if (inputText.isNotBlank()) {
+                        onExplainText(inputText.trim())
+                    } else {
+                        Toast.makeText(context, "Please enter or paste text to explain", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(18.dp)),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = accentPurple)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Explain",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        // 5. 2x2 Grid of Actions
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Try Gesture
+                ActionCard(
+                    title = "Try Gesture",
+                    icon = Icons.Rounded.PlayArrow,
+                    modifier = Modifier.weight(1f),
+                    surfaceColor = surfaceColor,
+                    borderColor = borderColor,
+                    accentPurple = accentPurple,
+                    primaryText = primaryText,
+                    onClick = {
+                        val intent = Intent(context, CircleSnipActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                )
+
+                // Assistant Settings
+                ActionCard(
+                    title = "Assistant\nSettings",
+                    icon = Icons.Rounded.Tune,
+                    modifier = Modifier.weight(1f),
+                    surfaceColor = surfaceColor,
+                    borderColor = borderColor,
+                    accentPurple = accentPurple,
+                    primaryText = primaryText,
+                    onClick = {
+                        Eli5AssistantManager.openAssistantSettings(context)
+                    }
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Language
+                ActionCard(
+                    title = "Language",
+                    subtitle = currentLangObj.nativeName,
+                    icon = Icons.Rounded.Public,
+                    hasDropdown = true,
+                    modifier = Modifier.weight(1f),
+                    surfaceColor = surfaceColor,
+                    borderColor = borderColor,
+                    accentPurple = accentPurple,
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    onClick = onOpenLanguagePicker
+                )
+
+                // Recent Activity
+                ActionCard(
+                    title = "Recent\nActivity",
+                    icon = Icons.Rounded.Schedule,
+                    modifier = Modifier.weight(1f),
+                    surfaceColor = surfaceColor,
+                    borderColor = borderColor,
+                    accentPurple = accentPurple,
+                    primaryText = primaryText,
+                    onClick = onOpenHistory
+                )
+            }
+        }
+
+        // 6. Recent Activity Section on Home
+        if (history.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.Schedule,
+                        contentDescription = null,
+                        tint = primaryText,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Recent Activity",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = primaryText
+                    )
+                }
+
+                Text(
+                    text = "Clear All",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = accentPurple,
+                    modifier = Modifier.clickable { onClearHistory() }
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                history.take(3).forEachIndexed { idx, item ->
+                    RecentHistoryItemCard(
+                        item = item,
+                        index = idx,
+                        isDark = isDark,
+                        surfaceColor = surfaceColor,
+                        borderColor = borderColor,
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        accentPurple = accentPurple,
+                        onClick = { onSelectHistoryItem(item) },
+                        onDelete = {
+                            HistoryManager.deleteItem(context, item)
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// Action Card (2x2 Grid Helper)
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun ActionCard(
+    title: String,
+    subtitle: String? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    hasDropdown: Boolean = false,
+    modifier: Modifier = Modifier,
+    surfaceColor: Color,
+    borderColor: Color,
+    accentPurple: Color,
+    primaryText: Color,
+    secondaryText: Color = primaryText,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .height(86.dp)
+            .shadow(elevation = 1.dp, shape = RoundedCornerShape(18.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(18.dp),
+        color = surfaceColor,
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(LavenderLight.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = accentPurple,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = title,
+                        fontSize = 13.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = primaryText
+                    )
+                    if (hasDropdown) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = secondaryText,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = secondaryText,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// Circle to ELI5 Card
+// -------------------------------------------------------------------------------------------------
+
 @Composable
 fun CircleToEli5Card(
     isDark: Boolean,
-    cardBg: Color,
-    cardBorder: Color,
-    primaryTextColor: Color,
-    secondaryTextColor: Color,
-    accent: Color
+    surfaceColor: Color,
+    borderColor: Color,
+    primaryText: Color,
+    secondaryText: Color,
+    accentPurple: Color,
+    lightLavender: Color
 ) {
     val context = LocalContext.current
     var isAssistant by remember { mutableStateOf(Eli5AssistantManager.isDefaultAssistant(context)) }
@@ -1319,112 +988,1052 @@ fun CircleToEli5Card(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        shape = RoundedCornerShape(18.dp),
-        color = cardBg,
-        border = BorderStroke(
-            1.dp,
-            if (isAssistant) (if (isDark) Color(0xFF1E462B) else Color(0xFFA5D6A7)) else cardBorder
-        )
+            .shadow(elevation = 2.dp, shape = RoundedCornerShape(22.dp))
+            .clickable {
+                if (!isAssistant) {
+                    Eli5AssistantManager.openAssistantSettings(context)
+                }
+            },
+        shape = RoundedCornerShape(22.dp),
+        color = surfaceColor,
+        border = BorderStroke(1.dp, borderColor)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically
+                // Hand Gesture rounded icon
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(lightLavender.copy(alpha = if (isDark) 0.5f else 0.85f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (isDark) Color(0xFF2E1065) else Color(0xFFEDE9FE)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("⚡", fontSize = 18.sp)
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = stringResource(R.string.circle_card_title),
-                            fontWeight = FontWeight.Bold,
-                            color = primaryTextColor,
-                            fontSize = 15.sp
-                        )
-                        Text(
-                            text = if (isAssistant) stringResource(R.string.circle_card_active) else stringResource(R.string.circle_card_inactive),
-                            color = if (isAssistant) Color(0xFF10B981) else secondaryTextColor,
-                            fontSize = 12.sp,
-                            fontWeight = if (isAssistant) FontWeight.SemiBold else FontWeight.Normal
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Rounded.TouchApp,
+                        contentDescription = "Gesture",
+                        tint = accentPurple,
+                        modifier = Modifier.size(26.dp)
+                    )
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isAssistant) (if (isDark) Color(0xFF064E3B) else Color(0xFFD1FAE5)) else (if (isDark) Color(0xFF3B0764) else Color(0xFFF3E8FF)),
-                    border = BorderStroke(1.dp, if (isAssistant) Color(0xFF10B981) else Color(0xFF8B5CF6))
-                ) {
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
                     Text(
-                        text = if (isAssistant) stringResource(R.string.circle_card_badge_active) else stringResource(R.string.circle_card_badge_new),
-                        color = if (isAssistant) Color(0xFF10B981) else Color(0xFF8B5CF6),
-                        fontSize = 10.sp,
+                        text = "Circle to ELI5",
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        color = primaryText
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(if (isAssistant) SuccessGreen else Color(0xFF9E9AA8))
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isAssistant) "Active (Long-press Home)" else "Inactive (Tap to set assistant)",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isAssistant) SuccessGreen else secondaryText
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Switch(
+                checked = isAssistant,
+                onCheckedChange = {
+                    Eli5AssistantManager.openAssistantSettings(context)
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = accentPurple,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = Color(0xFFD1D5DB)
+                )
+            )
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// SCREEN 2: Explanation Screen (Follows Middle Screen of Reference)
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun ExplanationScreen(
+    item: HistoryItem,
+    language: String,
+    isDark: Boolean,
+    surfaceColor: Color,
+    borderColor: Color,
+    primaryText: Color,
+    secondaryText: Color,
+    accentPurple: Color,
+    lightLavender: Color,
+    ttsHelper: TtsHelper,
+    onBack: () -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var fullExplanation by remember { mutableStateOf(item.resultText) }
+    var isLoading by remember { mutableStateOf(item.resultText.isBlank()) }
+    var liked by remember { mutableStateOf<Boolean?>(null) }
+    var deeperText by remember { mutableStateOf<String?>(null) }
+    var deeperLoading by remember { mutableStateOf(false) }
+    var deeperSectionTitle by remember { mutableStateOf<String?>(null) }
+    var showMenu by remember { mutableStateOf(false) }
+
+    LaunchedEffect(item.originalText) {
+        if (fullExplanation.isBlank()) {
+            isLoading = true
+            val generated = ExplainRepository.fetchExplanation(
+                text = item.originalText,
+                mode = item.mode,
+                language = language,
+                onChunk = { chunk ->
+                    fullExplanation = chunk
+                }
+            )
+            fullExplanation = generated
+            isLoading = false
+            // Save completed item to history
+            val savedItem = item.copy(resultText = generated)
+            HistoryManager.saveItem(context, savedItem)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Top Bar: Back arrow, "Explanation" title, Share icon, 3-dots overflow
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier.size(38.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = "Back",
+                    tint = primaryText,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
 
             Text(
-                text = stringResource(R.string.circle_card_desc),
-                color = secondaryTextColor,
-                fontSize = 12.5.sp,
-                lineHeight = 17.sp
+                text = "Explanation",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryText
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                OutlinedButton(
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
                     onClick = {
-                        val intent = Intent(context, CircleSnipActivity::class.java)
-                        context.startActivity(intent)
+                        if (fullExplanation.isNotBlank()) {
+                            ShareImageGenerator.shareExplanation(
+                                context,
+                                item.originalText,
+                                fullExplanation,
+                                item.mode,
+                                scope
+                            )
+                        }
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, if (isDark) Color(0xFF4C1D95) else Color(0xFFDDD6FE)),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = accent
-                    ),
-                    contentPadding = PaddingValues(vertical = 10.dp)
+                    modifier = Modifier.size(38.dp)
                 ) {
-                    Text(stringResource(R.string.circle_card_btn_demo), fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = "Share",
+                        tint = primaryText,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
 
-                Button(
+                Box {
+                    IconButton(
+                        onClick = { showMenu = true },
+                        modifier = Modifier.size(38.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.MoreVert,
+                            contentDescription = "More",
+                            tint = primaryText,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Copy Original Text") },
+                            onClick = {
+                                showMenu = false
+                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                cm.setPrimaryClip(ClipData.newPlainText("ELI5 Original", item.originalText))
+                                Toast.makeText(context, "Original text copied", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Copy Explanation") },
+                            onClick = {
+                                showMenu = false
+                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                cm.setPrimaryClip(ClipData.newPlainText("ELI5 Explanation", fullExplanation))
+                                Toast.makeText(context, "Explanation copied", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        // 1. Original Selected Text Card
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(18.dp)),
+            shape = RoundedCornerShape(18.dp),
+            color = surfaceColor,
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = item.originalText,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = primaryText,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                IconButton(
                     onClick = {
-                        Eli5AssistantManager.openAssistantSettings(context)
+                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        cm.setPrimaryClip(ClipData.newPlainText("ELI5 Original", item.originalText))
+                        Toast.makeText(context, "Copied original text", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isAssistant) (if (isDark) Color(0xFF1E293B) else Color(0xFFF1F5F9)) else accent,
-                        contentColor = if (isAssistant) primaryTextColor else Color.White
-                    ),
-                    contentPadding = PaddingValues(vertical = 10.dp)
+                    modifier = Modifier.size(32.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Rounded.ContentCopy,
+                        contentDescription = "Copy",
+                        tint = secondaryText,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+
+        // 2. Main ELI5 Explanation Card
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(22.dp)),
+            shape = RoundedCornerShape(22.dp),
+            color = surfaceColor,
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // Header with Sparkle and "ELI5 Explanation"
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = null,
+                        tint = accentPurple,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isAssistant) stringResource(R.string.circle_card_btn_settings) else stringResource(R.string.circle_card_btn_set_assistant),
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "ELI5 Explanation",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = accentPurple
+                    )
+                }
+
+                if (isLoading && fullExplanation.isBlank()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            color = accentPurple,
+                            strokeWidth = 3.dp,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Simplifying for you...",
+                            fontSize = 14.sp,
+                            color = secondaryText
+                        )
+                    }
+                } else {
+                    Text(
+                        text = fullExplanation,
+                        fontSize = 14.5.sp,
+                        lineHeight = 22.sp,
+                        color = primaryText
+                    )
+                }
+
+                // Action Row at bottom: Like, Dislike, Copy, Audio/TTS
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Thumbs Up
+                    IconButton(
+                        onClick = { liked = if (liked == true) null else true },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ThumbUp,
+                            contentDescription = "Like",
+                            tint = if (liked == true) SuccessGreen else secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Thumbs Down
+                    IconButton(
+                        onClick = { liked = if (liked == false) null else false },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ThumbDown,
+                            contentDescription = "Dislike",
+                            tint = if (liked == false) AccentOrange else secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Copy
+                    IconButton(
+                        onClick = {
+                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            cm.setPrimaryClip(ClipData.newPlainText("ELI5 Explanation", fullExplanation))
+                            Toast.makeText(context, "Explanation copied", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.ContentCopy,
+                            contentDescription = "Copy",
+                            tint = secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Audio / TTS
+                    IconButton(
+                        onClick = {
+                            if (fullExplanation.isNotBlank()) {
+                                val langObj = LanguageManager.getLanguageByEnglishName(language)
+                                ttsHelper.speak(fullExplanation, langObj.code)
+                                Toast.makeText(context, "Reading aloud...", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
+                            contentDescription = "Read aloud",
+                            tint = accentPurple,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // 3. "Go Deeper" Section
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(22.dp)),
+            shape = RoundedCornerShape(22.dp),
+            color = surfaceColor,
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Column(modifier = Modifier.padding(18.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.Layers,
+                        contentDescription = null,
+                        tint = primaryText,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Go Deeper",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = primaryText
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Row 1: A simpler analogy
+                GoDeeperRow(
+                    icon = Icons.Rounded.Science,
+                    title = "A simpler analogy",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    onClick = {
+                        deeperSectionTitle = "A Simpler Analogy"
+                        deeperLoading = true
+                        scope.launch {
+                            val res = ExplainRepository.fetchExplanation(
+                                text = item.originalText,
+                                mode = "ELI5",
+                                language = language,
+                                extraModifier = "Explain this using a super clear, everyday analogy that a child would immediately understand."
+                            )
+                            deeperText = res
+                            deeperLoading = false
+                        }
+                    }
+                )
+
+                HorizontalDivider(
+                    color = borderColor,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                // Row 2: Real world applications
+                GoDeeperRow(
+                    icon = Icons.Rounded.Layers,
+                    title = "Real world applications",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    onClick = {
+                        deeperSectionTitle = "Real World Applications"
+                        deeperLoading = true
+                        scope.launch {
+                            val res = ExplainRepository.fetchExplanation(
+                                text = item.originalText,
+                                mode = "Detailed",
+                                language = language,
+                                extraModifier = "Provide 3 concrete real-world applications or practical industry examples where this concept is actively used today."
+                            )
+                            deeperText = res
+                            deeperLoading = false
+                        }
+                    }
+                )
+
+                HorizontalDivider(
+                    color = borderColor,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                // Row 3: Key terms
+                GoDeeperRow(
+                    icon = Icons.AutoMirrored.Rounded.MenuBook,
+                    title = "Key terms",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    onClick = {
+                        deeperSectionTitle = "Key Terms Breakdown"
+                        deeperLoading = true
+                        scope.launch {
+                            val res = ExplainRepository.fetchExplanation(
+                                text = item.originalText,
+                                mode = "Direct",
+                                language = language,
+                                extraModifier = "Break down and define the 3-4 most important technical keywords or jargon mentioned here in 1 sentence each."
+                            )
+                            deeperText = res
+                            deeperLoading = false
+                        }
+                    }
+                )
+
+                // Deeper expansion view if clicked
+                if (deeperLoading) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            color = accentPurple,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Loading ${deeperSectionTitle ?: "insights"}...",
+                            fontSize = 13.sp,
+                            color = secondaryText
+                        )
+                    }
+                } else if (!deeperText.isNullOrBlank()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(lightLavender.copy(alpha = 0.4f))
+                            .padding(14.dp)
+                    ) {
+                        Text(
+                            text = deeperSectionTitle ?: "Deep Dive",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = accentPurple
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = deeperText!!,
+                            fontSize = 13.5.sp,
+                            lineHeight = 20.sp,
+                            color = primaryText
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun GoDeeperRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    primaryText: Color,
+    secondaryText: Color,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = primaryText,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = primaryText
+            )
+        }
+
+        Icon(
+            imageVector = Icons.Rounded.ChevronRight,
+            contentDescription = null,
+            tint = secondaryText,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// SCREEN 3: Your Activity / History Screen (Follows Right Screen of Reference)
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun ActivityHistoryScreen(
+    history: List<HistoryItem>,
+    isDark: Boolean,
+    surfaceColor: Color,
+    borderColor: Color,
+    primaryText: Color,
+    secondaryText: Color,
+    accentPurple: Color,
+    lightLavender: Color,
+    onBack: () -> Unit,
+    onClearHistory: () -> Unit,
+    onSelectHistoryItem: (HistoryItem) -> Unit,
+    onDeleteItem: (HistoryItem) -> Unit
+) {
+    val streak = remember(history) { HistoryManager.calculateDayStreak(history) }
+    val points = remember(history) { history.size * 25 + (if (history.isNotEmpty()) 50 else 0) }
+    val topics = remember(history) { HistoryManager.calculateTopicsCount(history) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Top Bar: Back arrow, "Your Activity", bar chart icon
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier.size(38.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = "Back",
+                    tint = primaryText,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Text(
+                text = "Your Activity",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryText
+            )
+
+            IconButton(
+                onClick = { /* stats details */ },
+                modifier = Modifier.size(38.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.BarChart,
+                    contentDescription = "Stats",
+                    tint = primaryText,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        // 1. Activity Summary Card
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(22.dp)),
+            shape = RoundedCornerShape(22.dp),
+            color = surfaceColor,
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Circular Ring Gauge on Left
+                CircularStatsIndicator(
+                    count = history.size,
+                    accentPurple = accentPurple,
+                    lightLavender = lightLavender,
+                    primaryText = primaryText,
+                    secondaryText = secondaryText
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Stats on Right
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatRow(
+                        emoji = "🔥",
+                        countText = streak.toString(),
+                        labelText = "Day Streak",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText
+                    )
+                    StatRow(
+                        emoji = "⭐",
+                        countText = points.toString(),
+                        labelText = "Points",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText
+                    )
+                    StatRow(
+                        emoji = "📖",
+                        countText = topics.toString(),
+                        labelText = "Topics",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText
+                    )
+                }
+            }
+        }
+
+        // 2. Recent Explanations Section
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Rounded.Schedule,
+                    contentDescription = null,
+                    tint = primaryText,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Recent Explanations",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryText
+                )
+            }
+
+            if (history.isNotEmpty()) {
+                Text(
+                    text = "Clear All",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = accentPurple,
+                    modifier = Modifier.clickable { onClearHistory() }
+                )
+            }
+        }
+
+        if (history.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Description,
+                    contentDescription = null,
+                    tint = secondaryText.copy(alpha = 0.5f),
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "No explanations yet",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = primaryText
+                )
+                Text(
+                    text = "Circle or paste any text to see it here.",
+                    fontSize = 12.5.sp,
+                    color = secondaryText
+                )
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                history.forEachIndexed { idx, item ->
+                    RecentHistoryItemCard(
+                        item = item,
+                        index = idx,
+                        isDark = isDark,
+                        surfaceColor = surfaceColor,
+                        borderColor = borderColor,
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        accentPurple = accentPurple,
+                        onClick = { onSelectHistoryItem(item) },
+                        onDelete = { onDeleteItem(item) }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// Circular Progress Indicator for Stats
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun CircularStatsIndicator(
+    count: Int,
+    accentPurple: Color,
+    lightLavender: Color,
+    primaryText: Color,
+    secondaryText: Color
+) {
+    val progress = remember(count) {
+        if (count == 0) 0.1f else (count % 50) / 50f
+    }
+
+    Box(
+        modifier = Modifier.size(118.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.size(118.dp)) {
+            val strokeWidth = 11.dp.toPx()
+
+            // Background track
+            drawArc(
+                color = lightLavender.copy(alpha = 0.6f),
+                startAngle = -90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = Stroke(width = strokeWidth)
+            )
+
+            // Foreground purple arc
+            drawArc(
+                brush = Brush.sweepGradient(
+                    listOf(PurpleSecondary, PurplePrimary, PurpleSecondary)
+                ),
+                startAngle = -90f,
+                sweepAngle = progress * 360f,
+                useCenter = false,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+        }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = count.toString(),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryText
+            )
+            Text(
+                text = "Explanations",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = secondaryText
+            )
+        }
+    }
+}
+
+@Composable
+fun StatRow(
+    emoji: String,
+    countText: String,
+    labelText: String,
+    primaryText: Color,
+    secondaryText: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = emoji, fontSize = 18.sp)
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = countText,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = primaryText,
+            modifier = Modifier.width(42.dp)
+        )
+        Text(
+            text = labelText,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = secondaryText
+        )
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// Recent History Item Card (Used on Home and History Screens)
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun RecentHistoryItemCard(
+    item: HistoryItem,
+    index: Int,
+    isDark: Boolean,
+    surfaceColor: Color,
+    borderColor: Color,
+    primaryText: Color,
+    secondaryText: Color,
+    accentPurple: Color,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var showMenu by remember { mutableStateOf(false) }
+
+    // Color palette rotation for badges
+    val badgeColors = listOf(
+        Pair(Color(0xFFEDE9FE), PurplePrimary),     // Lavender
+        Pair(Color(0xFFFFEDD5), Color(0xFFEA580C)), // Orange
+        Pair(Color(0xFFDCFCE7), Color(0xFF16A34A)), // Green
+        Pair(Color(0xFFE0E7FF), Color(0xFF4338CA))  // Blue
+    )
+    val (badgeBg, badgeIcon) = badgeColors[index % badgeColors.size]
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(elevation = 1.dp, shape = RoundedCornerShape(16.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        color = surfaceColor,
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Colored document badge
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isDark) badgeIcon.copy(alpha = 0.25f) else badgeBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Description,
+                    contentDescription = null,
+                    tint = badgeIcon,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.originalText.replace('\n', ' ').trim(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = HistoryManager.formatRelativeTime(item.timestamp),
+                    fontSize = 12.sp,
+                    color = secondaryText
+                )
+            }
+
+            // 3-dots overflow
+            Box {
+                IconButton(
+                    onClick = { showMenu = true },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.MoreVert,
+                        contentDescription = "Options",
+                        tint = secondaryText,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Copy Original") },
+                        onClick = {
+                            showMenu = false
+                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            cm.setPrimaryClip(ClipData.newPlainText("ELI5 Original", item.originalText))
+                            Toast.makeText(context, "Copied original text", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Copy Explanation") },
+                        onClick = {
+                            showMenu = false
+                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            cm.setPrimaryClip(ClipData.newPlainText("ELI5 Explanation", item.resultText))
+                            Toast.makeText(context, "Copied explanation", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Share Card") },
+                        onClick = {
+                            showMenu = false
+                            ShareImageGenerator.shareExplanation(
+                                context,
+                                item.originalText,
+                                item.resultText,
+                                item.mode,
+                                scope
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete", color = Color.Red) },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        }
                     )
                 }
             }
@@ -1432,7 +2041,395 @@ fun CircleToEli5Card(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// -------------------------------------------------------------------------------------------------
+// SCREEN 4: More / Settings Screen
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun MoreScreen(
+    themePref: String,
+    isDark: Boolean,
+    currentLanguage: String,
+    surfaceColor: Color,
+    borderColor: Color,
+    primaryText: Color,
+    secondaryText: Color,
+    accentPurple: Color,
+    lightLavender: Color,
+    onThemeChange: (String) -> Unit,
+    onOpenLanguagePicker: () -> Unit,
+    onShowTutorial: () -> Unit,
+    onCheckUpdates: () -> Unit,
+    onClearAllData: () -> Unit
+) {
+    val context = LocalContext.current
+    var showThemeDialog by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "More",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = primaryText,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+
+        // Preferences Group
+        Text(
+            text = "PREFERENCES",
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold,
+            color = secondaryText,
+            letterSpacing = 1.sp
+        )
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp)),
+            shape = RoundedCornerShape(20.dp),
+            color = surfaceColor,
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                // Language
+                val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
+                MoreMenuRow(
+                    icon = Icons.Rounded.Public,
+                    title = "Language",
+                    value = "${langObj.flag} ${langObj.nativeName}",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = onOpenLanguagePicker
+                )
+
+                HorizontalDivider(color = borderColor)
+
+                // Theme
+                val themeLabel = when (themePref) {
+                    "dark" -> "Dark"
+                    "light" -> "Light"
+                    else -> "System Default"
+                }
+                MoreMenuRow(
+                    icon = Icons.Rounded.Settings,
+                    title = "Theme",
+                    value = themeLabel,
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = { showThemeDialog = true }
+                )
+            }
+        }
+
+        // Assistant & Gesture Group
+        Text(
+            text = "ASSISTANT & GESTURES",
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold,
+            color = secondaryText,
+            letterSpacing = 1.sp
+        )
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp)),
+            shape = RoundedCornerShape(20.dp),
+            color = surfaceColor,
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                MoreMenuRow(
+                    icon = Icons.Rounded.TouchApp,
+                    title = "Try Gesture Demo",
+                    value = "Interactive",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = {
+                        val intent = Intent(context, CircleSnipActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                )
+
+                HorizontalDivider(color = borderColor)
+
+                MoreMenuRow(
+                    icon = Icons.Rounded.Tune,
+                    title = "Assistant Settings",
+                    value = "System",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = {
+                        Eli5AssistantManager.openAssistantSettings(context)
+                    }
+                )
+
+                HorizontalDivider(color = borderColor)
+
+                MoreMenuRow(
+                    icon = Icons.AutoMirrored.Rounded.MenuBook,
+                    title = "How to Use Tutorial",
+                    value = "Guide",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = onShowTutorial
+                )
+            }
+        }
+
+        // About & Updates
+        Text(
+            text = "ABOUT & DATA",
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold,
+            color = secondaryText,
+            letterSpacing = 1.sp
+        )
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp)),
+            shape = RoundedCornerShape(20.dp),
+            color = surfaceColor,
+            border = BorderStroke(1.dp, borderColor)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+                MoreMenuRow(
+                    icon = Icons.Rounded.AutoAwesome,
+                    title = "Check for Updates",
+                    value = "v2.2.1",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = onCheckUpdates
+                )
+
+                HorizontalDivider(color = borderColor)
+
+                MoreMenuRow(
+                    icon = Icons.Rounded.Delete,
+                    title = "Clear All History",
+                    value = "",
+                    primaryText = Color(0xFFEF4444),
+                    secondaryText = secondaryText,
+                    accentPurple = Color(0xFFEF4444),
+                    onClick = onClearAllData
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+
+    if (showThemeDialog) {
+        AlertDialog(
+            onDismissRequest = { showThemeDialog = false },
+            title = { Text("Choose Theme", fontWeight = FontWeight.Bold, color = primaryText) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    listOf(
+                        "system" to "System Default",
+                        "light" to "Light",
+                        "dark" to "Dark"
+                    ).forEach { (key, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onThemeChange(key)
+                                    showThemeDialog = false
+                                }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = label, fontSize = 15.sp, color = primaryText)
+                            if (themePref == key) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = accentPurple,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showThemeDialog = false }) {
+                    Text("Close", color = accentPurple)
+                }
+            },
+            containerColor = surfaceColor
+        )
+    }
+}
+
+@Composable
+fun MoreMenuRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    value: String,
+    primaryText: Color,
+    secondaryText: Color,
+    accentPurple: Color,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentPurple,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Text(
+                text = title,
+                fontSize = 14.5.sp,
+                fontWeight = FontWeight.Medium,
+                color = primaryText
+            )
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (value.isNotBlank()) {
+                Text(
+                    text = value,
+                    fontSize = 13.sp,
+                    color = secondaryText
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+            }
+            Icon(
+                imageVector = Icons.Rounded.ChevronRight,
+                contentDescription = null,
+                tint = secondaryText,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// Bottom Navigation Bar
+// -------------------------------------------------------------------------------------------------
+
+@Composable
+fun Eli5BottomNavigationBar(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    isDark: Boolean,
+    surfaceColor: Color,
+    borderColor: Color,
+    accentPurple: Color,
+    lightLavender: Color
+) {
+    val items = listOf(
+        Triple(0, "Home", Icons.Rounded.Home),
+        Triple(1, "History", Icons.Rounded.Schedule),
+        Triple(2, "More", Icons.Rounded.GridView)
+    )
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(elevation = 8.dp),
+        color = surfaceColor,
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            items.forEach { (index, label, icon) ->
+                val isSelected = selectedTab == index
+
+                if (isSelected) {
+                    // Active Pill Background
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(lightLavender.copy(alpha = if (isDark) 0.6f else 0.85f))
+                            .padding(horizontal = 22.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                tint = accentPurple,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = label,
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = accentPurple
+                            )
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(24.dp))
+                            .clickable { onTabSelected(index) }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = if (isDark) TextSecondaryDark else TextSecondary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = label,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isDark) TextSecondaryDark else TextSecondary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// Language Picker Dialog
+// -------------------------------------------------------------------------------------------------
+
 @Composable
 fun LanguagePickerDialog(
     currentLanguage: String,
@@ -1445,137 +2442,150 @@ fun LanguagePickerDialog(
     cardBg: Color,
     cardBorder: Color
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var searchQuery by remember { mutableStateOf("") }
     val filteredLanguages = remember(searchQuery) {
         LanguageManager.searchLanguages(searchQuery)
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = cardBg,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-    ) {
-        Column(
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.85f)
-                .padding(horizontal = 20.dp)
+                .heightIn(max = 560.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = cardBg,
+            border = BorderStroke(1.dp, cardBorder)
         ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.picker_title),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = primaryTextColor
-                    )
-                    Text(
-                        text = stringResource(R.string.picker_subtitle),
-                        color = secondaryTextColor,
-                        fontSize = 12.sp
-                    )
-                }
-                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = stringResource(R.string.close),
-                        tint = secondaryTextColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.picker_search_hint), color = secondaryTextColor, fontSize = 14.sp) },
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Search", tint = accent, modifier = Modifier.size(20.dp))
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = secondaryTextColor, modifier = Modifier.size(18.dp))
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = accent,
-                    unfocusedBorderColor = cardBorder,
-                    focusedTextColor = primaryTextColor,
-                    unfocusedTextColor = primaryTextColor,
-                    cursorColor = accent
-                )
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Language List
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
+                    .padding(20.dp)
             ) {
-                items(filteredLanguages) { lang ->
-                    val isSelected = currentLanguage.equals(lang.englishName, ignoreCase = true)
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSelectLanguage(lang.englishName) },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) (if (isDark) Color(0xFF2E1065) else Color(0xFFEDE9FE)) else Color.Transparent,
-                        border = if (isSelected) BorderStroke(1.5.dp, accent) else null
-                    ) {
-                        Row(
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Select Language",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = primaryTextColor
+                        )
+                        Text(
+                            text = "Explanations will be translated to this",
+                            fontSize = 12.sp,
+                            color = secondaryTextColor
+                        )
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = secondaryTextColor
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Search Bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = {
+                        Text("Search 35+ languages...", fontSize = 13.sp, color = secondaryTextColor)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Clear",
+                                    tint = secondaryTextColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = accent,
+                        unfocusedBorderColor = cardBorder,
+                        focusedTextColor = primaryTextColor,
+                        unfocusedTextColor = primaryTextColor,
+                        cursorColor = accent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Language List
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    items(filteredLanguages) { lang ->
+                        val isSelected = currentLanguage.equals(lang.englishName, ignoreCase = true)
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .clickable { onSelectLanguage(lang.englishName) },
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) (if (isDark) Color(0xFF2E1065) else Color(0xFFEDE9FE)) else Color.Transparent,
+                            border = if (isSelected) BorderStroke(1.5.dp, accent) else null
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = lang.flag, fontSize = 22.sp)
-                                Spacer(modifier = Modifier.width(14.dp))
-                                Column {
-                                    Text(
-                                        text = lang.nativeName,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                                        fontSize = 15.sp,
-                                        color = if (isSelected) accent else primaryTextColor
-                                    )
-                                    Text(
-                                        text = lang.englishName,
-                                        fontSize = 12.sp,
-                                        color = secondaryTextColor
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(text = lang.flag, fontSize = 22.sp)
+                                    Spacer(modifier = Modifier.width(14.dp))
+                                    Column {
+                                        Text(
+                                            text = lang.nativeName,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                            fontSize = 15.sp,
+                                            color = if (isSelected) accent else primaryTextColor
+                                        )
+                                        Text(
+                                            text = lang.englishName,
+                                            fontSize = 12.sp,
+                                            color = secondaryTextColor
+                                        )
+                                    }
+                                }
+
+                                if (isSelected) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = "Selected",
+                                        tint = accent,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
-                            }
-
-                            if (isSelected) {
-                                Icon(
-                                    Icons.Default.Check,
-                                    contentDescription = "Selected",
-                                    tint = accent,
-                                    modifier = Modifier.size(20.dp)
-                                )
                             }
                         }
                     }

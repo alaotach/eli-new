@@ -11,21 +11,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PurpleSecondary,
+    secondary = LavenderLight,
+    tertiary = AccentOrange,
+    background = BackgroundDark,
+    surface = SurfaceDark,
+    onPrimary = SurfaceWhite,
+    onSecondary = TextPrimary,
+    onBackground = TextPrimaryDark,
+    onSurface = TextPrimaryDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = PurplePrimary,
+    secondary = PurpleSecondary,
+    tertiary = AccentOrange,
+    background = LavenderBackground,
+    surface = SurfaceWhite,
+    onPrimary = SurfaceWhite,
+    onSecondary = SurfaceWhite,
+    onBackground = TextPrimary,
+    onSurface = TextPrimary
 )
 
 @Composable
 fun Eli5Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Keep branded purple consistent across devices
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

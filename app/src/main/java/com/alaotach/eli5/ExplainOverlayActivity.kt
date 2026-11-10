@@ -336,83 +336,14 @@ class ExplainOverlayActivity : Activity() {
         language: String,
         extraModifier: String?,
         onChunk: suspend (String) -> Unit
-    ): String = withContext(Dispatchers.IO) {
-        try {
-            val endpoint = "${BuildConfig.BACKEND_URL}/api/explain"
-            val url = URL(endpoint)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Content-Type", "application/json")
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0 ELI5-Android/2.2.1")
-            conn.connectTimeout = 15000
-            conn.readTimeout = 30000
-            conn.doOutput = true
-
-            val resolvedMode = when (mode) {
-                "Direct" -> "Straightforward"
-                "Detailed" -> "Detailed"
-                else -> "ELI5"
-            }
-
-            var promptText = text
-            if (isFromSnip) {
-                promptText = """
-                    [Context: The user selected this text by circling/snipping on their mobile screen.]
-                    [Instruction: Focus exclusively on explaining the central entity, concept, punchline, jargon, or question the user circled. Disregard any peripheral timestamps, battery/status text, buttons, or accidental edge clippings. Give a clear, direct, and insightful explanation.]
-
-                    $text
-                """.trimIndent()
-            }
-            if (!extraModifier.isNullOrEmpty()) {
-                promptText = "$promptText\n\n[$extraModifier]"
-            }
-            if (language.equals("Hinglish", ignoreCase = true)) {
-                promptText = "$promptText\n\n[Please explain in natural, casual Hinglish (Hindi written using the English/Latin alphabet, mixing everyday conversational Hindi and English words naturally, e.g. 'Yeh concept bohot simple hai, basically...'). Do NOT use Devanagari script; write entirely in Latin/English letters.]"
-            } else if (!language.equals("English", ignoreCase = true)) {
-                promptText = "$promptText\n\n[Please explain in clear, natural $language]"
-            }
-
-            val payload = JSONObject().apply {
-                put("text", promptText)
-                put("mode", resolvedMode)
-                put("language", language)
-            }
-
-            OutputStreamWriter(conn.outputStream).use { writer ->
-                writer.write(payload.toString())
-                writer.flush()
-            }
-
-            if (conn.responseCode == 200) {
-                val reader = BufferedReader(InputStreamReader(conn.inputStream))
-                val fullResponse = StringBuilder()
-                var line: String?
-
-                while (reader.readLine().also { line = it } != null) {
-                    val currentLine = line ?: continue
-                    if (currentLine.startsWith("data: ")) {
-                        val data = currentLine.removePrefix("data: ").trim()
-                        if (data == "[DONE]") break
-                        try {
-                            val json = JSONObject(data)
-                            val delta = json.getJSONArray("choices").getJSONObject(0).getJSONObject("delta")
-                            val content = delta.optString("content", "")
-                            if (content.isNotEmpty()) {
-                                fullResponse.append(content)
-                                onChunk(fullResponse.toString())
-                            }
-                        } catch (_: Exception) {}
-                    }
-                }
-                reader.close()
-                fullResponse.toString().trim()
-            } else {
-                "Error: API returned ${conn.responseCode}"
-            }
-        } catch (e: Exception) {
-            "Error: ${e.message}"
-        }
-    }
+    ): String = ExplainRepository.fetchExplanation(
+        text = text,
+        mode = mode,
+        language = language,
+        extraModifier = extraModifier,
+        isFromSnip = isFromSnip,
+        onChunk = onChunk
+    )
 
     private fun showBottomSheet() {
         // Haptic feedback

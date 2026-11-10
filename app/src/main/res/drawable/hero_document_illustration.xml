@@ -1,0 +1,72 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="250dp"
+    android:viewportWidth="320"
+    android:viewportHeight="250">
+
+    <!-- Background lavender blob -->
+    <path
+        android:fillColor="#E9D5FF"
+        android:pathData="M70,160 C30,90 100,65 100,65 C180,15 250,85 250,85 C310,160 230,210 230,210 C130,260 70,160 70,160 Z" />
+
+    <!-- Orange sparkle bursts at top right of paper -->
+    <path
+        android:strokeColor="#FF8A32"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M218,42 L227,20 M240,48 L254,29 M256,65 L277,55" />
+
+    <!-- Violet star sparkle on left -->
+    <path
+        android:fillColor="#A855F7"
+        android:pathData="M76,75 L82,60 L88,75 L103,81 L88,87 L82,102 L76,87 L61,81 Z" />
+
+    <!-- Purple star sparkle on right -->
+    <path
+        android:fillColor="#6A0DAD"
+        android:pathData="M245,150 L250,137 L255,150 L268,155 L255,160 L250,173 L245,160 L232,155 Z" />
+
+    <!-- Rotated Document Paper -->
+    <group
+        android:pivotX="160"
+        android:pivotY="130"
+        android:rotation="12">
+
+        <!-- Shadow Rect -->
+        <path
+            android:fillColor="#246A0DAD"
+            android:pathData="M106,45 L217,45 A17,17 0 0,1 234,62 L234,202 A17,17 0 0,1 217,219 L106,219 A17,17 0 0,1 89,202 L89,62 A17,17 0 0,1 106,45 Z" />
+
+        <!-- Paper Body (White with purple border) -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:strokeColor="#6A0DAD"
+            android:strokeWidth="3"
+            android:pathData="M97,36 L208,36 A17,17 0 0,1 225,53 L225,193 A17,17 0 0,1 208,210 L97,210 A17,17 0 0,1 80,193 L80,53 A17,17 0 0,1 97,36 Z" />
+
+        <!-- Line 1 -->
+        <path
+            android:fillColor="#A855F7"
+            android:pathData="M108,70 L198,70 A5,5 0 0,1 203,75 L203,75 A5,5 0 0,1 198,80 L108,80 A5,5 0 0,1 103,75 L103,75 A5,5 0 0,1 108,70 Z" />
+
+        <!-- Line 2 -->
+        <path
+            android:fillColor="#C084FC"
+            android:pathData="M108,96 L189,96 A5,5 0 0,1 194,101 L194,101 A5,5 0 0,1 189,106 L108,106 A5,5 0 0,1 103,101 L103,101 A5,5 0 0,1 108,96 Z" />
+
+        <!-- Line 3 -->
+        <path
+            android:fillColor="#A855F7"
+            android:pathData="M108,122 L203,122 A5,5 0 0,1 208,127 L208,127 A5,5 0 0,1 203,132 L108,132 A5,5 0 0,1 103,127 L103,127 A5,5 0 0,1 108,122 Z" />
+
+        <!-- Line 4 -->
+        <path
+            android:fillColor="#6A0DAD"
+            android:pathData="M108,148 L163,148 A5,5 0 0,1 168,153 L168,153 A5,5 0 0,1 163,158 L108,158 A5,5 0 0,1 103,153 L103,153 A5,5 0 0,1 108,148 Z" />
+    </group>
+
+    <!-- Bottom small accent blob -->
+    <path
+        android:fillColor="#59A855F7"
+        android:pathData="M58,195 C95,175 126,215 126,215 C76,235 45,215 45,215 Z" />
+</vector>
