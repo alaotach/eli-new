@@ -291,7 +291,7 @@ object ShareImageGenerator {
         imageFile
     }
 
-    private fun grantPermissionsToReceivers(context: Context, shareIntent: Intent, uri: Uri) {
+    fun grantPermissionsToReceivers(context: Context, shareIntent: Intent, uri: Uri) {
         try {
             val resolveInfoList = context.packageManager.queryIntentActivities(
                 shareIntent,
@@ -594,24 +594,15 @@ object ShareImageGenerator {
 
                 val caption = "✨ Translated into $targetLanguage with ELI5! Try ELI5 now: $PLAY_STORE_URL"
 
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "image/png"
-                    clipData = ClipData.newRawUri("ELI5 Translation", imageUri)
-                    putExtra(Intent.EXTRA_STREAM, imageUri)
-                    putExtra(Intent.EXTRA_TEXT, caption)
-                    putExtra(Intent.EXTRA_SUBJECT, "ELI5 Screen Translation")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                // Launch via dedicated transparent Activity so Chooser has full foreground activity privileges
+                // This prevents Android from blocking third-party apps (WhatsApp, Telegram) as background starts
+                val shareTransparentIntent = Intent(context, com.alaotach.eli5.assistant.ShareTransparentActivity::class.java).apply {
+                    putExtra(com.alaotach.eli5.assistant.ShareTransparentActivity.EXTRA_IMAGE_PATH, imageFile.absolutePath)
+                    putExtra(com.alaotach.eli5.assistant.ShareTransparentActivity.EXTRA_CAPTION, caption)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 }
 
-                grantPermissionsToReceivers(context, shareIntent, imageUri)
-
-                val chooserIntent = Intent.createChooser(shareIntent, "Share Translated Screen").apply {
-                    clipData = ClipData.newRawUri("ELI5 Translation", imageUri)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                context.startActivity(chooserIntent)
+                context.startActivity(shareTransparentIntent)
                 onShareStarted?.invoke()
             } catch (e: Exception) {
                 onError?.invoke()

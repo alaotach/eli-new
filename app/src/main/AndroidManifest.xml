@@ -95,6 +95,13 @@
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <activity
+            android:name=".assistant.ShareTransparentActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <!-- Circle / Square to ELI5 Demo & Snip Overlay Activity -->
         <activity
             android:name=".assistant.CircleSnipActivity"
