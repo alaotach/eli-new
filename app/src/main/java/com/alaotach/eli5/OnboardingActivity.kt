@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -34,12 +35,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-val ONBOARDING_BG: Int = Color.parseColor("#120F1D")
-val ONBOARDING_CARD_BG: Int = Color.parseColor("#1C172B")
+val ONBOARDING_BG: Int = Color.parseColor("#F8F5FF")
+val ONBOARDING_CARD_BG: Int = Color.parseColor("#FFFFFF")
 val ONBOARDING_PURPLE: Int = Color.parseColor("#6A0DAD")
-val ONBOARDING_PURPLE_LIGHT: Int = Color.parseColor("#A855F7")
-val ONBOARDING_TEXT_PRIMARY: Int = Color.parseColor("#FFFFFF")
-val ONBOARDING_TEXT_MUTED: Int = Color.parseColor("#9E9AA8")
+val ONBOARDING_PURPLE_LIGHT: Int = Color.parseColor("#E9D5FF")
+val ONBOARDING_TEXT_PRIMARY: Int = Color.parseColor("#21112F")
+val ONBOARDING_TEXT_MUTED: Int = Color.parseColor("#766782")
 
 fun Context.dpToPx(dp: Float): Int {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).toInt()
@@ -61,7 +62,7 @@ fun createStepIndicator(context: Context, activeIndex: Int): LinearLayout {
                 setMargins(context.dpToPx(4f), 0, context.dpToPx(4f), 0)
             }
             background = GradientDrawable().apply {
-                setColor(if (isActive) ONBOARDING_PURPLE else Color.parseColor("#38304D"))
+                setColor(if (isActive) ONBOARDING_PURPLE else Color.parseColor("#E9D5FF"))
                 cornerRadius = context.dpToPx(4f).toFloat()
             }
         }
@@ -170,7 +171,7 @@ class OnboardingStep1Fragment : Fragment() {
                     setMargins(context.dpToPx(3f), 0, context.dpToPx(3f), 0)
                 }
                 background = GradientDrawable().apply {
-                    setColor(if (i == 0) ONBOARDING_PURPLE else Color.parseColor("#443C56"))
+                    setColor(if (i == 0) ONBOARDING_PURPLE else Color.parseColor("#E9D5FF"))
                     cornerRadius = context.dpToPx(3f).toFloat()
                 }
             }
@@ -202,7 +203,7 @@ class OnboardingStep1Fragment : Fragment() {
                     setMargins(context.dpToPx(3f), 0, context.dpToPx(3f), 0)
                 }
                 d.background = GradientDrawable().apply {
-                    setColor(if (isActive) ONBOARDING_PURPLE else Color.parseColor("#443C56"))
+                    setColor(if (isActive) ONBOARDING_PURPLE else Color.parseColor("#E9D5FF"))
                     cornerRadius = context.dpToPx(3f).toFloat()
                 }
             }
@@ -311,7 +312,7 @@ class OnboardingStep2Fragment : Fragment() {
         val keyLineCard = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#261D3B"))
+                setColor(Color.parseColor("#EDE9FE"))
                 cornerRadius = context.dpToPx(12f).toFloat()
                 setStroke(context.dpToPx(1f), ONBOARDING_PURPLE)
             }
@@ -324,7 +325,7 @@ class OnboardingStep2Fragment : Fragment() {
 
         val keyLineText = TextView(context).apply {
             text = getString(R.string.onboarding_step2_keyline)
-            setTextColor(Color.WHITE)
+            setTextColor(ONBOARDING_PURPLE)
             textSize = 13.5f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
@@ -630,13 +631,13 @@ class OnboardingStep3Fragment : Fragment() {
 
         val badgePill = TextView(context).apply {
             this.text = badge
-            setTextColor(Color.parseColor("#DDD6FE"))
+            setTextColor(ONBOARDING_PURPLE)
             textSize = 11.5f
             typeface = Typeface.DEFAULT_BOLD
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#2A2040"))
+                setColor(Color.parseColor("#EDE9FE"))
                 cornerRadius = context.dpToPx(6f).toFloat()
-                setStroke(context.dpToPx(1f), Color.parseColor("#6D28D9"))
+                setStroke(context.dpToPx(1f), Color.parseColor("#C4B5FD"))
             }
             setPadding(context.dpToPx(10f), context.dpToPx(4f), context.dpToPx(10f), context.dpToPx(4f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
@@ -646,7 +647,7 @@ class OnboardingStep3Fragment : Fragment() {
 
         val bodyTv = TextView(context).apply {
             this.text = text
-            setTextColor(Color.parseColor("#F9FAFB"))
+            setTextColor(ONBOARDING_TEXT_PRIMARY)
             textSize = 14.5f
             setLineSpacing(0f, 1.25f)
             setPadding(0, 0, 0, context.dpToPx(12f))
@@ -724,6 +725,10 @@ class OnboardingActivity : AppCompatActivity() {
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
         window.setBackgroundDrawable(ColorDrawable(ONBOARDING_BG))
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = true
+            isAppearanceLightNavigationBars = true
+        }
 
         val root = FrameLayout(this).apply {
             setBackgroundColor(ONBOARDING_BG)

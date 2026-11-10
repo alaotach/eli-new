@@ -102,36 +102,36 @@ class CircleSelectionView @JvmOverloads constructor(
 
     // Background Dimming Scrim
     private val dimPaint = Paint().apply {
-        color = Color.parseColor("#59000000") // 35% translucent dark scrim
+        color = Color.parseColor("#40000000") // Soft translucent dark scrim
     }
 
-    // ELI5 Floating Island Header
+    // ELI5 Floating Island Header - Redesigned Light Purple Surface
     private val pillBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#F20F172A") // Deep frosted slate / dark violet
+        color = Color.WHITE
         style = Paint.Style.FILL
-        setShadowLayer(16f * dp, 0f, 6f * dp, Color.parseColor("#80000000"))
+        setShadowLayer(14f * dp, 0f, 4f * dp, Color.parseColor("#26000000"))
     }
 
     private val pillBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#668B5CF6") // Neon violet border
+        color = Color.parseColor("#E9D5FF") // Light lavender border
         style = Paint.Style.STROKE
-        strokeWidth = 1.5f * dp
+        strokeWidth = 1.2f * dp
     }
 
     private val titleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = Color.parseColor("#21112F") // Deep plum primary text
         textSize = 14f * dp
         typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
     }
 
     private val subtitleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#C4B5FD") // Light lavender
+        color = Color.parseColor("#766782") // Muted purple-gray
         textSize = 11f * dp
         typeface = Typeface.create("sans-serif", Typeface.NORMAL)
     }
 
     private val closeButtonPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#C4B5FD")
+        color = Color.parseColor("#766782")
         textSize = 18f * dp
         textAlign = Paint.Align.CENTER
         typeface = Typeface.DEFAULT_BOLD
@@ -140,17 +140,17 @@ class CircleSelectionView @JvmOverloads constructor(
     // Translate Button & Badge Paints
     private val translateBtnBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = Color.parseColor("#268B5CF6")
+        color = Color.parseColor("#EDE9FE") // Lavender pill
     }
 
     private val translateBtnBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 1.2f * dp
-        color = Color.parseColor("#8B5CF6")
+        color = Color.parseColor("#A855F7")
     }
 
     private val translateBtnTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = Color.parseColor("#6A0DAD") // Primary purple
         textSize = 12f * dp
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)

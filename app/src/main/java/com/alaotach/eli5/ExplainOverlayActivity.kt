@@ -82,6 +82,9 @@ class ExplainOverlayActivity : Activity() {
     private var primaryLangBtn: TextView? = null
     private var secondaryLangBtn: TextView? = null
     private var moreLangBtn: TextView? = null
+    private var speakerBtn: TextView? = null
+    private var ttsHelper: TtsHelper? = null
+    private var isTtsSpeaking: Boolean = false
 
     private val activityScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -91,30 +94,30 @@ class ExplainOverlayActivity : Activity() {
     private val isDark: Boolean
         get() = SettingsManager.isDarkTheme(this)
 
-    // Palette per spec
+    // Design System Light & Purple Palette per redesign spec
     private val purpleAccent: Int
-        get() = Color.parseColor(if (isDark) "#8B5CF6" else "#7C3AED")
+        get() = Color.parseColor(if (isDark) "#A855F7" else "#6A0DAD")
 
     private val purpleBorderColor: Int
-        get() = Color.argb((255 * 0.40f).toInt(), 139, 92, 246)
+        get() = Color.parseColor(if (isDark) "#35234E" else "#EFE9F7")
 
     private val cardBgColor: Int
         get() = Color.parseColor(if (isDark) "#1C1826" else "#FFFFFF")
 
     private val contentBoxBgColor: Int
-        get() = Color.parseColor(if (isDark) "#161320" else "#F7F5FA")
+        get() = Color.parseColor(if (isDark) "#161320" else "#F8F5FF")
 
     private val textPrimaryColor: Int
-        get() = Color.parseColor(if (isDark) "#FFFFFF" else "#1C1826")
+        get() = Color.parseColor(if (isDark) "#FFFFFF" else "#21112F")
 
     private val textMutedColor: Int
-        get() = Color.parseColor(if (isDark) "#9E9AA8" else "#6B6678")
+        get() = Color.parseColor(if (isDark) "#9E9AA8" else "#766782")
 
     private val tabsBgColor: Int
-        get() = Color.parseColor(if (isDark) "#14101E" else "#F0EDF7")
+        get() = Color.parseColor(if (isDark) "#221733" else "#EDE9FE")
 
     private val handleColor: Int
-        get() = Color.parseColor(if (isDark) "#443E54" else "#DCD8E8")
+        get() = Color.parseColor(if (isDark) "#443E54" else "#E9D5FF")
 
     override fun attachBaseContext(newBase: Context) {
         val lang = SettingsManager.getLanguage(newBase)
@@ -438,6 +441,35 @@ class ExplainOverlayActivity : Activity() {
             }
         }
         headerRow.addView(copyBtn)
+
+        // Read aloud / TTS button (Speaker toggle)
+        speakerBtn = TextView(this).apply {
+            text = "🔊"
+            textSize = 15.0f
+            setPadding((dp * 8).toInt(), (dp * 6).toInt(), (dp * 8).toInt(), (dp * 6).toInt())
+            setOnClickListener {
+                if (currentExplanationText.isNotBlank()) {
+                    if (ttsHelper == null) {
+                        ttsHelper = TtsHelper(this@ExplainOverlayActivity)
+                    }
+                    val langObj = LanguageManager.getLanguageByEnglishName(currentActiveLanguage)
+                    val nowSpeaking = ttsHelper?.toggle(currentExplanationText, langObj.code) { speaking ->
+                        isTtsSpeaking = speaking
+                        runOnUiThread {
+                            speakerBtn?.text = if (speaking) "⏹" else "🔊"
+                        }
+                    } ?: false
+                    isTtsSpeaking = nowSpeaking
+                    speakerBtn?.text = if (nowSpeaking) "⏹" else "🔊"
+                    if (nowSpeaking) {
+                        Toast.makeText(this@ExplainOverlayActivity, "Reading aloud...", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@ExplainOverlayActivity, "Stopped reading", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+        headerRow.addView(speakerBtn)
 
         // Share button
         val shareBtn = TextView(this).apply {
@@ -943,5 +975,11 @@ class ExplainOverlayActivity : Activity() {
 
         dialog.setContentView(dialogRoot)
         dialog.show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ttsHelper?.shutdown()
+        ttsHelper = null
     }
 }

@@ -1,5 +1,6 @@
 package com.alaotach.eli5
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -11,6 +12,7 @@ import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
@@ -29,6 +31,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -64,10 +67,13 @@ import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StopCircle
 import androidx.compose.material.icons.rounded.ThumbDown
 import androidx.compose.material.icons.rounded.ThumbUp
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.rounded.Whatshot
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -90,6 +96,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -121,6 +128,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.alaotach.eli5.assistant.CircleSnipActivity
 import com.alaotach.eli5.assistant.Eli5AssistantManager
 import com.alaotach.eli5.ui.Eli5OrganicBackground
+import com.alaotach.eli5.ui.MarkdownTextFormatter
 import com.alaotach.eli5.ui.theme.AccentOrange
 import com.alaotach.eli5.ui.theme.CardBorderDark
 import com.alaotach.eli5.ui.theme.CardBorderLight
@@ -314,6 +322,34 @@ fun Eli5App(
     var currentLanguage by remember { mutableStateOf(SettingsManager.getLanguage(context)) }
     var showLanguagePicker by remember { mutableStateOf(false) }
     var history by remember { mutableStateOf<List<HistoryItem>>(emptyList()) }
+    var lastBackPressTime by remember { mutableLongStateOf(0L) }
+
+    // Dynamic RTL/LTR support based on current selected language
+    val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
+    val locale = java.util.Locale.forLanguageTag(langObj.code)
+    val isRtl = TextUtilsCompat.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL
+    val layoutDir = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+
+    // System Back Press handling:
+    // 1. If viewing an explanation -> close explanation & return to previous tab
+    // 2. If on History or More tab -> return to Home tab
+    // 3. If on Home tab -> double-tap back within 2 seconds to exit the app
+    BackHandler(enabled = true) {
+        if (activeExplanationItem != null) {
+            ttsHelper.stop()
+            activeExplanationItem = null
+        } else if (selectedTab != 0) {
+            selectedTab = 0
+        } else {
+            val now = System.currentTimeMillis()
+            if (now - lastBackPressTime < 2000L) {
+                (context as? Activity)?.finish()
+            } else {
+                lastBackPressTime = now
+                Toast.makeText(context, "Press back again to exit", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     // Color tokens
     val primaryText = if (isDark) TextPrimaryDark else TextPrimary
@@ -333,7 +369,10 @@ fun Eli5App(
         }
     }
 
-    Scaffold(
+    CompositionLocalProvider(
+        LocalLayoutDirection provides layoutDir
+    ) {
+        Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Transparent,
         bottomBar = {
@@ -448,6 +487,7 @@ fun Eli5App(
                 }
             }
         }
+    }
     }
 
     if (showLanguagePicker) {
@@ -1096,6 +1136,17 @@ fun ExplanationScreen(
     var deeperLoading by remember { mutableStateOf(false) }
     var deeperSectionTitle by remember { mutableStateOf<String?>(null) }
     var showMenu by remember { mutableStateOf(false) }
+    var isSpeaking by remember { mutableStateOf(false) }
+
+    DisposableEffect(ttsHelper) {
+        ttsHelper.setStateListener { speaking ->
+            isSpeaking = speaking
+        }
+        onDispose {
+            ttsHelper.stop()
+            ttsHelper.setStateListener(null)
+        }
+    }
 
     LaunchedEffect(item.originalText) {
         if (fullExplanation.isBlank()) {
@@ -1312,8 +1363,11 @@ fun ExplanationScreen(
                         )
                     }
                 } else {
+                    val formattedExplanation = remember(fullExplanation, primaryText, accentPurple) {
+                        MarkdownTextFormatter.formatMarkdown(fullExplanation, primaryText, accentPurple)
+                    }
                     Text(
-                        text = fullExplanation,
+                        text = formattedExplanation,
                         fontSize = 14.5.sp,
                         lineHeight = 22.sp,
                         color = primaryText
@@ -1377,21 +1431,27 @@ fun ExplanationScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Audio / TTS
+                    // Audio / TTS Toggle (Reads aloud or stops when already speaking)
                     IconButton(
                         onClick = {
                             if (fullExplanation.isNotBlank()) {
                                 val langObj = LanguageManager.getLanguageByEnglishName(language)
-                                ttsHelper.speak(fullExplanation, langObj.code)
-                                Toast.makeText(context, "Reading aloud...", Toast.LENGTH_SHORT).show()
+                                val nowSpeaking = ttsHelper.toggle(fullExplanation, langObj.code) { speaking ->
+                                    isSpeaking = speaking
+                                }
+                                if (nowSpeaking) {
+                                    Toast.makeText(context, "Reading aloud...", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Stopped reading", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
-                            contentDescription = "Read aloud",
-                            tint = accentPurple,
+                            imageVector = if (isSpeaking) Icons.Rounded.StopCircle else Icons.AutoMirrored.Rounded.VolumeUp,
+                            contentDescription = if (isSpeaking) "Stop reading" else "Read aloud",
+                            tint = if (isSpeaking) AccentOrange else accentPurple,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -1540,12 +1600,17 @@ fun ExplanationScreen(
                             color = accentPurple
                         )
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = deeperText!!,
-                            fontSize = 13.5.sp,
-                            lineHeight = 20.sp,
-                            color = primaryText
-                        )
+                        val formattedDeeper = remember(deeperText, primaryText, accentPurple) {
+                            deeperText?.let { MarkdownTextFormatter.formatMarkdown(it, primaryText, accentPurple) }
+                        }
+                        if (formattedDeeper != null) {
+                            Text(
+                                text = formattedDeeper,
+                                fontSize = 13.5.sp,
+                                lineHeight = 20.sp,
+                                color = primaryText
+                            )
+                        }
                     }
                 }
             }
@@ -1699,7 +1764,9 @@ fun ActivityHistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     StatRow(
-                        emoji = "🔥",
+                        icon = Icons.Rounded.Whatshot,
+                        iconTint = Color(0xFFFF8A32),
+                        iconBgColor = Color(0xFFFF8A32).copy(alpha = 0.15f),
                         countText = streak.toString(),
                         labelText = "Day Streak",
                         primaryText = primaryText,
@@ -1708,7 +1775,9 @@ fun ActivityHistoryScreen(
                         borderColor = borderColor
                     )
                     StatRow(
-                        emoji = "⭐",
+                        icon = Icons.Rounded.Star,
+                        iconTint = Color(0xFFEAB308),
+                        iconBgColor = Color(0xFFEAB308).copy(alpha = 0.15f),
                         countText = points.toString(),
                         labelText = "Points",
                         primaryText = primaryText,
@@ -1717,7 +1786,9 @@ fun ActivityHistoryScreen(
                         borderColor = borderColor
                     )
                     StatRow(
-                        emoji = "📖",
+                        icon = Icons.AutoMirrored.Rounded.MenuBook,
+                        iconTint = Color(0xFF8B5CF6),
+                        iconBgColor = Color(0xFF8B5CF6).copy(alpha = 0.15f),
                         countText = topics.toString(),
                         labelText = "Topics",
                         primaryText = primaryText,
@@ -1902,7 +1973,9 @@ fun CircularStatsIndicator(
 
 @Composable
 fun StatRow(
-    emoji: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color,
+    iconBgColor: Color,
     countText: String,
     labelText: String,
     primaryText: Color,
@@ -1919,10 +1992,23 @@ fun StatRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 9.dp),
+                .padding(horizontal = 12.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = emoji, fontSize = 16.sp)
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(iconBgColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
             Spacer(modifier = Modifier.width(10.dp))
             Text(
                 text = countText,
@@ -2404,6 +2490,7 @@ fun Eli5BottomNavigationBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
