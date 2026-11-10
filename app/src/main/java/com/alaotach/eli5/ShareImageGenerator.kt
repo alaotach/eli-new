@@ -1,7 +1,9 @@
 package com.alaotach.eli5
 
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -282,9 +284,45 @@ object ShareImageGenerator {
         val imageFile = File(sharedDir, "eli5_share_${System.currentTimeMillis()}.png")
         FileOutputStream(imageFile).use { out ->
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.flush()
         }
+        imageFile.setReadable(true, false)
 
         imageFile
+    }
+
+    private fun grantPermissionsToReceivers(context: Context, shareIntent: Intent, uri: Uri) {
+        try {
+            val resolveInfoList = context.packageManager.queryIntentActivities(
+                shareIntent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            )
+            for (resolveInfo in resolveInfoList) {
+                val packageName = resolveInfo.activityInfo.packageName
+                context.grantUriPermission(
+                    packageName,
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+        } catch (_: Exception) {}
+
+        // Fallback explicit grant to known messaging/social apps in case queries didn't resolve them
+        val knownPackages = listOf(
+            "com.whatsapp",
+            "com.whatsapp.w4b",
+            "org.telegram.messenger",
+            "org.telegram.messenger.web",
+            "com.google.android.apps.messaging",
+            "com.facebook.orca",
+            "com.instagram.android",
+            "com.twitter.android"
+        )
+        for (pkg in knownPackages) {
+            try {
+                context.grantUriPermission(pkg, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) {}
+        }
     }
 
     private fun createStaticLayout(text: String, paint: TextPaint, width: Int): StaticLayout {
@@ -335,13 +373,17 @@ object ShareImageGenerator {
 
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "image/png"
+                    clipData = ClipData.newRawUri("ELI5 Explanation", imageUri)
                     putExtra(Intent.EXTRA_STREAM, imageUri)
                     putExtra(Intent.EXTRA_TEXT, caption)
                     putExtra(Intent.EXTRA_SUBJECT, "ELI5 Explanation")
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 
+                grantPermissionsToReceivers(context, shareIntent, imageUri)
+
                 val chooserIntent = Intent.createChooser(shareIntent, "Share ELI5 Explanation").apply {
+                    clipData = ClipData.newRawUri("ELI5 Explanation", imageUri)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
@@ -517,7 +559,9 @@ object ShareImageGenerator {
         val imageFile = File(sharedDir, "eli5_translation_${System.currentTimeMillis()}.png")
         FileOutputStream(imageFile).use { out ->
             resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.flush()
         }
+        imageFile.setReadable(true, false)
 
         imageFile
     }
@@ -552,13 +596,17 @@ object ShareImageGenerator {
 
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "image/png"
+                    clipData = ClipData.newRawUri("ELI5 Translation", imageUri)
                     putExtra(Intent.EXTRA_STREAM, imageUri)
                     putExtra(Intent.EXTRA_TEXT, caption)
                     putExtra(Intent.EXTRA_SUBJECT, "ELI5 Screen Translation")
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 
+                grantPermissionsToReceivers(context, shareIntent, imageUri)
+
                 val chooserIntent = Intent.createChooser(shareIntent, "Share Translated Screen").apply {
+                    clipData = ClipData.newRawUri("ELI5 Translation", imageUri)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
