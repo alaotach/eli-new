@@ -47,6 +47,7 @@ class CircleSelectionView @JvmOverloads constructor(
     private var isTranslating = false
     private var isShowingTranslation = false
     private var showOriginalOnly = false
+    private var isSharingTranslation = false
     private var translatedBlocks = listOf<TranslatedBlock>()
 
     private val touchPath = Path()
@@ -245,13 +246,26 @@ class CircleSelectionView @JvmOverloads constructor(
     private fun shareCurrentTranslation() {
         val bmp = screenshot ?: return
         if (translatedBlocks.isEmpty()) return
+        if (isSharingTranslation) return
+        isSharingTranslation = true
         triggerHaptic(0)
+        invalidate()
+
         com.alaotach.eli5.ShareImageGenerator.shareTranslatedScreen(
             context,
             bmp,
             translatedBlocks,
             targetLanguage,
-            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main),
+            onShareStarted = {
+                isSharingTranslation = false
+                // Dismiss overlay so system share popup/sheet is visible on top
+                onDismissRequested?.invoke()
+            },
+            onError = {
+                isSharingTranslation = false
+                invalidate()
+            }
         )
     }
 
@@ -626,18 +640,19 @@ class CircleSelectionView @JvmOverloads constructor(
                 val toggleLabel = if (showOriginalOnly) "✨ Translated" else "👁 Original"
                 canvas.drawText(toggleLabel, toggleOriginalBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
 
-                // Share button: [📤 Share]
-                val shareWidth = 68f * dp
+                // Share button: [📤 Share] / [⏳ Sharing…]
+                val shareWidth = if (isSharingTranslation) 78f * dp else 68f * dp
                 val shareRight = toggleLeft - 6f * dp
                 val shareLeft = shareRight - shareWidth
                 shareBtnRect.set(shareLeft, toggleTop, shareRight, toggleBottom)
 
-                translateBtnBgPaint.color = Color.parseColor("#4D8B5CF6")
+                translateBtnBgPaint.color = Color.parseColor(if (isSharingTranslation) "#808B5CF6" else "#4D8B5CF6")
                 canvas.drawRoundRect(shareBtnRect, 16f * dp, 16f * dp, translateBtnBgPaint)
                 translateBtnBorderPaint.color = Color.parseColor("#A78BFA")
                 canvas.drawRoundRect(shareBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
 
-                canvas.drawText("📤 Share", shareBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
+                val shareLabel = if (isSharingTranslation) "⏳ Sharing…" else "📤 Share"
+                canvas.drawText(shareLabel, shareBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
             }
 
             isTranslating -> {

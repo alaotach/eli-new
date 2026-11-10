@@ -341,7 +341,11 @@ object ShareImageGenerator {
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 
-                context.startActivity(Intent.createChooser(shareIntent, "Share ELI5 Explanation"))
+                val chooserIntent = Intent.createChooser(shareIntent, "Share ELI5 Explanation").apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(chooserIntent)
             } catch (e: Exception) {
                 // Fallback to text if image generation encounters any issue
                 val textFallback = "$explanationText\n\nExplained with ELI5: $PLAY_STORE_URL"
@@ -349,7 +353,11 @@ object ShareImageGenerator {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_TEXT, textFallback)
                 }
-                context.startActivity(Intent.createChooser(shareIntent, "Share ELI5 Explanation"))
+                val chooserIntent = Intent.createChooser(shareIntent, "Share ELI5 Explanation").apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(chooserIntent)
             }
         }
     }
@@ -519,14 +527,17 @@ object ShareImageGenerator {
         screenshot: Bitmap,
         blocks: List<com.alaotach.eli5.assistant.TranslatedBlock>,
         targetLanguage: String,
-        coroutineScope: kotlinx.coroutines.CoroutineScope
+        coroutineScope: kotlinx.coroutines.CoroutineScope,
+        onShareStarted: (() -> Unit)? = null,
+        onError: (() -> Unit)? = null
     ) {
         if (blocks.isEmpty()) {
             Toast.makeText(context, "No translation to share", Toast.LENGTH_SHORT).show()
+            onError?.invoke()
             return
         }
 
-        Toast.makeText(context, "Generating branded screenshot...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Preparing screenshot to share...", Toast.LENGTH_SHORT).show()
 
         coroutineScope.launch(Dispatchers.Main) {
             try {
@@ -547,8 +558,15 @@ object ShareImageGenerator {
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 
-                context.startActivity(Intent.createChooser(shareIntent, "Share Translated Screen"))
+                val chooserIntent = Intent.createChooser(shareIntent, "Share Translated Screen").apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                context.startActivity(chooserIntent)
+                onShareStarted?.invoke()
             } catch (e: Exception) {
+                onError?.invoke()
                 Toast.makeText(context, "Could not share screenshot: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
