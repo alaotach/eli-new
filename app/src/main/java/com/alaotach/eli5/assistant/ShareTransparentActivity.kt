@@ -11,8 +11,6 @@ import java.io.File
 
 class ShareTransparentActivity : ComponentActivity() {
 
-    private var resumeCount = 0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         @Suppress("DEPRECATION")
@@ -54,26 +52,8 @@ class ShareTransparentActivity : ComponentActivity() {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        @Suppress("DEPRECATION")
-        startActivityForResult(chooserIntent, REQUEST_SHARE)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        resumeCount++
-        if (resumeCount > 1) {
-            finish()
-        }
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+        startActivity(chooserIntent)
         finish()
-    }
-
-    override fun finish() {
-        super.finish()
         @Suppress("DEPRECATION")
         overridePendingTransition(0, 0)
     }
@@ -81,6 +61,5 @@ class ShareTransparentActivity : ComponentActivity() {
     companion object {
         const val EXTRA_IMAGE_PATH = "extra_image_path"
         const val EXTRA_CAPTION = "extra_caption"
-        private const val REQUEST_SHARE = 4040
     }
 }

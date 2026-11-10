@@ -61,6 +61,13 @@ class CircleSnipActivity : ComponentActivity() {
         selectionView.setScreenshot(demoBitmap)
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (::selectionView.isInitialized) {
+            selectionView.resetTranslation()
+        }
+    }
+
     private fun processCroppedBitmap(croppedBitmap: Bitmap, localPath: android.graphics.Path?) {
         val preferredLang = SettingsManager.getLanguage(this)
         OcrHelper.extractText(croppedBitmap, localPath, preferredLang) { extractedText ->

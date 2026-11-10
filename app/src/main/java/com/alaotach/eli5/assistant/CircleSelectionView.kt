@@ -199,6 +199,17 @@ class CircleSelectionView @JvmOverloads constructor(
     fun setScreenshot(bitmap: Bitmap?) {
         this.screenshot = bitmap
         resetSelection()
+        resetTranslation()
+        invalidate()
+    }
+
+    fun resetTranslation() {
+        isTranslating = false
+        isShowingTranslation = false
+        showOriginalOnly = false
+        isSharingTranslation = false
+        translatedBlocks = emptyList()
+        pulseAnimator?.cancel()
         invalidate()
     }
 
@@ -284,6 +295,13 @@ class CircleSelectionView @JvmOverloads constructor(
         } catch (_: Exception) {}
     }
 
+    private fun isPointInExpandedRect(rect: RectF, x: Float, y: Float, paddingDp: Float = 10f): Boolean {
+        if (rect.isEmpty) return false
+        val pad = paddingDp * dp
+        return x >= rect.left - pad && x <= rect.right + pad &&
+                y >= rect.top - pad && y <= rect.bottom + pad
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x
@@ -294,13 +312,10 @@ class CircleSelectionView @JvmOverloads constructor(
                 isInteractingWithPill = false
 
                 // 1. Check if tapped the '✕' close button
-                if (closeBtnRect.contains(x, y)) {
+                if (isPointInExpandedRect(closeBtnRect, x, y, 12f)) {
                     isInteractingWithPill = true
                     if (isShowingTranslation) {
-                        isShowingTranslation = false
-                        showOriginalOnly = false
-                        translatedBlocks = emptyList()
-                        invalidate()
+                        resetTranslation()
                     } else {
                         onDismissRequested?.invoke()
                     }
@@ -308,7 +323,7 @@ class CircleSelectionView @JvmOverloads constructor(
                 }
 
                 // 2. Check if in translated mode and tapped the Original/Translated toggle chip
-                if (isShowingTranslation && toggleOriginalBtnRect.contains(x, y)) {
+                if (isShowingTranslation && isPointInExpandedRect(toggleOriginalBtnRect, x, y, 8f)) {
                     isInteractingWithPill = true
                     showOriginalOnly = !showOriginalOnly
                     triggerHaptic(0)
@@ -317,14 +332,14 @@ class CircleSelectionView @JvmOverloads constructor(
                 }
 
                 // 2b. Check if in translated mode and tapped the Share button
-                if (isShowingTranslation && shareBtnRect.contains(x, y)) {
+                if (isShowingTranslation && isPointInExpandedRect(shareBtnRect, x, y, 8f)) {
                     isInteractingWithPill = true
                     shareCurrentTranslation()
                     return true
                 }
 
                 // 3. Check if tapped the Translate button
-                if (!isShowingTranslation && !isTranslating && translateBtnRect.contains(x, y)) {
+                if (!isShowingTranslation && !isTranslating && isPointInExpandedRect(translateBtnRect, x, y, 8f)) {
                     isInteractingWithPill = true
                     startScreenTranslation()
                     return true

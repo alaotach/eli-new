@@ -73,10 +73,19 @@ class Eli5VoiceInteractionSession(context: Context) : VoiceInteractionSession(co
         }
     }
 
+    override fun onShow(args: Bundle?, showFlags: Int) {
+        super.onShow(args, showFlags)
+        if (::selectionView.isInitialized) {
+            selectionView.resetSelection()
+            selectionView.resetTranslation()
+        }
+    }
+
     override fun onHide() {
         super.onHide()
         if (::selectionView.isInitialized) {
             selectionView.resetSelection()
+            selectionView.resetTranslation()
         }
     }
 
