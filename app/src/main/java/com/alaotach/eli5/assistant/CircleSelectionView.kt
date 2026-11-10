@@ -605,6 +605,13 @@ class CircleSelectionView @JvmOverloads constructor(
         pillRect.set(pillLeft, pillTop, pillRight, pillBottom)
         val cornerRadius = 29f * dp
 
+        val isDark = SettingsManager.isDarkTheme(context)
+
+        // Dynamic theme persistence
+        pillBgPaint.color = if (isDark) Color.parseColor("#1C1826") else Color.WHITE
+        pillBorderPaint.color = if (isDark) Color.parseColor("#35234E") else Color.parseColor("#E9D5FF")
+        closeButtonPaint.color = if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782")
+
         // Island Background & Border
         canvas.drawRoundRect(pillRect, cornerRadius, cornerRadius, pillBgPaint)
         canvas.drawRoundRect(pillRect, cornerRadius, cornerRadius, pillBorderPaint)
@@ -632,13 +639,13 @@ class CircleSelectionView @JvmOverloads constructor(
                 // Translation Result State:
                 // Show language badge and Original / Translated toggle chip
                 titleTextPaint.color = Color.parseColor("#A78BFA")
-                canvas.drawText("文A $targetLanguage", textStartX, centerY - 2f * dp, titleTextPaint)
-                subtitleTextPaint.color = Color.parseColor("#E2E8F0")
+                canvas.drawText(targetLanguage, textStartX, centerY - 2f * dp, titleTextPaint)
+                subtitleTextPaint.color = if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782")
                 val blockCountText = "${translatedBlocks.size} blocks translated"
                 canvas.drawText(blockCountText, textStartX, centerY + 13f * dp, subtitleTextPaint)
 
-                // Toggle chip: [👁 Show Original] vs [✨ Show Translated]
-                val toggleWidth = 100f * dp
+                // Toggle chip: [Show Original] vs [Show Translated] (no emojis)
+                val toggleWidth = 92f * dp
                 val toggleHeight = 32f * dp
                 val toggleRight = closeBtnRect.left - 6f * dp
                 val toggleLeft = toggleRight - toggleWidth
@@ -646,27 +653,28 @@ class CircleSelectionView @JvmOverloads constructor(
                 val toggleBottom = centerY + (toggleHeight / 2f)
                 toggleOriginalBtnRect.set(toggleLeft, toggleTop, toggleRight, toggleBottom)
 
-                translateBtnBgPaint.color = Color.parseColor(if (showOriginalOnly) "#338B5CF6" else "#4D8B5CF6")
+                translateBtnBgPaint.color = if (isDark) Color.parseColor("#261D3B") else Color.parseColor("#EDE9FE")
                 canvas.drawRoundRect(toggleOriginalBtnRect, 16f * dp, 16f * dp, translateBtnBgPaint)
-                translateBtnBorderPaint.color = Color.parseColor("#A78BFA")
+                translateBtnBorderPaint.color = if (isDark) Color.parseColor("#8B5CF6") else Color.parseColor("#A855F7")
                 canvas.drawRoundRect(toggleOriginalBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
 
-                translateBtnTextPaint.textSize = 11f * dp
-                val toggleLabel = if (showOriginalOnly) "✨ Translated" else "👁 Original"
+                translateBtnTextPaint.textSize = 11.5f * dp
+                translateBtnTextPaint.color = if (isDark) Color.parseColor("#DDD6FE") else Color.parseColor("#6A0DAD")
+                val toggleLabel = if (showOriginalOnly) "Translated" else "Original"
                 canvas.drawText(toggleLabel, toggleOriginalBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
 
-                // Share button: [📤 Share] / [⏳ Sharing…]
-                val shareWidth = if (isSharingTranslation) 78f * dp else 68f * dp
+                // Share button: [Share] / [Sharing…] (no emojis)
+                val shareWidth = if (isSharingTranslation) 74f * dp else 64f * dp
                 val shareRight = toggleLeft - 6f * dp
                 val shareLeft = shareRight - shareWidth
                 shareBtnRect.set(shareLeft, toggleTop, shareRight, toggleBottom)
 
-                translateBtnBgPaint.color = Color.parseColor(if (isSharingTranslation) "#808B5CF6" else "#4D8B5CF6")
+                translateBtnBgPaint.color = if (isDark) Color.parseColor("#261D3B") else Color.parseColor("#EDE9FE")
                 canvas.drawRoundRect(shareBtnRect, 16f * dp, 16f * dp, translateBtnBgPaint)
-                translateBtnBorderPaint.color = Color.parseColor("#A78BFA")
+                translateBtnBorderPaint.color = if (isDark) Color.parseColor("#8B5CF6") else Color.parseColor("#A855F7")
                 canvas.drawRoundRect(shareBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
 
-                val shareLabel = if (isSharingTranslation) "⏳ Sharing…" else "📤 Share"
+                val shareLabel = if (isSharingTranslation) "Sharing…" else "Share"
                 canvas.drawText(shareLabel, shareBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
             }
 
@@ -674,11 +682,11 @@ class CircleSelectionView @JvmOverloads constructor(
                 // Translating in-progress state
                 titleTextPaint.color = Color.parseColor("#A78BFA")
                 canvas.drawText("Translating screen…", textStartX, centerY - 2f * dp, titleTextPaint)
-                subtitleTextPaint.color = Color.parseColor("#E2E8F0")
+                subtitleTextPaint.color = if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782")
                 canvas.drawText("Translating to $targetLanguage", textStartX, centerY + 13f * dp, subtitleTextPaint)
 
-                // Translating progress capsule
-                val transPillW = 82f * dp
+                // Translating progress capsule (no emojis)
+                val transPillW = 86f * dp
                 val transPillH = 32f * dp
                 val transRight = closeBtnRect.left - 8f * dp
                 val transLeft = transRight - transPillW
@@ -689,28 +697,32 @@ class CircleSelectionView @JvmOverloads constructor(
                 translateBtnBorderPaint.color = Color.argb(pulseAlpha, 167, 139, 250)
                 canvas.drawRoundRect(transRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
 
-                translateBtnTextPaint.textSize = 11f * dp
-                canvas.drawText("⏳ Working", transRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
+                translateBtnTextPaint.textSize = 11.5f * dp
+                translateBtnTextPaint.color = Color.WHITE
+                canvas.drawText("Translating…", transRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
             }
 
             isAnalyzing -> {
                 // Circling analysis in-progress
                 titleTextPaint.color = Color.parseColor("#A78BFA")
                 canvas.drawText("Analyzing with ELI5…", textStartX, centerY - 2f * dp, titleTextPaint)
-                subtitleTextPaint.color = Color.parseColor("#E2E8F0")
+                subtitleTextPaint.color = if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782")
                 canvas.drawText("Focusing on circled content", textStartX, centerY + 13f * dp, subtitleTextPaint)
             }
 
             else -> {
-                // Normal Circle to Search State:
-                // Title, Subtitle, and prominent [文A Translate] capsule button
-                titleTextPaint.color = Color.WHITE
-                canvas.drawText("Circle to Search", textStartX, centerY - 2f * dp, titleTextPaint)
-                subtitleTextPaint.color = Color.parseColor("#C4B5FD")
-                canvas.drawText("Circle anything or translate", textStartX, centerY + 13f * dp, subtitleTextPaint)
+                // Normal Circle to Explain State:
+                // Prominent title & clear, legible "Circle anything to explain" subtitle
+                titleTextPaint.color = if (isDark) Color.WHITE else Color.parseColor("#21112F")
+                titleTextPaint.textSize = 14.5f * dp
+                canvas.drawText("Circle to ELI5", textStartX, centerY - 2.5f * dp, titleTextPaint)
+                subtitleTextPaint.color = if (isDark) Color.parseColor("#C4B5FD") else Color.parseColor("#6A0DAD")
+                subtitleTextPaint.textSize = 12f * dp
+                subtitleTextPaint.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+                canvas.drawText("Circle anything to explain", textStartX, centerY + 13.5f * dp, subtitleTextPaint)
 
-                // Translate Button Capsule
-                val btnW = 90f * dp
+                // Translate Button Capsule (clean text without emojis)
+                val btnW = 86f * dp
                 val btnH = 32f * dp
                 val btnRight = closeBtnRect.left - 6f * dp
                 val btnLeft = btnRight - btnW
@@ -718,13 +730,14 @@ class CircleSelectionView @JvmOverloads constructor(
                 val btnBottom = centerY + (btnH / 2f)
                 translateBtnRect.set(btnLeft, btnTop, btnRight, btnBottom)
 
-                translateBtnBgPaint.color = Color.parseColor("#338B5CF6")
+                translateBtnBgPaint.color = if (isDark) Color.parseColor("#261D3B") else Color.parseColor("#EDE9FE")
                 canvas.drawRoundRect(translateBtnRect, 16f * dp, 16f * dp, translateBtnBgPaint)
-                translateBtnBorderPaint.color = Color.parseColor("#8B5CF6")
+                translateBtnBorderPaint.color = if (isDark) Color.parseColor("#8B5CF6") else Color.parseColor("#A855F7")
                 canvas.drawRoundRect(translateBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
 
-                translateBtnTextPaint.textSize = 11.5f * dp
-                canvas.drawText("文A Translate", translateBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
+                translateBtnTextPaint.textSize = 12f * dp
+                translateBtnTextPaint.color = if (isDark) Color.parseColor("#DDD6FE") else Color.parseColor("#6A0DAD")
+                canvas.drawText("Translate", translateBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
             }
         }
     }

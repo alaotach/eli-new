@@ -7,6 +7,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -25,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -82,7 +84,7 @@ class ExplainOverlayActivity : Activity() {
     private var primaryLangBtn: TextView? = null
     private var secondaryLangBtn: TextView? = null
     private var moreLangBtn: TextView? = null
-    private var speakerBtn: TextView? = null
+    private var speakerBtn: ImageView? = null
     private var ttsHelper: TtsHelper? = null
     private var isTtsSpeaking: Boolean = false
 
@@ -409,10 +411,12 @@ class ExplainOverlayActivity : Activity() {
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
         }
 
-        val iconTv = TextView(this).apply {
-            text = "✨"
-            textSize = 17.0f
-            setPadding(0, 0, (dp * 6).toInt(), 0)
+        val iconIv = ImageView(this).apply {
+            setImageResource(R.drawable.ic_sparkle)
+            imageTintList = ColorStateList.valueOf(purpleAccent)
+            layoutParams = LinearLayout.LayoutParams((dp * 20).toInt(), (dp * 20).toInt()).apply {
+                marginEnd = (dp * 8).toInt()
+            }
         }
         val titleTv = TextView(this).apply {
             text = "ELI5"
@@ -420,7 +424,7 @@ class ExplainOverlayActivity : Activity() {
             textSize = 18.0f
             setTypeface(typeface, Typeface.BOLD)
         }
-        appTitleBox.addView(iconTv)
+        appTitleBox.addView(iconIv)
         appTitleBox.addView(titleTv)
         headerRow.addView(appTitleBox)
 
@@ -442,11 +446,19 @@ class ExplainOverlayActivity : Activity() {
         }
         headerRow.addView(copyBtn)
 
-        // Read aloud / TTS button (Speaker toggle)
-        speakerBtn = TextView(this).apply {
-            text = "🔊"
-            textSize = 15.0f
-            setPadding((dp * 8).toInt(), (dp * 6).toInt(), (dp * 8).toInt(), (dp * 6).toInt())
+        // Read aloud / TTS button (Speaker toggle with vector icons, no emojis)
+        speakerBtn = ImageView(this).apply {
+            setImageResource(R.drawable.ic_volume_up)
+            imageTintList = ColorStateList.valueOf(purpleAccent)
+            layoutParams = LinearLayout.LayoutParams((dp * 34).toInt(), (dp * 34).toInt()).apply {
+                marginStart = (dp * 4).toInt()
+                marginEnd = (dp * 4).toInt()
+            }
+            setPadding((dp * 6).toInt(), (dp * 6).toInt(), (dp * 6).toInt(), (dp * 6).toInt())
+            background = GradientDrawable().apply {
+                setColor(if (isDark) Color.parseColor("#261D3B") else Color.parseColor("#EDE9FE"))
+                cornerRadius = dp * 17f
+            }
             setOnClickListener {
                 if (currentExplanationText.isNotBlank()) {
                     if (ttsHelper == null) {
@@ -456,11 +468,13 @@ class ExplainOverlayActivity : Activity() {
                     val nowSpeaking = ttsHelper?.toggle(currentExplanationText, langObj.code) { speaking ->
                         isTtsSpeaking = speaking
                         runOnUiThread {
-                            speakerBtn?.text = if (speaking) "⏹" else "🔊"
+                            setImageResource(if (speaking) R.drawable.ic_stop_circle else R.drawable.ic_volume_up)
+                            imageTintList = ColorStateList.valueOf(if (speaking) Color.parseColor("#FF8A32") else purpleAccent)
                         }
                     } ?: false
                     isTtsSpeaking = nowSpeaking
-                    speakerBtn?.text = if (nowSpeaking) "⏹" else "🔊"
+                    setImageResource(if (nowSpeaking) R.drawable.ic_stop_circle else R.drawable.ic_volume_up)
+                    imageTintList = ColorStateList.valueOf(if (nowSpeaking) Color.parseColor("#FF8A32") else purpleAccent)
                     if (nowSpeaking) {
                         Toast.makeText(this@ExplainOverlayActivity, "Reading aloud...", Toast.LENGTH_SHORT).show()
                     } else {
@@ -638,7 +652,7 @@ class ExplainOverlayActivity : Activity() {
         languageRow.addView(secondaryLangBtn)
 
         moreLangBtn = TextView(this).apply {
-            text = "🌐 ▾"
+            text = "More ▾"
             gravity = Gravity.CENTER
             textSize = 13.0f
             setTypeface(typeface, Typeface.BOLD)
@@ -834,7 +848,7 @@ class ExplainOverlayActivity : Activity() {
         val isSecondaryActive = currentActiveLanguage.equals(secondaryLanguage, ignoreCase = true)
 
         primaryLangBtn?.apply {
-            text = "${defaultLangObj.flag} ${defaultLangObj.nativeName}"
+            text = defaultLangObj.nativeName
             if (isPrimaryActive) {
                 setTextColor(Color.WHITE)
                 (background as? GradientDrawable)?.setColor(purpleAccent)
@@ -845,7 +859,7 @@ class ExplainOverlayActivity : Activity() {
         }
 
         secondaryLangBtn?.apply {
-            text = "${secLangObj.flag} ${secLangObj.nativeName}"
+            text = secLangObj.nativeName
             if (isSecondaryActive) {
                 setTextColor(Color.WHITE)
                 (background as? GradientDrawable)?.setColor(purpleAccent)
@@ -858,11 +872,11 @@ class ExplainOverlayActivity : Activity() {
         moreLangBtn?.apply {
             if (!isPrimaryActive && !isSecondaryActive) {
                 val currentObj = LanguageManager.getLanguageByEnglishName(currentActiveLanguage)
-                text = "${currentObj.flag} ${currentObj.nativeName} ▾"
+                text = "${currentObj.nativeName} ▾"
                 setTextColor(Color.WHITE)
                 (background as? GradientDrawable)?.setColor(purpleAccent)
             } else {
-                text = "🌐 ▾"
+                text = "More ▾"
                 setTextColor(textMutedColor)
                 (background as? GradientDrawable)?.setColor(Color.TRANSPARENT)
             }

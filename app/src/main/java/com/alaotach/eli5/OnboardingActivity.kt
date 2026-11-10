@@ -35,12 +35,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-val ONBOARDING_BG: Int = Color.parseColor("#F8F5FF")
-val ONBOARDING_CARD_BG: Int = Color.parseColor("#FFFFFF")
+fun getOnboardingBg(context: Context): Int =
+    Color.parseColor(if (SettingsManager.isDarkTheme(context)) "#120E1A" else "#F8F5FF")
+
+fun getOnboardingCardBg(context: Context): Int =
+    Color.parseColor(if (SettingsManager.isDarkTheme(context)) "#1C1826" else "#FFFFFF")
+
 val ONBOARDING_PURPLE: Int = Color.parseColor("#6A0DAD")
 val ONBOARDING_PURPLE_LIGHT: Int = Color.parseColor("#E9D5FF")
-val ONBOARDING_TEXT_PRIMARY: Int = Color.parseColor("#21112F")
-val ONBOARDING_TEXT_MUTED: Int = Color.parseColor("#766782")
+
+fun getOnboardingTextPrimary(context: Context): Int =
+    Color.parseColor(if (SettingsManager.isDarkTheme(context)) "#FFFFFF" else "#21112F")
+
+fun getOnboardingTextMuted(context: Context): Int =
+    Color.parseColor(if (SettingsManager.isDarkTheme(context)) "#9E9AA8" else "#766782")
 
 fun Context.dpToPx(dp: Float): Int {
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).toInt()
@@ -82,7 +90,7 @@ class OnboardingStep1Fragment : Fragment() {
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(ONBOARDING_BG)
+            setBackgroundColor(getOnboardingBg(context))
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
 
@@ -108,14 +116,14 @@ class OnboardingStep1Fragment : Fragment() {
         // Title & subtitle
         val title = TextView(context).apply {
             text = getString(R.string.onboarding_step1_title)
-            setTextColor(ONBOARDING_TEXT_PRIMARY)
+            setTextColor(getOnboardingTextPrimary(context))
             textSize = 23f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         }
         val subtitle = TextView(context).apply {
             text = getString(R.string.onboarding_step1_subtitle)
-            setTextColor(ONBOARDING_TEXT_MUTED)
+            setTextColor(getOnboardingTextMuted(context))
             textSize = 14f
             gravity = Gravity.CENTER
             setPadding(0, context.dpToPx(6f), 0, context.dpToPx(14f))
@@ -128,7 +136,7 @@ class OnboardingStep1Fragment : Fragment() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             background = GradientDrawable().apply {
-                setColor(ONBOARDING_CARD_BG)
+                setColor(getOnboardingCardBg(context))
                 cornerRadius = context.dpToPx(18f).toFloat()
                 setStroke(context.dpToPx(1f), Color.argb(100, 139, 92, 246))
             }
@@ -226,7 +234,7 @@ class OnboardingStep1Fragment : Fragment() {
             gravity = Gravity.CENTER
             setPadding(context.dpToPx(24f), context.dpToPx(8f), context.dpToPx(24f), context.dpToPx(16f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            background = ColorDrawable(ONBOARDING_BG)
+            background = ColorDrawable(getOnboardingBg(context))
         }
 
         val continueBtn = Button(context).apply {
@@ -267,7 +275,7 @@ class OnboardingStep2Fragment : Fragment() {
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(ONBOARDING_BG)
+            setBackgroundColor(getOnboardingBg(context))
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
 
@@ -301,7 +309,7 @@ class OnboardingStep2Fragment : Fragment() {
 
         val title = TextView(context).apply {
             text = getString(R.string.onboarding_step2_title)
-            setTextColor(ONBOARDING_TEXT_PRIMARY)
+            setTextColor(getOnboardingTextPrimary(context))
             textSize = 22f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
@@ -335,7 +343,7 @@ class OnboardingStep2Fragment : Fragment() {
 
         val explanation = TextView(context).apply {
             text = getString(R.string.onboarding_step2_subtitle)
-            setTextColor(ONBOARDING_TEXT_MUTED)
+            setTextColor(getOnboardingTextMuted(context))
             textSize = 13f
             gravity = Gravity.CENTER
             setPadding(0, 0, 0, context.dpToPx(8f))
@@ -358,7 +366,7 @@ class OnboardingStep2Fragment : Fragment() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             background = GradientDrawable().apply {
-                setColor(ONBOARDING_CARD_BG)
+                setColor(getOnboardingCardBg(context))
                 cornerRadius = context.dpToPx(14f).toFloat()
                 setStroke(context.dpToPx(1f), Color.argb(80, 139, 92, 246))
             }
@@ -389,7 +397,7 @@ class OnboardingStep2Fragment : Fragment() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             background = GradientDrawable().apply {
-                setColor(ONBOARDING_CARD_BG)
+                setColor(getOnboardingCardBg(context))
                 cornerRadius = context.dpToPx(14f).toFloat()
                 setStroke(context.dpToPx(1f), Color.argb(80, 139, 92, 246))
             }
@@ -425,7 +433,7 @@ class OnboardingStep2Fragment : Fragment() {
             gravity = Gravity.CENTER
             setPadding(context.dpToPx(24f), context.dpToPx(8f), context.dpToPx(24f), context.dpToPx(16f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            background = ColorDrawable(ONBOARDING_BG)
+            background = ColorDrawable(getOnboardingBg(context))
         }
 
         grantBtn = Button(context).apply {
@@ -485,7 +493,7 @@ class OnboardingStep3Fragment : Fragment() {
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(ONBOARDING_BG)
+            setBackgroundColor(getOnboardingBg(context))
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
 
@@ -510,14 +518,14 @@ class OnboardingStep3Fragment : Fragment() {
 
         val title = TextView(context).apply {
             text = getString(R.string.onboarding_step3_title)
-            setTextColor(ONBOARDING_TEXT_PRIMARY)
+            setTextColor(getOnboardingTextPrimary(context))
             textSize = 23f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         }
         val subtitle = TextView(context).apply {
             text = getString(R.string.onboarding_step3_subtitle)
-            setTextColor(ONBOARDING_TEXT_MUTED)
+            setTextColor(getOnboardingTextMuted(context))
             textSize = 14f
             gravity = Gravity.CENTER
             setPadding(0, context.dpToPx(6f), 0, context.dpToPx(16f))
@@ -585,7 +593,7 @@ class OnboardingStep3Fragment : Fragment() {
             gravity = Gravity.CENTER
             setPadding(context.dpToPx(24f), context.dpToPx(8f), context.dpToPx(24f), context.dpToPx(16f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            background = ColorDrawable(ONBOARDING_BG)
+            background = ColorDrawable(getOnboardingBg(context))
         }
 
         finishBtn = Button(context).apply {
@@ -614,7 +622,7 @@ class OnboardingStep3Fragment : Fragment() {
         val card = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             background = GradientDrawable().apply {
-                setColor(ONBOARDING_CARD_BG)
+                setColor(getOnboardingCardBg(context))
                 cornerRadius = context.dpToPx(18f).toFloat()
                 setStroke(context.dpToPx(1.5f), Color.argb(120, 139, 92, 246))
             }
@@ -647,14 +655,14 @@ class OnboardingStep3Fragment : Fragment() {
 
         val bodyTv = TextView(context).apply {
             this.text = text
-            setTextColor(ONBOARDING_TEXT_PRIMARY)
+            setTextColor(getOnboardingTextPrimary(context))
             textSize = 14.5f
             setLineSpacing(0f, 1.25f)
             setPadding(0, 0, 0, context.dpToPx(12f))
         }
 
         val btn = TextView(context).apply {
-            this.text = getString(R.string.explain_with_eli5) + " ✨"
+            this.text = getString(R.string.explain_with_eli5)
             setTextColor(Color.WHITE)
             textSize = 14f
             typeface = Typeface.DEFAULT_BOLD
@@ -721,17 +729,19 @@ class OnboardingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val isDark = SettingsManager.isDarkTheme(this)
+        val bgCol = getOnboardingBg(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
-        window.setBackgroundDrawable(ColorDrawable(ONBOARDING_BG))
+        window.setBackgroundDrawable(ColorDrawable(bgCol))
         WindowInsetsControllerCompat(window, window.decorView).apply {
-            isAppearanceLightStatusBars = true
-            isAppearanceLightNavigationBars = true
+            isAppearanceLightStatusBars = !isDark
+            isAppearanceLightNavigationBars = !isDark
         }
 
         val root = FrameLayout(this).apply {
-            setBackgroundColor(ONBOARDING_BG)
+            setBackgroundColor(bgCol)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->

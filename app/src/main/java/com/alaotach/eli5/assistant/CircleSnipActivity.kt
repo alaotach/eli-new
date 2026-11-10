@@ -1,22 +1,36 @@
 package com.alaotach.eli5.assistant
 
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.MediaController
+import android.widget.TextView
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.activity.ComponentActivity
 import com.alaotach.eli5.AnalyticsManager
 import com.alaotach.eli5.ExplainOverlayActivity
+import com.alaotach.eli5.R
 import com.alaotach.eli5.SettingsManager
+import java.io.File
 
 class CircleSnipActivity : ComponentActivity() {
 
@@ -54,11 +68,61 @@ class CircleSnipActivity : ComponentActivity() {
         }
 
         root.addView(selectionView)
+
+        // Floating Tutorial Video Button at bottom center
+        val dp = resources.displayMetrics.density
+        val isDark = SettingsManager.isDarkTheme(this)
+        val tutorialBtn = TextView(this).apply {
+            text = "Watch Tutorial"
+            textSize = 13f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_play_tutorial, 0, 0, 0)
+            compoundDrawablePadding = (dp * 8).toInt()
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#6A0DAD"))
+                cornerRadius = dp * 22f
+                setStroke((dp * 1.2f).toInt(), Color.parseColor("#A855F7"))
+            }
+            setPadding((dp * 16).toInt(), (dp * 9).toInt(), (dp * 18).toInt(), (dp * 9).toInt())
+            elevation = dp * 6f
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+                bottomMargin = (dp * 28).toInt()
+            }
+            setOnClickListener {
+                showTutorialVideoDialog()
+            }
+        }
+        root.addView(tutorialBtn)
+
         setContentView(root)
 
         // Generate a rich demo canvas if no bitmap passed
         val demoBitmap = createDemoScreenBitmap()
         selectionView.setScreenshot(demoBitmap)
+
+        // Show tutorial video overlay automatically on first open only
+        val prefs = getSharedPreferences("eli5_prefs", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("try_gesture_tutorial_video_shown", false)) {
+            prefs.edit().putBoolean("try_gesture_tutorial_video_shown", true).apply()
+            root.postDelayed({
+                if (!isFinishing && !isDestroyed) {
+                    showTutorialVideoDialog()
+                }
+            }, 350)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::selectionView.isInitialized) {
+            selectionView.resetSelection()
+        }
     }
 
     override fun onPause() {
@@ -78,7 +142,7 @@ class CircleSnipActivity : ComponentActivity() {
                     putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, true)
                 }
                 startActivity(intent)
-                finish()
+                // Keep CircleSnipActivity active underneath so the explanation overlay appears over the demo screen!
             } else {
                 Toast.makeText(
                     this,
@@ -88,6 +152,165 @@ class CircleSnipActivity : ComponentActivity() {
                 selectionView.resetSelection()
             }
         }
+    }
+
+    private fun showTutorialVideoDialog() {
+        val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar)
+        val dp = resources.displayMetrics.density
+        val isDark = SettingsManager.isDarkTheme(this)
+        var isFullscreen = false
+
+        val dialogRoot = FrameLayout(this).apply {
+            setBackgroundColor(Color.parseColor("#B3000000"))
+        }
+
+        val cardContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = GradientDrawable().apply {
+                setColor(if (isDark) Color.parseColor("#1C1826") else Color.WHITE)
+                cornerRadius = dp * 20f
+                setStroke((dp * 1f).toInt(), if (isDark) Color.parseColor("#35234E") else Color.parseColor("#E9D5FF"))
+            }
+            elevation = dp * 12f
+        }
+
+        // Header
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding((dp * 16).toInt(), (dp * 12).toInt(), (dp * 16).toInt(), (dp * 10).toInt())
+        }
+
+        val titleTv = TextView(this).apply {
+            text = "Circle to ELI5 Tutorial"
+            textSize = 15.5f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(if (isDark) Color.WHITE else Color.parseColor("#21112F"))
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
+        }
+        header.addView(titleTv)
+
+        val fullscreenBtn = ImageView(this).apply {
+            setImageResource(R.drawable.ic_fullscreen)
+            imageTintList = ColorStateList.valueOf(if (isDark) Color.parseColor("#C4B5FD") else Color.parseColor("#6A0DAD"))
+            layoutParams = LinearLayout.LayoutParams((dp * 32).toInt(), (dp * 32).toInt()).apply {
+                marginEnd = (dp * 8).toInt()
+            }
+            setPadding((dp * 4).toInt(), (dp * 4).toInt(), (dp * 4).toInt(), (dp * 4).toInt())
+        }
+        header.addView(fullscreenBtn)
+
+        val closeBtn = TextView(this).apply {
+            text = "✕"
+            textSize = 18f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782"))
+            setPadding((dp * 6).toInt(), 0, (dp * 6).toInt(), 0)
+            setOnClickListener {
+                dialog.dismiss()
+            }
+        }
+        header.addView(closeBtn)
+        cardContainer.addView(header)
+
+        // Video View Frame
+        val videoFrame = FrameLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                (dp * 240).toInt()
+            )
+            setBackgroundColor(Color.BLACK)
+        }
+
+        val videoView = VideoView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            ).apply {
+                gravity = Gravity.CENTER
+            }
+        }
+        videoFrame.addView(videoView)
+        cardContainer.addView(videoFrame)
+
+        // Subtitle hint at bottom
+        val hintTv = TextView(this).apply {
+            text = "Circle any content on your screen to get an instant explanation"
+            textSize = 12f
+            setTextColor(if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782"))
+            gravity = Gravity.CENTER
+            setPadding((dp * 16).toInt(), (dp * 10).toInt(), (dp * 16).toInt(), (dp * 12).toInt())
+        }
+        cardContainer.addView(hintTv)
+
+        val cardLayoutParams = FrameLayout.LayoutParams(
+            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = Gravity.CENTER
+        }
+        dialogRoot.addView(cardContainer, cardLayoutParams)
+
+        // Toggle Fullscreen action
+        fullscreenBtn.setOnClickListener {
+            isFullscreen = !isFullscreen
+            if (isFullscreen) {
+                fullscreenBtn.setImageResource(R.drawable.ic_fullscreen_exit)
+                header.visibility = View.GONE
+                hintTv.visibility = View.GONE
+                (cardContainer.background as? GradientDrawable)?.cornerRadius = 0f
+                cardLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+                cardLayoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                videoFrame.layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            } else {
+                fullscreenBtn.setImageResource(R.drawable.ic_fullscreen)
+                header.visibility = View.VISIBLE
+                hintTv.visibility = View.VISIBLE
+                (cardContainer.background as? GradientDrawable)?.cornerRadius = dp * 20f
+                cardLayoutParams.width = (resources.displayMetrics.widthPixels * 0.92f).toInt()
+                cardLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                videoFrame.layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    (dp * 240).toInt()
+                )
+            }
+            cardContainer.layoutParams = cardLayoutParams
+        }
+
+        // Tap background outside to dismiss (when not fullscreen)
+        dialogRoot.setOnClickListener {
+            if (!isFullscreen) {
+                dialog.dismiss()
+            }
+        }
+        cardContainer.setOnClickListener { /* prevent dismiss when tapping container */ }
+
+        // Video Setup
+        val rawUri = Uri.parse("android.resource://$packageName/${R.raw.eli5_tutorial_voiceover}")
+        val fileFallback = File("/home/aloo/Downloads/eli5_tutorial_voiceover.mp4")
+        val videoUri = if (fileFallback.exists()) Uri.fromFile(fileFallback) else rawUri
+
+        val mediaController = MediaController(this)
+        mediaController.setAnchorView(videoView)
+        videoView.setMediaController(mediaController)
+        videoView.setVideoURI(videoUri)
+
+        videoView.setOnPreparedListener { mp ->
+            mp.isLooping = true
+            videoView.start()
+        }
+
+        dialog.setOnDismissListener {
+            try {
+                videoView.stopPlayback()
+            } catch (_: Exception) {}
+        }
+
+        dialog.setContentView(dialogRoot)
+        dialog.show()
     }
 
     /**
@@ -103,46 +326,48 @@ class CircleSnipActivity : ComponentActivity() {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // Redesigned Light Purple & Lavender theme
-        canvas.drawColor(Color.parseColor("#F8F5FF"))
+        val isDark = SettingsManager.isDarkTheme(this)
+
+        // Persistent theme background (Dark or Light)
+        canvas.drawColor(if (isDark) Color.parseColor("#120E1A") else Color.parseColor("#F8F5FF"))
 
         val cardPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
+            color = if (isDark) Color.parseColor("#1C1826") else Color.WHITE
             style = Paint.Style.FILL
         }
 
         val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#EFE9F7")
+            color = if (isDark) Color.parseColor("#35234E") else Color.parseColor("#EFE9F7")
             style = Paint.Style.STROKE
             strokeWidth = 1f * dp
         }
 
         val headerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#766782")
+            color = if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782")
             textSize = 10.5f * dp
             isFakeBoldText = true
             letterSpacing = 0.08f
         }
 
         val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#21112F")
+            color = if (isDark) Color.WHITE else Color.parseColor("#21112F")
             textSize = 14f * dp
             isFakeBoldText = true
         }
 
         val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#4A3E56")
+            color = if (isDark) Color.parseColor("#CBD5E1") else Color.parseColor("#4A3E56")
             textSize = 11.5f * dp
         }
 
         val tagPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#6A0DAD")
+            color = if (isDark) Color.parseColor("#A855F7") else Color.parseColor("#6A0DAD")
             textSize = 9.5f * dp
             isFakeBoldText = true
         }
 
         val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#A855F7")
+            color = if (isDark) Color.parseColor("#C4B5FD") else Color.parseColor("#A855F7")
             textSize = 9.5f * dp
         }
 

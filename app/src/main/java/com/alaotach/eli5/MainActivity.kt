@@ -359,12 +359,16 @@ fun Eli5App(
     val accentPurple = if (isDark) PurpleSecondary else PurplePrimary
     val lightLavender = if (isDark) Color(0xFF2E2245) else LavenderLight
 
-    LaunchedEffect(Unit) {
-        history = HistoryManager.getHistory(context)
-    }
-
-    DisposableEffect(Unit) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                history = HistoryManager.getHistory(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
             ttsHelper.shutdown()
         }
     }
@@ -424,21 +428,26 @@ fun Eli5App(
                             onOpenLanguagePicker = { showLanguagePicker = true },
                             onOpenSettings = { selectedTab = 2 },
                             onOpenHistory = { selectedTab = 1 },
-                            onSelectHistoryItem = { activeExplanationItem = it },
+                            onSelectHistoryItem = { item ->
+                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
+                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, item.originalText)
+                                    putExtra(ExplainOverlayActivity.EXTRA_RESULT, item.resultText)
+                                    putExtra(ExplainOverlayActivity.EXTRA_MODE, item.mode)
+                                    putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, false)
+                                }
+                                context.startActivity(intent)
+                            },
                             onClearHistory = {
                                 HistoryManager.clearHistory(context)
                                 history = emptyList()
                             },
                             onExplainText = { text ->
-                                scope.launch {
-                                    val item = HistoryItem(
-                                        timestamp = System.currentTimeMillis(),
-                                        originalText = text,
-                                        resultText = "",
-                                        mode = "ELI5"
-                                    )
-                                    activeExplanationItem = item
+                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
+                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, text)
+                                    putExtra(ExplainOverlayActivity.EXTRA_MODE, "ELI5")
+                                    putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, false)
                                 }
+                                context.startActivity(intent)
                             }
                         )
 
@@ -456,7 +465,15 @@ fun Eli5App(
                                 HistoryManager.clearHistory(context)
                                 history = emptyList()
                             },
-                            onSelectHistoryItem = { activeExplanationItem = it },
+                            onSelectHistoryItem = { item ->
+                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
+                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, item.originalText)
+                                    putExtra(ExplainOverlayActivity.EXTRA_RESULT, item.resultText)
+                                    putExtra(ExplainOverlayActivity.EXTRA_MODE, item.mode)
+                                    putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, false)
+                                }
+                                context.startActivity(intent)
+                            },
                             onDeleteItem = { item ->
                                 HistoryManager.deleteItem(context, item)
                                 history = HistoryManager.getHistory(context)
