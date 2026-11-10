@@ -125,6 +125,7 @@ class MainActivity : ComponentActivity() {
         val locale = java.util.Locale.forLanguageTag(langObj.code)
         val config = newBase.resources.configuration
         config.setLocale(locale)
+        config.setLayoutDirection(locale)
         val localizedContext = newBase.createConfigurationContext(config)
         super.attachBaseContext(localizedContext)
     }
@@ -165,24 +166,34 @@ class MainActivity : ComponentActivity() {
                 return@setContent
             }
 
-            Eli5Theme(darkTheme = isDark, dynamicColor = false) {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = if (isDark) Color(0xFF13101C) else Color(0xFFF9FAFB)
-                ) { innerPadding ->
-                    MainScreen(
-                        themePref = themePreference,
-                        isDark = isDark,
-                        onThemeChange = {
-                            SettingsManager.setTheme(this@MainActivity, it)
-                            themePreference = it
-                        },
-                        onCheckUpdates = { triggerManualUpdateCheck() },
-                        onShowTutorial = {
-                            startActivity(Intent(this@MainActivity, HowToUseActivity::class.java))
-                        },
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            val lang = SettingsManager.getLanguage(context)
+            val langObj = LanguageManager.getLanguageByEnglishName(lang)
+            val locale = java.util.Locale.forLanguageTag(langObj.code)
+            val isRtl = androidx.core.text.TextUtilsCompat.getLayoutDirectionFromLocale(locale) == android.view.View.LAYOUT_DIRECTION_RTL
+            val layoutDir = if (isRtl) androidx.compose.ui.unit.LayoutDirection.Rtl else androidx.compose.ui.unit.LayoutDirection.Ltr
+
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalLayoutDirection provides layoutDir
+            ) {
+                Eli5Theme(darkTheme = isDark, dynamicColor = false) {
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        containerColor = if (isDark) Color(0xFF13101C) else Color(0xFFF9FAFB)
+                    ) { innerPadding ->
+                        MainScreen(
+                            themePref = themePreference,
+                            isDark = isDark,
+                            onThemeChange = {
+                                SettingsManager.setTheme(this@MainActivity, it)
+                                themePreference = it
+                            },
+                            onCheckUpdates = { triggerManualUpdateCheck() },
+                            onShowTutorial = {
+                                startActivity(Intent(this@MainActivity, HowToUseActivity::class.java))
+                            },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
                 }
             }
         }

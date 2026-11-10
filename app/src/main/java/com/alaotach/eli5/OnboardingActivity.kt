@@ -713,6 +713,7 @@ class OnboardingActivity : AppCompatActivity() {
         val locale = java.util.Locale.forLanguageTag(langObj.code)
         val config = newBase.resources.configuration
         config.setLocale(locale)
+        config.setLayoutDirection(locale)
         val localizedContext = newBase.createConfigurationContext(config)
         super.attachBaseContext(localizedContext)
     }
