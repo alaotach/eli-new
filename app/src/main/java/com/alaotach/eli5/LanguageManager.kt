@@ -18,6 +18,7 @@ object LanguageManager {
     val SUPPORTED_LANGUAGES = listOf(
         Language("en", "English", "English", "🇺🇸"),
         Language("hi", "Hindi", "हिन्दी", "🇮🇳"),
+        Language("hi-Latn", "Hinglish", "Hinglish", "🇮🇳"),
         Language("es", "Spanish", "Español", "🇪🇸"),
         Language("fr", "French", "Français", "🇫🇷"),
         Language("de", "German", "Deutsch", "🇩🇪"),

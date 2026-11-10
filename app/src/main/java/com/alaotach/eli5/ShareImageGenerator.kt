@@ -353,4 +353,204 @@ object ShareImageGenerator {
             }
         }
     }
+
+    suspend fun createTranslatedShareImage(
+        context: Context,
+        screenshot: Bitmap,
+        blocks: List<com.alaotach.eli5.assistant.TranslatedBlock>,
+        targetLanguage: String
+    ): File = withContext(Dispatchers.Default) {
+        val width = screenshot.width
+        val height = screenshot.height
+        val dp = width / 390f
+        val bannerHeight = (68f * dp).toInt().coerceIn(160, 240)
+
+        val resultBitmap = Bitmap.createBitmap(width, height + bannerHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(resultBitmap)
+
+        // 1. Draw base screenshot
+        canvas.drawBitmap(screenshot, 0f, 0f, null)
+
+        // 2. Draw translated overlays
+        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 1.5f * dp
+        }
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            isAntiAlias = true
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+
+        val padding = 4f * dp
+        val cornerRadius = 6f * dp
+
+        for (block in blocks) {
+            val r = block.bounds
+            val rect = RectF(
+                r.left.toFloat() - padding,
+                r.top.toFloat() - padding,
+                r.right.toFloat() + padding,
+                r.bottom.toFloat() + padding
+            )
+
+            // Background card with 97% opacity
+            bgPaint.color = block.bgColor
+            bgPaint.alpha = 248
+            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bgPaint)
+
+            // Border
+            val isDarkCard = Color.luminance(block.bgColor) < 0.5f
+            borderPaint.color = if (isDarkCard) Color.argb(80, 255, 255, 255) else Color.argb(60, 0, 0, 0)
+            canvas.drawRoundRect(rect, cornerRadius, cornerRadius, borderPaint)
+
+            // Text
+            textPaint.color = block.textColor
+            val availW = rect.width() - (padding * 2)
+            val availH = rect.height() - (padding * 2)
+            val optimalSize = com.alaotach.eli5.assistant.ScreenTranslator.calculateOptimalTextSize(
+                block.translatedText,
+                availW,
+                availH,
+                dp,
+                textPaint
+            )
+            textPaint.textSize = optimalSize
+
+            val widthInt = maxOf(1, availW.toInt())
+            val layout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                StaticLayout.Builder.obtain(block.translatedText, 0, block.translatedText.length, textPaint, widthInt)
+                    .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                    .setLineSpacing(0f, 1.15f)
+                    .setIncludePad(false)
+                    .build()
+            } else {
+                @Suppress("DEPRECATION")
+                StaticLayout(block.translatedText, textPaint, widthInt, Layout.Alignment.ALIGN_NORMAL, 1.15f, 0f, false)
+            }
+
+            canvas.save()
+            val textY = rect.centerY() - (layout.height / 2f)
+            canvas.translate(rect.left + padding, textY)
+            layout.draw(canvas)
+            canvas.restore()
+        }
+
+        // 3. Draw Branded Advertisement Footer Banner
+        val bannerTop = height.toFloat()
+        val bannerBottom = (height + bannerHeight).toFloat()
+        val bannerRect = RectF(0f, bannerTop, width.toFloat(), bannerBottom)
+
+        // Gradient dark background
+        val bannerBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(
+                0f, bannerTop, width.toFloat(), bannerBottom,
+                intArrayOf(Color.parseColor("#0F172A"), Color.parseColor("#1E1B4B")),
+                null, Shader.TileMode.CLAMP
+            )
+        }
+        canvas.drawRect(bannerRect, bannerBgPaint)
+
+        // Top neon separator line
+        val neonLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#8B5CF6")
+            strokeWidth = 3f * dp
+        }
+        canvas.drawLine(0f, bannerTop, width.toFloat(), bannerTop, neonLinePaint)
+
+        // Logo
+        val logoDrawable = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_eli5_logo)
+        val logoSize = (36f * dp).toInt()
+        val logoLeft = (16f * dp).toInt()
+        val logoTopPos = (bannerTop + (bannerHeight - logoSize) / 2f).toInt()
+        logoDrawable?.setBounds(logoLeft, logoTopPos, logoLeft + logoSize, logoTopPos + logoSize)
+        logoDrawable?.draw(canvas)
+
+        // Text paints for advertisement
+        val adTitlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textSize = 15f * dp
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        val adSubPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#C4B5FD")
+            textSize = 10.5f * dp
+            typeface = Typeface.DEFAULT
+        }
+
+        val textLeft = logoLeft + logoSize + (12f * dp)
+        val adCenterY = bannerTop + (bannerHeight / 2f)
+        canvas.drawText("✨ Translated with ELI5", textLeft, adCenterY - (2f * dp), adTitlePaint)
+        canvas.drawText("Explain & Translate screen instantly • Get ELI5", textLeft, adCenterY + (13f * dp), adSubPaint)
+
+        // QR Code on right
+        try {
+            val qrSize = (bannerHeight * 0.72f).toInt()
+            val qrBmp = generateQrBitmap(PLAY_STORE_URL, qrSize)
+            val qrLeft = width - qrSize - (16f * dp).toInt()
+            val qrTop = (bannerTop + (bannerHeight - qrSize) / 2f).toInt()
+
+            val qrBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+            }
+            val qrBgRect = RectF(
+                qrLeft.toFloat() - 4f,
+                qrTop.toFloat() - 4f,
+                qrLeft.toFloat() + qrSize + 4f,
+                qrTop.toFloat() + qrSize + 4f
+            )
+            canvas.drawRoundRect(qrBgRect, 6f * dp, 6f * dp, qrBgPaint)
+            canvas.drawBitmap(qrBmp, qrLeft.toFloat(), qrTop.toFloat(), null)
+        } catch (_: Exception) {}
+
+        // 4. Save to shared cache file
+        val sharedDir = File(context.cacheDir, "shared")
+        if (!sharedDir.exists()) sharedDir.mkdirs()
+        val imageFile = File(sharedDir, "eli5_translation_${System.currentTimeMillis()}.png")
+        FileOutputStream(imageFile).use { out ->
+            resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+
+        imageFile
+    }
+
+    fun shareTranslatedScreen(
+        context: Context,
+        screenshot: Bitmap,
+        blocks: List<com.alaotach.eli5.assistant.TranslatedBlock>,
+        targetLanguage: String,
+        coroutineScope: kotlinx.coroutines.CoroutineScope
+    ) {
+        if (blocks.isEmpty()) {
+            Toast.makeText(context, "No translation to share", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Toast.makeText(context, "Generating branded screenshot...", Toast.LENGTH_SHORT).show()
+
+        coroutineScope.launch(Dispatchers.Main) {
+            try {
+                val imageFile = createTranslatedShareImage(context, screenshot, blocks, targetLanguage)
+                val imageUri: Uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    imageFile
+                )
+
+                val caption = "✨ Translated into $targetLanguage with ELI5! Try ELI5 now: $PLAY_STORE_URL"
+
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "image/png"
+                    putExtra(Intent.EXTRA_STREAM, imageUri)
+                    putExtra(Intent.EXTRA_TEXT, caption)
+                    putExtra(Intent.EXTRA_SUBJECT, "ELI5 Screen Translation")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                context.startActivity(Intent.createChooser(shareIntent, "Share Translated Screen"))
+            } catch (e: Exception) {
+                Toast.makeText(context, "Could not share screenshot: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

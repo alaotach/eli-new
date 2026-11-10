@@ -177,7 +177,12 @@ class ExplainOverlayActivity : Activity() {
 
         userDefaultLanguage = SettingsManager.getLanguage(this)
         currentActiveLanguage = userDefaultLanguage
-        secondaryLanguage = if (userDefaultLanguage.equals("English", ignoreCase = true)) "Hindi" else "English"
+        secondaryLanguage = when {
+            userDefaultLanguage.equals("Hinglish", ignoreCase = true) -> "English"
+            userDefaultLanguage.equals("Hindi", ignoreCase = true) -> "Hinglish"
+            userDefaultLanguage.equals("English", ignoreCase = true) -> "Hinglish"
+            else -> "English"
+        }
 
         showBottomSheet()
         requestExplanation(currentActiveMode, currentActiveLanguage)
@@ -360,7 +365,9 @@ class ExplainOverlayActivity : Activity() {
             if (!extraModifier.isNullOrEmpty()) {
                 promptText = "$promptText\n\n[$extraModifier]"
             }
-            if (!language.equals("English", ignoreCase = true)) {
+            if (language.equals("Hinglish", ignoreCase = true)) {
+                promptText = "$promptText\n\n[Please explain in natural, casual Hinglish (Hindi written using the English/Latin alphabet, mixing everyday conversational Hindi and English words naturally, e.g. 'Yeh concept bohot simple hai, basically...'). Do NOT use Devanagari script; write entirely in Latin/English letters.]"
+            } else if (!language.equals("English", ignoreCase = true)) {
                 promptText = "$promptText\n\n[Please explain in clear, natural $language]"
             }
 

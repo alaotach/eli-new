@@ -525,7 +525,7 @@ fun MainScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    listOf("English", "Hindi", "Spanish", "French").forEach { langName ->
+                    listOf("English", "Hindi", "Hinglish", "Spanish").forEach { langName ->
                         val lang = LanguageManager.getLanguageByEnglishName(langName)
                         val isSelected = currentLanguage.equals(langName, ignoreCase = true)
                         Surface(

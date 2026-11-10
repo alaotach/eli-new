@@ -251,13 +251,19 @@ object ScreenTranslator {
             "${index + 1}. ${pair.second.replace("\n", " ").trim()}"
         }.joinToString("\n")
 
+        val targetLangInstruction = if (targetLanguage.equals("Hinglish", ignoreCase = true)) {
+            "conversational Hinglish (Hindi written in the English/Latin alphabet, e.g. 'Yeh bohot simple hai'. Do NOT use Devanagari script; write purely in Latin alphabet)"
+        } else {
+            targetLanguage
+        }
+
         val prompt = """
             You are an expert multi-language translator for mobile screens.
             The following numbered texts were extracted from a mobile screen and may contain MULTIPLE DIFFERENT LANGUAGES simultaneously (for example, English, Hindi, Bengali, Spanish, Japanese, Chinese, Arabic, French, German, etc.).
             
-            Translate EVERY SINGLE numbered text into $targetLanguage.
+            Translate EVERY SINGLE numbered text into $targetLangInstruction.
             - If a text is already in $targetLanguage, leave it unchanged.
-            - If a text is in ANY other language, translate it accurately into $targetLanguage.
+            - If a text is in ANY other language, translate it accurately into $targetLangInstruction.
             - Every number from 1 to ${blocks.size} MUST have an entry in the returned JSON.
             - Preserve numbers, URLs, and punctuation appropriately.
             - Return strictly valid JSON mapping each number as a string to its translated text (e.g. {"1": "...", "2": "..."}).
@@ -383,10 +389,16 @@ object ScreenTranslator {
             conn.readTimeout = 18000
             conn.doOutput = true
 
+            val targetLangInstruction = if (targetLanguage.equals("Hinglish", ignoreCase = true)) {
+                "conversational Hinglish (Hindi written in the Latin alphabet, e.g. 'Yeh bohot simple hai'. Do NOT use Devanagari script)"
+            } else {
+                targetLanguage
+            }
+
             val prompt = """
                 Detect all distinct text blocks, buttons, and paragraphs visible on this mobile phone screen.
                 The screen may contain text in multiple languages (such as Bengali, Hindi, English, Tamil, Telugu, Arabic, Russian, Japanese, etc.).
-                For every text block, detect its 2D bounding box coordinates [ymin, xmin, ymax, xmax] (normalized from 0 to 1000) and translate its text into $targetLanguage.
+                For every text block, detect its 2D bounding box coordinates [ymin, xmin, ymax, xmax] (normalized from 0 to 1000) and translate its text into $targetLangInstruction.
                 Return strictly a valid JSON array of objects:
                 [
                   {

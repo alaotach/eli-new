@@ -63,6 +63,7 @@ class CircleSelectionView @JvmOverloads constructor(
     private val pillRect = RectF()
     private val translateBtnRect = RectF()
     private val toggleOriginalBtnRect = RectF()
+    private val shareBtnRect = RectF()
     private val closeBtnRect = RectF()
     private var isInteractingWithPill = false
 
@@ -241,6 +242,19 @@ class CircleSelectionView @JvmOverloads constructor(
         }
     }
 
+    private fun shareCurrentTranslation() {
+        val bmp = screenshot ?: return
+        if (translatedBlocks.isEmpty()) return
+        triggerHaptic(0)
+        com.alaotach.eli5.ShareImageGenerator.shareTranslatedScreen(
+            context,
+            bmp,
+            translatedBlocks,
+            targetLanguage,
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
+        )
+    }
+
     private fun triggerHaptic(type: Int) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -285,6 +299,13 @@ class CircleSelectionView @JvmOverloads constructor(
                     showOriginalOnly = !showOriginalOnly
                     triggerHaptic(0)
                     invalidate()
+                    return true
+                }
+
+                // 2b. Check if in translated mode and tapped the Share button
+                if (isShowingTranslation && shareBtnRect.contains(x, y)) {
+                    isInteractingWithPill = true
+                    shareCurrentTranslation()
                     return true
                 }
 
@@ -588,9 +609,9 @@ class CircleSelectionView @JvmOverloads constructor(
                 canvas.drawText(blockCountText, textStartX, centerY + 13f * dp, subtitleTextPaint)
 
                 // Toggle chip: [👁 Show Original] vs [✨ Show Translated]
-                val toggleWidth = 110f * dp
+                val toggleWidth = 100f * dp
                 val toggleHeight = 32f * dp
-                val toggleRight = closeBtnRect.left - 8f * dp
+                val toggleRight = closeBtnRect.left - 6f * dp
                 val toggleLeft = toggleRight - toggleWidth
                 val toggleTop = centerY - (toggleHeight / 2f)
                 val toggleBottom = centerY + (toggleHeight / 2f)
@@ -601,9 +622,22 @@ class CircleSelectionView @JvmOverloads constructor(
                 translateBtnBorderPaint.color = Color.parseColor("#A78BFA")
                 canvas.drawRoundRect(toggleOriginalBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
 
-                translateBtnTextPaint.textSize = 11.5f * dp
+                translateBtnTextPaint.textSize = 11f * dp
                 val toggleLabel = if (showOriginalOnly) "✨ Translated" else "👁 Original"
                 canvas.drawText(toggleLabel, toggleOriginalBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
+
+                // Share button: [📤 Share]
+                val shareWidth = 68f * dp
+                val shareRight = toggleLeft - 6f * dp
+                val shareLeft = shareRight - shareWidth
+                shareBtnRect.set(shareLeft, toggleTop, shareRight, toggleBottom)
+
+                translateBtnBgPaint.color = Color.parseColor("#4D8B5CF6")
+                canvas.drawRoundRect(shareBtnRect, 16f * dp, 16f * dp, translateBtnBgPaint)
+                translateBtnBorderPaint.color = Color.parseColor("#A78BFA")
+                canvas.drawRoundRect(shareBtnRect, 16f * dp, 16f * dp, translateBtnBorderPaint)
+
+                canvas.drawText("📤 Share", shareBtnRect.centerX(), centerY + 4.5f * dp, translateBtnTextPaint)
             }
 
             isTranslating -> {

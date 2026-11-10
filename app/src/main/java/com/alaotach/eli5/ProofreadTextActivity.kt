@@ -381,9 +381,9 @@ class ProofreadTextActivity : Activity() {
             langChips.add("${prefLang.flag} To ${prefLang.englishName}" to prefLang.englishName)
             langChips.add("🇺🇸 To English" to "English")
         } else {
-            langChips.add("🇪🇸 To Spanish" to "Spanish")
+            langChips.add("🇮🇳 To Hinglish" to "Hinglish")
             langChips.add("🇮🇳 To Hindi" to "Hindi")
-            langChips.add("🇫🇷 To French" to "French")
+            langChips.add("🇪🇸 To Spanish" to "Spanish")
         }
 
         for ((chipLabel, targetLang) in langChips) {
@@ -714,7 +714,11 @@ class ProofreadTextActivity : Activity() {
                 - Output ONLY the proofread text, with no preamble, markdown wrapping, or explanations.
                 """.trimIndent()
             } else {
-                instruction
+                if (targetLanguage?.equals("Hinglish", ignoreCase = true) == true) {
+                    "$instruction. Output strictly in natural, fluent Hinglish (Hindi written in the Latin alphabet). Do NOT use Devanagari script."
+                } else {
+                    instruction
+                }
             }
 
             AnalyticsManager.logExplainRequest(
