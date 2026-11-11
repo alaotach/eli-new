@@ -190,7 +190,16 @@ class ExplainOverlayActivity : Activity() {
             else -> "English"
         }
 
+        ttsHelper = TtsHelper(this).apply {
+            addInitListener {
+                runOnUiThread {
+                    updateSpeakerVisibility()
+                }
+            }
+        }
+
         showBottomSheet()
+        updateSpeakerVisibility()
         requestExplanation(currentActiveMode, currentActiveLanguage)
     }
 
@@ -238,6 +247,7 @@ class ExplainOverlayActivity : Activity() {
         currentActiveMode = mode
         currentActiveLanguage = language
         SettingsManager.setLastMode(this, mode)
+        updateSpeakerVisibility()
 
         currentJob?.cancel()
         typewriterJob?.cancel()
@@ -461,17 +471,15 @@ class ExplainOverlayActivity : Activity() {
             }
             setOnClickListener {
                 if (currentExplanationText.isNotBlank()) {
-                    if (ttsHelper == null) {
-                        ttsHelper = TtsHelper(this@ExplainOverlayActivity)
-                    }
-                    val langObj = LanguageManager.getLanguageByEnglishName(currentActiveLanguage)
-                    val nowSpeaking = ttsHelper?.toggle(currentExplanationText, langObj.code) { speaking ->
+                    val helper = ttsHelper ?: TtsHelper(this@ExplainOverlayActivity).also { ttsHelper = it }
+                    val langObj = LanguageManager.findLanguage(currentActiveLanguage)
+                    val nowSpeaking = helper.toggle(currentExplanationText, langObj.code) { speaking ->
                         isTtsSpeaking = speaking
                         runOnUiThread {
                             setImageResource(if (speaking) R.drawable.ic_stop_circle else R.drawable.ic_volume_up)
                             imageTintList = ColorStateList.valueOf(if (speaking) Color.parseColor("#FF8A32") else purpleAccent)
                         }
-                    } ?: false
+                    }
                     isTtsSpeaking = nowSpeaking
                     setImageResource(if (nowSpeaking) R.drawable.ic_stop_circle else R.drawable.ic_volume_up)
                     imageTintList = ColorStateList.valueOf(if (nowSpeaking) Color.parseColor("#FF8A32") else purpleAccent)
@@ -484,6 +492,7 @@ class ExplainOverlayActivity : Activity() {
             }
         }
         headerRow.addView(speakerBtn)
+        updateSpeakerVisibility()
 
         // Share button
         val shareBtn = TextView(this).apply {
@@ -880,6 +889,19 @@ class ExplainOverlayActivity : Activity() {
                 setTextColor(textMutedColor)
                 (background as? GradientDrawable)?.setColor(Color.TRANSPARENT)
             }
+        }
+        updateSpeakerVisibility()
+    }
+
+    private fun updateSpeakerVisibility() {
+        val helper = ttsHelper ?: TtsHelper(this@ExplainOverlayActivity).also { ttsHelper = it }
+        val isSupported = helper.isLanguageSupported(currentActiveLanguage)
+        speakerBtn?.visibility = if (isSupported) View.VISIBLE else View.GONE
+        if (!isSupported && isTtsSpeaking) {
+            helper.stop()
+            isTtsSpeaking = false
+            speakerBtn?.setImageResource(R.drawable.ic_volume_up)
+            speakerBtn?.imageTintList = ColorStateList.valueOf(purpleAccent)
         }
     }
 

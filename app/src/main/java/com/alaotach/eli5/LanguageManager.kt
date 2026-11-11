@@ -64,6 +64,15 @@ object LanguageManager {
             ?: SUPPORTED_LANGUAGES.first()
     }
 
+    fun findLanguage(identifier: String): Language {
+        val trimmed = identifier.trim()
+        return SUPPORTED_LANGUAGES.find {
+            it.code.equals(trimmed, ignoreCase = true) ||
+            it.englishName.equals(trimmed, ignoreCase = true) ||
+            it.nativeName.equals(trimmed, ignoreCase = true)
+        } ?: getLanguageByEnglishName(identifier)
+    }
+
     fun searchLanguages(query: String): List<Language> {
         val q = query.trim().lowercase()
         if (q.isEmpty()) return SUPPORTED_LANGUAGES

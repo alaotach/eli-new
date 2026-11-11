@@ -1187,13 +1187,22 @@ fun ExplanationScreen(
     var deeperSectionTitle by remember { mutableStateOf<String?>(null) }
     var showMenu by remember { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
+    var isTtsSupported by remember(language, ttsHelper) {
+        mutableStateOf(ttsHelper.isLanguageSupported(language))
+    }
     val isProofread = remember(item.mode) { item.mode.startsWith("Proofread", ignoreCase = true) }
 
-    DisposableEffect(ttsHelper) {
+    DisposableEffect(ttsHelper, language) {
+        val initListener = {
+            isTtsSupported = ttsHelper.isLanguageSupported(language)
+        }
+        ttsHelper.addInitListener(initListener)
         ttsHelper.setStateListener { speaking ->
             isSpeaking = speaking
         }
+        isTtsSupported = ttsHelper.isLanguageSupported(language)
         onDispose {
+            ttsHelper.removeInitListener(initListener)
             ttsHelper.stop()
             ttsHelper.setStateListener(null)
         }
@@ -1499,31 +1508,33 @@ fun ExplanationScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    if (isTtsSupported) {
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                    // Audio / TTS Toggle (Reads aloud or stops when already speaking)
-                    IconButton(
-                        onClick = {
-                            if (fullExplanation.isNotBlank()) {
-                                val langObj = LanguageManager.getLanguageByEnglishName(language)
-                                val nowSpeaking = ttsHelper.toggle(fullExplanation, langObj.code) { speaking ->
-                                    isSpeaking = speaking
+                        // Audio / TTS Toggle (Reads aloud or stops when already speaking)
+                        IconButton(
+                            onClick = {
+                                if (fullExplanation.isNotBlank()) {
+                                    val langObj = LanguageManager.findLanguage(language)
+                                    val nowSpeaking = ttsHelper.toggle(fullExplanation, langObj.code) { speaking ->
+                                        isSpeaking = speaking
+                                    }
+                                    if (nowSpeaking) {
+                                        Toast.makeText(context, "Reading aloud...", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, "Stopped reading", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
-                                if (nowSpeaking) {
-                                    Toast.makeText(context, "Reading aloud...", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    Toast.makeText(context, "Stopped reading", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isSpeaking) Icons.Rounded.StopCircle else Icons.AutoMirrored.Rounded.VolumeUp,
-                            contentDescription = if (isSpeaking) "Stop reading" else "Read aloud",
-                            tint = if (isSpeaking) AccentOrange else accentPurple,
-                            modifier = Modifier.size(22.dp)
-                        )
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isSpeaking) Icons.Rounded.StopCircle else Icons.AutoMirrored.Rounded.VolumeUp,
+                                contentDescription = if (isSpeaking) "Stop reading" else "Read aloud",
+                                tint = if (isSpeaking) AccentOrange else accentPurple,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
