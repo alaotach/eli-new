@@ -26,6 +26,67 @@ class TtsHelper(context: Context) {
             "it", "tr", "id", "vi", "nl", "pl", "th", "tl", "el", "he",
             "sv", "uk", "ms", "cs"
         )
+
+        /**
+         * Cleans markdown formatting, syntax symbols (*, _, #, `, ~, etc.),
+         * URLs, and HTML tags so TextToSpeech reads natural, fluent prose
+         * without pronouncing formatting symbols like "asterisk" or "hash".
+         */
+        fun cleanTextForSpeech(rawText: String): String {
+            if (rawText.isBlank()) return ""
+
+            var cleaned = rawText
+
+            // 1. Remove code blocks (```...```) - keep inner code text
+            cleaned = cleaned.replace(Regex("```[a-zA-Z]*\\n?([\\s\\S]*?)```"), "$1")
+            cleaned = cleaned.replace("```", " ")
+
+            // 2. Remove inline code backticks (`code` -> code)
+            cleaned = cleaned.replace(Regex("`([^`]+)`"), "$1")
+            cleaned = cleaned.replace("`", " ")
+
+            // 3. Remove markdown links: [Label](http...) -> Label
+            cleaned = cleaned.replace(Regex("\\[([^\\]]+)\\]\\([^\\)]+\\)"), "$1")
+            // Remove bare URLs
+            cleaned = cleaned.replace(Regex("https?://\\S+"), "")
+
+            // 4. Remove HTML tags (<p>, <br/>, <b>, <span>, etc.)
+            cleaned = cleaned.replace(Regex("<[^>]*>"), " ")
+
+            // 5. Remove Markdown headers (# Header -> Header)
+            cleaned = cleaned.replace(Regex("(?m)^\\s*#{1,6}\\s*"), "")
+
+            // 6. Remove bold/italics markers (***text***, **text**, *text*, ___text___, __text__, _text_)
+            cleaned = cleaned.replace(Regex("\\*{1,3}([^*]+)\\*{1,3}"), "$1")
+            cleaned = cleaned.replace(Regex("_{1,3}([^_]+)_{1,3}"), "$1")
+            // Any stray asterisks or underscores left
+            cleaned = cleaned.replace("*", " ")
+            cleaned = cleaned.replace("_", " ")
+
+            // 7. Remove strikethrough (~~text~~ -> text)
+            cleaned = cleaned.replace(Regex("~~([^~]+)~~"), "$1")
+            cleaned = cleaned.replace("~", " ")
+
+            // 8. Remove blockquotes (> Quote -> Quote)
+            cleaned = cleaned.replace(Regex("(?m)^\\s*>+\\s*"), "")
+
+            // 9. Clean list bullets (- item, + item, * item at start of lines)
+            cleaned = cleaned.replace(Regex("(?m)^\\s*[-+*]\\s+"), "")
+            // Clean numbered lists prefix: "1. " -> "1. "
+            cleaned = cleaned.replace(Regex("(?m)^\\s*(\\d+)\\.\\s+"), "$1. ")
+
+            // 10. Remove horizontal rules (---, ***, ___ on a line by itself)
+            cleaned = cleaned.replace(Regex("(?m)^\\s*[-*_]{3,}\\s*$"), "")
+
+            // 11. Remove table pipes |
+            cleaned = cleaned.replace("|", " ")
+
+            // 12. Collapse multiple spaces and excessive newlines into natural pauses
+            cleaned = cleaned.replace(Regex("[ \\t]+"), " ")
+            cleaned = cleaned.replace(Regex("\\n{3,}"), "\n\n")
+
+            return cleaned.trim()
+        }
     }
 
     init {
@@ -186,6 +247,8 @@ class TtsHelper(context: Context) {
 
     fun speak(text: String, languageCode: String = "en") {
         if (!isInitialized || tts == null) return
+        val textToSpeak = cleanTextForSpeech(text)
+        if (textToSpeak.isBlank()) return
         try {
             val targetLocale = getBestLocale(languageCode)
             val res = tts?.setLanguage(targetLocale)
@@ -198,7 +261,7 @@ class TtsHelper(context: Context) {
         val params = android.os.Bundle()
         params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "eli5_utterance_${System.currentTimeMillis()}")
         isSpeaking = true
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "eli5_utterance")
+        tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, params, "eli5_utterance")
     }
 
     fun stop() {
