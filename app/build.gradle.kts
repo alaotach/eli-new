@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.alaotach.eli5"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.alaotach.eli5"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 6
         versionName = "2.3.0"
 
