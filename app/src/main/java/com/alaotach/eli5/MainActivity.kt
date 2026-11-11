@@ -108,6 +108,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -206,6 +207,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val initialLang = SettingsManager.getLanguage(this)
+        val initialLangObj = LanguageManager.getLanguageByEnglishName(initialLang)
+        LanguageManager.applyAppLocale(this, initialLangObj.code)
+        try {
+            val initialLocale = java.util.Locale.forLanguageTag(initialLangObj.code)
+            val config = resources.configuration
+            config.setLocale(initialLocale)
+            config.setLayoutDirection(initialLocale)
+            @Suppress("DEPRECATION")
+            resources.updateConfiguration(config, resources.displayMetrics)
+        } catch (_: Exception) {}
+
         val themePref = SettingsManager.getTheme(this)
         val initialDark = when (themePref) {
             "dark" -> true
@@ -221,7 +234,6 @@ class MainActivity : ComponentActivity() {
         checkForAppUpdates()
 
         setContent {
-            val context = LocalContext.current
             var currentLanguage by remember {
                 mutableStateOf(SettingsManager.getLanguage(this@MainActivity))
             }
@@ -236,11 +248,14 @@ class MainActivity : ComponentActivity() {
             }
             val layoutDir = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
 
-            val localizedContext = remember(currentLanguage, locale) {
-                val config = android.content.res.Configuration(resources.configuration)
-                config.setLocale(locale)
-                config.setLayoutDirection(locale)
-                createConfigurationContext(config)
+            SideEffect {
+                try {
+                    val config = resources.configuration
+                    config.setLocale(locale)
+                    config.setLayoutDirection(locale)
+                    @Suppress("DEPRECATION")
+                    resources.updateConfiguration(config, resources.displayMetrics)
+                } catch (_: Exception) {}
             }
 
             val localizedConfiguration = remember(currentLanguage, locale) {
@@ -259,7 +274,7 @@ class MainActivity : ComponentActivity() {
                 else -> isSystemInDarkTheme()
             }
 
-            val prefs = context.getSharedPreferences("eli5_prefs", Context.MODE_PRIVATE)
+            val prefs = this@MainActivity.getSharedPreferences("eli5_prefs", Context.MODE_PRIVATE)
             if (!prefs.getBoolean("onboarding_done", false)) {
                 startActivity(Intent(this@MainActivity, OnboardingActivity::class.java))
                 finish()
@@ -267,7 +282,6 @@ class MainActivity : ComponentActivity() {
             }
 
             CompositionLocalProvider(
-                LocalContext provides localizedContext,
                 LocalConfiguration provides localizedConfiguration,
                 LocalLayoutDirection provides layoutDir
             ) {
@@ -279,6 +293,16 @@ class MainActivity : ComponentActivity() {
                         onLanguageChange = { newLang ->
                             currentLanguage = newLang
                             SettingsManager.setLanguage(this@MainActivity, newLang)
+                            val lang = LanguageManager.getLanguageByEnglishName(newLang)
+                            LanguageManager.applyAppLocale(this@MainActivity, lang.code)
+                            try {
+                                val loc = java.util.Locale.forLanguageTag(lang.code)
+                                val config = resources.configuration
+                                config.setLocale(loc)
+                                config.setLayoutDirection(loc)
+                                @Suppress("DEPRECATION")
+                                resources.updateConfiguration(config, resources.displayMetrics)
+                            } catch (_: Exception) {}
                             AnalyticsManager.logLanguageChanged(this@MainActivity, newLang, "app_picker_dialog")
                         },
                         onThemeChange = {
@@ -524,6 +548,7 @@ fun Eli5App(
                             },
                             onExplainText = { text ->
                                 val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     putExtra(ExplainOverlayActivity.EXTRA_TEXT, text)
                                     putExtra(ExplainOverlayActivity.EXTRA_MODE, "ELI5")
                                     putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, false)
@@ -572,6 +597,7 @@ fun Eli5App(
                             onShowTutorial = onShowTutorial,
                             onWatchVideoTutorial = {
                                 val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     putExtra("SHOW_TUTORIAL_VIDEO", true)
                                     putExtra("SHOW_FULL_APP_WALKTHROUGH", true)
                                 }
@@ -604,7 +630,9 @@ fun Eli5App(
             isAssistantEnabled = isAssistantEnabled,
             onTryGesture = {
                 walkthroughState.nextStep(4)
-                val intent = Intent(context, CircleSnipActivity::class.java)
+                val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
                 context.startActivity(intent)
             },
             onOpenAssistantSettings = {
@@ -612,6 +640,7 @@ fun Eli5App(
             },
             onWatchVideoTutorial = {
                 val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     putExtra("SHOW_TUTORIAL_VIDEO", true)
                     putExtra("SHOW_FULL_APP_WALKTHROUGH", true)
                 }
@@ -939,7 +968,9 @@ fun HomeScreen(
                     primaryText = primaryText,
                     isDark = isDark,
                     onClick = {
-                        val intent = Intent(context, CircleSnipActivity::class.java)
+                        val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
                         context.startActivity(intent)
                     }
                 )
@@ -2621,7 +2652,9 @@ fun MoreScreen(
                     secondaryText = secondaryText,
                     accentPurple = accentPurple,
                     onClick = {
-                        val intent = Intent(context, CircleSnipActivity::class.java)
+                        val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
                         context.startActivity(intent)
                     }
                 )
