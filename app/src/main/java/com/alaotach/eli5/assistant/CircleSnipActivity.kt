@@ -21,11 +21,14 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.MediaController
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.VideoView
 import androidx.activity.ComponentActivity
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
 import com.alaotach.eli5.AnalyticsManager
 import com.alaotach.eli5.ExplainOverlayActivity
 import com.alaotach.eli5.R
@@ -163,7 +166,7 @@ class CircleSnipActivity : ComponentActivity() {
         val isDark = SettingsManager.isDarkTheme(this)
         var isFullscreen = false
         var currentStep = 0
-        var mediaPlayer: android.media.MediaPlayer? = null
+        var exoPlayer: ExoPlayer? = null
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         var updateProgressRunnable: Runnable? = null
 
@@ -283,15 +286,17 @@ class CircleSnipActivity : ComponentActivity() {
             clipToOutline = true
         }
 
-        val videoView = VideoView(this).apply {
+        val playerView = PlayerView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             ).apply {
                 gravity = Gravity.CENTER
             }
+            useController = false
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
         }
-        videoContainer.addView(videoView)
+        videoContainer.addView(playerView)
 
         // Custom Video Controller Overlay Bar at Bottom
         val controllerBar = LinearLayout(this).apply {
@@ -564,49 +569,71 @@ class CircleSnipActivity : ComponentActivity() {
         }
         cardContainer.setOnClickListener { /* prevent dismiss when clicking inside */ }
 
-        // Video Setup
+        // Video Setup with ExoPlayer
         val rawUri = Uri.parse("android.resource://$packageName/${R.raw.eli5_tutorial_voiceover}")
         val fileFallback = File("/home/aloo/Downloads/eli5_tutorial_voiceover.mp4")
         val videoUri = if (fileFallback.exists()) Uri.fromFile(fileFallback) else rawUri
 
-        videoView.setVideoURI(videoUri)
-
-        fun formatTime(ms: Int): String {
+        fun formatTime(ms: Long): String {
             val totalSeconds = ms / 1000
             val minutes = totalSeconds / 60
             val seconds = totalSeconds % 60
             return String.format(java.util.Locale.US, "%d:%02d", minutes, seconds)
         }
 
-        videoView.setOnPreparedListener { mp ->
-            mediaPlayer = mp
-            mp.isLooping = true
-            videoView.start()
-            playPauseBtn.setImageResource(R.drawable.ic_pause_rounded)
+        val player = ExoPlayer.Builder(this).build().apply {
+            repeatMode = Player.REPEAT_MODE_ALL
+            val mediaItem = MediaItem.fromUri(videoUri)
+            setMediaItem(mediaItem)
+            prepare()
+            playWhenReady = true
+        }
+        exoPlayer = player
+        playerView.player = player
 
-            updateProgressRunnable = object : Runnable {
-                override fun run() {
-                    try {
-                        if (videoView.isPlaying) {
-                            val cur = videoView.currentPosition
-                            val dur = maxOf(1, videoView.duration)
-                            timeTv.text = "${formatTime(cur)} / ${formatTime(dur)}"
-                            seekBar.progress = (cur * 1000L / dur).toInt()
-                        }
-                    } catch (_: Exception) {}
-                    handler.postDelayed(this, 250)
+        player.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isPlaying) {
+                    playPauseBtn.setImageResource(R.drawable.ic_pause_rounded)
+                } else {
+                    playPauseBtn.setImageResource(R.drawable.ic_play_arrow_rounded)
                 }
             }
-            handler.post(updateProgressRunnable!!)
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_READY) {
+                    val dur = maxOf(1L, player.duration)
+                    val cur = player.currentPosition
+                    timeTv.text = "${formatTime(cur)} / ${formatTime(dur)}"
+                    if (!seekBar.isPressed) {
+                        seekBar.progress = (cur * 1000L / dur).toInt()
+                    }
+                }
+            }
+        })
+
+        updateProgressRunnable = object : Runnable {
+            override fun run() {
+                try {
+                    val dur = player.duration
+                    if (dur > 0) {
+                        val cur = player.currentPosition
+                        timeTv.text = "${formatTime(cur)} / ${formatTime(dur)}"
+                        if (!seekBar.isPressed) {
+                            seekBar.progress = (cur * 1000L / dur).toInt()
+                        }
+                    }
+                } catch (_: Exception) {}
+                handler.postDelayed(this, 250)
+            }
         }
+        handler.post(updateProgressRunnable!!)
 
         playPauseBtn.setOnClickListener {
-            if (videoView.isPlaying) {
-                videoView.pause()
-                playPauseBtn.setImageResource(R.drawable.ic_play_arrow_rounded)
+            if (player.isPlaying) {
+                player.pause()
             } else {
-                videoView.start()
-                playPauseBtn.setImageResource(R.drawable.ic_pause_rounded)
+                player.play()
             }
         }
 
@@ -615,20 +642,16 @@ class CircleSnipActivity : ComponentActivity() {
             val chosenSpeed = speeds[currentSpeedIndex]
             speedTv.text = if (chosenSpeed == 1.0f) "1x" else "${chosenSpeed}x"
             try {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && mediaPlayer != null) {
-                    val params = mediaPlayer!!.playbackParams
-                    params.speed = chosenSpeed
-                    mediaPlayer!!.playbackParams = params
-                }
+                player.setPlaybackSpeed(chosenSpeed)
             } catch (_: Exception) {}
         }
 
         seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser && videoView.duration > 0) {
-                    val targetMs = (progress * videoView.duration.toLong() / 1000L).toInt()
-                    videoView.seekTo(targetMs)
-                    timeTv.text = "${formatTime(targetMs)} / ${formatTime(videoView.duration)}"
+                if (fromUser && player.duration > 0) {
+                    val targetMs = progress * player.duration / 1000L
+                    player.seekTo(targetMs)
+                    timeTv.text = "${formatTime(targetMs)} / ${formatTime(player.duration)}"
                 }
             }
             override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {}
@@ -638,7 +661,8 @@ class CircleSnipActivity : ComponentActivity() {
         dialog.setOnDismissListener {
             updateProgressRunnable?.let { handler.removeCallbacks(it) }
             try {
-                videoView.stopPlayback()
+                player.stop()
+                player.release()
             } catch (_: Exception) {}
         }
 

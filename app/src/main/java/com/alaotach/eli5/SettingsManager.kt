@@ -81,7 +81,7 @@ object SettingsManager {
             .apply()
 
         val lang = LanguageManager.getLanguageByEnglishName(language)
-        LanguageManager.applyAppLocale(lang.code)
+        LanguageManager.applyAppLocale(context, lang.code)
     }
 
     fun getProofreadDefaultTone(context: Context): String {

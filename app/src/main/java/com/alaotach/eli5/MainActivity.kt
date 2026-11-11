@@ -126,6 +126,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -447,9 +448,15 @@ fun Eli5App(
                             onSelectHistoryItem = { item ->
                                 activeExplanationItem = item
                             },
+                            onDeleteItem = { item ->
+                                HistoryManager.deleteItem(context, item)
+                                history = HistoryManager.getHistory(context)
+                                Toast.makeText(context, R.string.deleted_from_history, Toast.LENGTH_SHORT).show()
+                            },
                             onClearHistory = {
                                 HistoryManager.clearHistory(context)
                                 history = emptyList()
+                                Toast.makeText(context, R.string.history_cleared, Toast.LENGTH_SHORT).show()
                             },
                             onExplainText = { text ->
                                 val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
@@ -474,6 +481,7 @@ fun Eli5App(
                             onClearHistory = {
                                 HistoryManager.clearHistory(context)
                                 history = emptyList()
+                                Toast.makeText(context, R.string.history_cleared, Toast.LENGTH_SHORT).show()
                             },
                             onSelectHistoryItem = { item ->
                                 activeExplanationItem = item
@@ -481,6 +489,7 @@ fun Eli5App(
                             onDeleteItem = { item ->
                                 HistoryManager.deleteItem(context, item)
                                 history = HistoryManager.getHistory(context)
+                                Toast.makeText(context, R.string.deleted_from_history, Toast.LENGTH_SHORT).show()
                             }
                         )
 
@@ -501,7 +510,7 @@ fun Eli5App(
                             onClearAllData = {
                                 HistoryManager.clearHistory(context)
                                 history = emptyList()
-                                Toast.makeText(context, "All history cleared", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.history_cleared, Toast.LENGTH_SHORT).show()
                             }
                         )
                     }
@@ -517,6 +526,8 @@ fun Eli5App(
             onSelectLanguage = { selected ->
                 currentLanguage = selected
                 SettingsManager.setLanguage(context, selected)
+                val langObj = LanguageManager.getLanguageByEnglishName(selected)
+                LanguageManager.applyAppLocale(context, langObj.code)
                 AnalyticsManager.logLanguageChanged(context, selected, "app_picker_dialog")
                 showLanguagePicker = false
                 (context as? ComponentActivity)?.recreate()
@@ -551,6 +562,7 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenHistory: () -> Unit,
     onSelectHistoryItem: (HistoryItem) -> Unit,
+    onDeleteItem: (HistoryItem) -> Unit,
     onClearHistory: () -> Unit,
     onExplainText: (String) -> Unit
 ) {
@@ -652,14 +664,14 @@ fun HomeScreen(
                     .padding(end = 8.dp)
             ) {
                 Text(
-                    text = "Understand\nanything,",
+                    text = stringResource(R.string.hero_title_1),
                     fontSize = 26.sp,
                     lineHeight = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = primaryText
                 )
                 Text(
-                    text = "instantly.",
+                    text = stringResource(R.string.hero_title_highlight),
                     fontSize = 28.sp,
                     lineHeight = 34.sp,
                     fontWeight = FontWeight.Bold,
@@ -668,7 +680,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Select, circle or paste any text and get a simple explanation — in your language.",
+                    text = stringResource(R.string.hero_subtitle),
                     fontSize = 12.5.sp,
                     lineHeight = 17.sp,
                     color = secondaryText
@@ -719,7 +731,7 @@ fun HomeScreen(
                     Box(modifier = Modifier.weight(1f)) {
                         if (inputText.isEmpty()) {
                             Text(
-                                text = "Paste or type any text...",
+                                text = stringResource(R.string.direct_explain_placeholder),
                                 color = secondaryText,
                                 fontSize = 14.sp
                             )
@@ -796,7 +808,7 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Explain",
+                        text = stringResource(R.string.btn_explain_action),
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -813,7 +825,7 @@ fun HomeScreen(
             ) {
                 // Try Gesture
                 ActionCard(
-                    title = "Try Gesture",
+                    title = stringResource(R.string.btn_try_gesture),
                     icon = Icons.Rounded.PlayArrow,
                     modifier = Modifier.weight(1f),
                     surfaceColor = surfaceColor,
@@ -829,7 +841,7 @@ fun HomeScreen(
 
                 // Assistant Settings
                 ActionCard(
-                    title = "Assistant\nSettings",
+                    title = stringResource(R.string.btn_assistant_settings),
                     icon = Icons.Rounded.Tune,
                     modifier = Modifier.weight(1f),
                     surfaceColor = surfaceColor,
@@ -849,7 +861,7 @@ fun HomeScreen(
             ) {
                 // Language
                 ActionCard(
-                    title = "Language",
+                    title = stringResource(R.string.btn_language),
                     subtitle = currentLangObj.nativeName,
                     icon = Icons.Rounded.Public,
                     hasDropdown = true,
@@ -865,7 +877,7 @@ fun HomeScreen(
 
                 // Recent Activity
                 ActionCard(
-                    title = "Recent\nActivity",
+                    title = stringResource(R.string.btn_recent_activity),
                     icon = Icons.Rounded.Schedule,
                     modifier = Modifier.weight(1f),
                     surfaceColor = surfaceColor,
@@ -896,7 +908,7 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Recent Activity",
+                        text = stringResource(R.string.history_title),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = primaryText
@@ -904,7 +916,7 @@ fun HomeScreen(
                 }
 
                 Text(
-                    text = "Clear All",
+                    text = stringResource(R.string.history_clear_all),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = accentPurple,
@@ -925,7 +937,7 @@ fun HomeScreen(
                         accentPurple = accentPurple,
                         onClick = { onSelectHistoryItem(item) },
                         onDelete = {
-                            HistoryManager.deleteItem(context, item)
+                            onDeleteItem(item)
                         }
                     )
                 }
@@ -1096,7 +1108,7 @@ fun CircleToEli5Card(
 
                 Column {
                     Text(
-                        text = "Circle to ELI5",
+                        text = stringResource(R.string.circle_to_eli5_title),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = primaryText
@@ -1111,7 +1123,7 @@ fun CircleToEli5Card(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (isAssistant) "Active (Long-press Home)" else "Inactive (Tap to set assistant)",
+                            text = if (isAssistant) stringResource(R.string.circle_card_active) else stringResource(R.string.circle_card_inactive),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = if (isAssistant) SuccessGreen else secondaryText
@@ -1224,7 +1236,7 @@ fun ExplanationScreen(
             }
 
             Text(
-                text = "Explanation",
+                text = stringResource(R.string.explanation_title),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = primaryText
@@ -1369,7 +1381,7 @@ fun ExplanationScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (isProofread) "Proofread Text" else "ELI5 Explanation",
+                            text = if (isProofread) stringResource(R.string.proofread_card_title) else stringResource(R.string.eli5_explanation_card_title),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = accentPurple
@@ -1559,7 +1571,7 @@ fun ExplanationScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isProofread) "Refine & Tweak" else "Go Deeper",
+                        text = if (isProofread) stringResource(R.string.refine_tweak_title) else stringResource(R.string.go_deeper_title),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = primaryText
@@ -1572,7 +1584,7 @@ fun ExplanationScreen(
                     // Tweak 1: Professional Tone
                     GoDeeperRow(
                         icon = Icons.Rounded.WorkOutline,
-                        title = "More professional tone",
+                        title = stringResource(R.string.tweak_professional),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         onClick = {
@@ -1599,7 +1611,7 @@ fun ExplanationScreen(
                     // Tweak 2: Concise & Punchy
                     GoDeeperRow(
                         icon = Icons.Rounded.Compress,
-                        title = "Concise & punchy",
+                        title = stringResource(R.string.tweak_concise),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         onClick = {
@@ -1626,7 +1638,7 @@ fun ExplanationScreen(
                     // Tweak 3: Friendly & Casual
                     GoDeeperRow(
                         icon = Icons.Rounded.SentimentSatisfied,
-                        title = "Friendly & casual",
+                        title = stringResource(R.string.tweak_casual),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         onClick = {
@@ -1653,7 +1665,7 @@ fun ExplanationScreen(
                     // Tweak 4: Fix grammar only
                     GoDeeperRow(
                         icon = Icons.Rounded.Spellcheck,
-                        title = "Fix only grammar & spelling",
+                        title = stringResource(R.string.tweak_grammar),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         onClick = {
@@ -1675,7 +1687,7 @@ fun ExplanationScreen(
                     // Row 1: A simpler analogy
                     GoDeeperRow(
                         icon = Icons.Rounded.Science,
-                        title = "A simpler analogy",
+                        title = stringResource(R.string.go_deeper_analogy),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         onClick = {
@@ -1702,7 +1714,7 @@ fun ExplanationScreen(
                     // Row 2: Real world applications
                     GoDeeperRow(
                         icon = Icons.Rounded.Layers,
-                        title = "Real world applications",
+                        title = stringResource(R.string.go_deeper_applications),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         onClick = {
@@ -1729,7 +1741,7 @@ fun ExplanationScreen(
                     // Row 3: Key terms
                     GoDeeperRow(
                         icon = Icons.AutoMirrored.Rounded.MenuBook,
-                        title = "Key terms",
+                        title = stringResource(R.string.go_deeper_terms),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         onClick = {
@@ -1972,7 +1984,7 @@ fun ActivityHistoryScreen(
                         iconTint = Color(0xFFFF8A32),
                         iconBgColor = Color(0xFFFF8A32).copy(alpha = 0.15f),
                         countText = streak.toString(),
-                        labelText = "Day Streak",
+                        labelText = stringResource(R.string.activity_summary_streak),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         isDark = isDark,
@@ -1983,7 +1995,7 @@ fun ActivityHistoryScreen(
                         iconTint = Color(0xFFEAB308),
                         iconBgColor = Color(0xFFEAB308).copy(alpha = 0.15f),
                         countText = points.toString(),
-                        labelText = "Points",
+                        labelText = stringResource(R.string.activity_summary_points),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         isDark = isDark,
@@ -1994,7 +2006,7 @@ fun ActivityHistoryScreen(
                         iconTint = Color(0xFF8B5CF6),
                         iconBgColor = Color(0xFF8B5CF6).copy(alpha = 0.15f),
                         countText = topics.toString(),
-                        labelText = "Topics",
+                        labelText = stringResource(R.string.activity_summary_topics),
                         primaryText = primaryText,
                         secondaryText = secondaryText,
                         isDark = isDark,
@@ -2021,7 +2033,7 @@ fun ActivityHistoryScreen(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Recent Explanations",
+                    text = stringResource(R.string.recent_explanations),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = primaryText
@@ -2030,7 +2042,7 @@ fun ActivityHistoryScreen(
 
             if (history.isNotEmpty()) {
                 Text(
-                    text = "Clear All",
+                    text = stringResource(R.string.history_clear_all),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = accentPurple,
@@ -2054,13 +2066,13 @@ fun ActivityHistoryScreen(
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "No explanations yet",
+                    text = stringResource(R.string.history_empty_title),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = primaryText
                 )
                 Text(
-                    text = "Circle or paste any text to see it here.",
+                    text = stringResource(R.string.empty_state_message),
                     fontSize = 12.5.sp,
                     color = secondaryText
                 )
@@ -2348,7 +2360,7 @@ fun RecentHistoryItemCard(
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Share Card") },
+                        text = { Text(stringResource(R.string.overlay_share)) },
                         onClick = {
                             showMenu = false
                             ShareImageGenerator.shareExplanation(
@@ -2361,7 +2373,7 @@ fun RecentHistoryItemCard(
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete", color = Color.Red) },
+                        text = { Text(stringResource(R.string.history_delete_item), color = Color.Red) },
                         onClick = {
                             showMenu = false
                             onDelete()
@@ -2405,7 +2417,7 @@ fun MoreScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "More",
+            text = stringResource(R.string.bottom_nav_more),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = primaryText,
@@ -2414,7 +2426,7 @@ fun MoreScreen(
 
         // Preferences Group
         Text(
-            text = "PREFERENCES",
+            text = stringResource(R.string.more_preferences),
             fontSize = 11.5.sp,
             fontWeight = FontWeight.Bold,
             color = secondaryText,
@@ -2434,7 +2446,7 @@ fun MoreScreen(
                 val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
                 MoreMenuRow(
                     icon = Icons.Rounded.Public,
-                    title = "Language",
+                    title = stringResource(R.string.btn_language),
                     value = "${langObj.flag} ${langObj.nativeName}",
                     primaryText = primaryText,
                     secondaryText = secondaryText,
@@ -2446,13 +2458,13 @@ fun MoreScreen(
 
                 // Theme
                 val themeLabel = when (themePref) {
-                    "dark" -> "Dark"
-                    "light" -> "Light"
-                    else -> "System Default"
+                    "dark" -> stringResource(R.string.settings_theme_dark)
+                    "light" -> stringResource(R.string.settings_theme_light)
+                    else -> stringResource(R.string.settings_theme_system)
                 }
                 MoreMenuRow(
                     icon = Icons.Rounded.Settings,
-                    title = "Theme",
+                    title = stringResource(R.string.more_theme),
                     value = themeLabel,
                     primaryText = primaryText,
                     secondaryText = secondaryText,
@@ -2464,7 +2476,7 @@ fun MoreScreen(
 
         // Assistant & Gesture Group
         Text(
-            text = "ASSISTANT & GESTURES",
+            text = stringResource(R.string.more_assistant_gestures),
             fontSize = 11.5.sp,
             fontWeight = FontWeight.Bold,
             color = secondaryText,
@@ -2482,7 +2494,7 @@ fun MoreScreen(
             Column(modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)) {
                 MoreMenuRow(
                     icon = Icons.Rounded.TouchApp,
-                    title = "Try Gesture Demo",
+                    title = stringResource(R.string.more_gesture_demo),
                     value = "Interactive",
                     primaryText = primaryText,
                     secondaryText = secondaryText,
@@ -2497,7 +2509,7 @@ fun MoreScreen(
 
                 MoreMenuRow(
                     icon = Icons.Rounded.Tune,
-                    title = "Assistant Settings",
+                    title = stringResource(R.string.more_assistant_settings),
                     value = "System",
                     primaryText = primaryText,
                     secondaryText = secondaryText,
@@ -2511,7 +2523,7 @@ fun MoreScreen(
 
                 MoreMenuRow(
                     icon = Icons.AutoMirrored.Rounded.MenuBook,
-                    title = "How to Use Tutorial",
+                    title = stringResource(R.string.more_tutorial),
                     value = "Guide",
                     primaryText = primaryText,
                     secondaryText = secondaryText,
@@ -2523,7 +2535,7 @@ fun MoreScreen(
 
         // About & Updates
         Text(
-            text = "ABOUT & DATA",
+            text = stringResource(R.string.more_about_data),
             fontSize = 11.5.sp,
             fontWeight = FontWeight.Bold,
             color = secondaryText,
@@ -2541,7 +2553,7 @@ fun MoreScreen(
             Column(modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)) {
                 MoreMenuRow(
                     icon = Icons.Rounded.AutoAwesome,
-                    title = "Check for Updates",
+                    title = stringResource(R.string.more_check_updates),
                     value = "v2.2.1",
                     primaryText = primaryText,
                     secondaryText = secondaryText,
@@ -2553,7 +2565,7 @@ fun MoreScreen(
 
                 MoreMenuRow(
                     icon = Icons.Rounded.Delete,
-                    title = "Clear All History",
+                    title = stringResource(R.string.more_clear_all_history),
                     value = "",
                     primaryText = Color(0xFFEF4444),
                     secondaryText = secondaryText,
@@ -2567,15 +2579,18 @@ fun MoreScreen(
     }
 
     if (showThemeDialog) {
+        val sysLabel = stringResource(R.string.settings_theme_system)
+        val lightLabel = stringResource(R.string.settings_theme_light)
+        val darkLabel = stringResource(R.string.settings_theme_dark)
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text("Choose Theme", fontWeight = FontWeight.Bold, color = primaryText) },
+            title = { Text(stringResource(R.string.settings_theme), fontWeight = FontWeight.Bold, color = primaryText) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf(
-                        "system" to "System Default",
-                        "light" to "Light",
-                        "dark" to "Dark"
+                        "system" to sysLabel,
+                        "light" to lightLabel,
+                        "dark" to darkLabel
                     ).forEach { (key, label) ->
                         Row(
                             modifier = Modifier
@@ -2680,9 +2695,9 @@ fun Eli5BottomNavigationBar(
     lightLavender: Color
 ) {
     val items = listOf(
-        Triple(0, "Home", Icons.Rounded.Home),
-        Triple(1, "History", Icons.Rounded.Schedule),
-        Triple(2, "More", Icons.Rounded.GridView)
+        Triple(0, stringResource(R.string.bottom_nav_home), Icons.Rounded.Home),
+        Triple(1, stringResource(R.string.bottom_nav_history), Icons.Rounded.Schedule),
+        Triple(2, stringResource(R.string.bottom_nav_more), Icons.Rounded.GridView)
     )
 
     Surface(
@@ -2791,13 +2806,13 @@ fun LanguagePickerDialog(
                 ) {
                     Column {
                         Text(
-                            text = "Select Language",
+                            text = stringResource(R.string.picker_title),
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = primaryTextColor
                         )
                         Text(
-                            text = "Translate explanations to this language",
+                            text = stringResource(R.string.picker_subtitle),
                             fontSize = 11.5.sp,
                             color = secondaryTextColor
                         )
@@ -2819,7 +2834,7 @@ fun LanguagePickerDialog(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     placeholder = {
-                        Text("Search 35+ languages...", fontSize = 12.5.sp, color = secondaryTextColor)
+                        Text(stringResource(R.string.picker_search_hint), fontSize = 12.5.sp, color = secondaryTextColor)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = {

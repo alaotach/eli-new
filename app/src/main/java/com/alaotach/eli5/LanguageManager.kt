@@ -75,13 +75,32 @@ object LanguageManager {
     }
 
     fun applyAppLocale(languageCode: String) {
+        applyAppLocale(null, languageCode)
+    }
+
+    fun applyAppLocale(context: Context?, languageCode: String) {
+        val locale = java.util.Locale.forLanguageTag(languageCode)
+        try {
+            java.util.Locale.setDefault(locale)
+        } catch (_: Exception) {}
         try {
             val localeList = LocaleListCompat.forLanguageTags(languageCode)
             AppCompatDelegate.setApplicationLocales(localeList)
         } catch (_: Exception) {}
-        try {
-            val locale = java.util.Locale.forLanguageTag(languageCode)
-            java.util.Locale.setDefault(locale)
-        } catch (_: Exception) {}
+        context?.let { ctx ->
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    val lm = ctx.getSystemService(android.app.LocaleManager::class.java)
+                    lm?.applicationLocales = android.os.LocaleList(locale)
+                }
+            } catch (_: Exception) {}
+            try {
+                val res = ctx.resources
+                val config = res.configuration
+                config.setLocale(locale)
+                config.setLayoutDirection(locale)
+                res.updateConfiguration(config, res.displayMetrics)
+            } catch (_: Exception) {}
+        }
     }
 }

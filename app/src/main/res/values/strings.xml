@@ -167,4 +167,25 @@
     <string name="activity_summary_points">Points</string>
     <string name="activity_summary_topics">Topics</string>
     <string name="recent_explanations">Recent Explanations</string>
+    <string name="proofread_card_title">Proofread Text</string>
+    <string name="refine_tweak_title">Refine &amp; Tweak</string>
+    <string name="tweak_professional">More professional tone</string>
+    <string name="tweak_concise">Concise &amp; punchy</string>
+    <string name="tweak_casual">Friendly &amp; casual</string>
+    <string name="tweak_grammar">Fix only grammar &amp; spelling</string>
+    <string name="more_preferences">PREFERENCES</string>
+    <string name="more_theme">Theme</string>
+    <string name="more_assistant_gestures">ASSISTANT &amp; GESTURES</string>
+    <string name="more_gesture_demo">Try Gesture Demo</string>
+    <string name="more_assistant_settings">Assistant Settings</string>
+    <string name="more_tutorial">How to Use Tutorial</string>
+    <string name="more_about_data">ABOUT &amp; DATA</string>
+    <string name="more_check_updates">Check for Updates</string>
+    <string name="more_clear_all_history">Clear All History</string>
+    <string name="circle_to_eli5_title">Circle to ELI5</string>
+    <string name="circle_to_eli5_subtitle">Explain any text on screen</string>
+    <string name="status_active_label">Active</string>
+    <string name="status_inactive_label">Inactive</string>
+    <string name="deleted_from_history">Deleted from history</string>
+    <string name="history_cleared">History cleared</string>
 </resources>
