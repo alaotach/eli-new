@@ -78,7 +78,7 @@ object SettingsManager {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putString(KEY_LANGUAGE, language)
-            .apply()
+            .commit()
 
         val lang = LanguageManager.getLanguageByEnglishName(language)
         LanguageManager.applyAppLocale(context, lang.code)

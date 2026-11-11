@@ -123,6 +123,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -221,11 +222,33 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
-            val lang = SettingsManager.getLanguage(context)
-            val langObj = LanguageManager.getLanguageByEnglishName(lang)
-            val locale = java.util.Locale.forLanguageTag(langObj.code)
-            val isRtl = TextUtilsCompat.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL
+            var currentLanguage by remember {
+                mutableStateOf(SettingsManager.getLanguage(this@MainActivity))
+            }
+            val langObj = remember(currentLanguage) {
+                LanguageManager.getLanguageByEnglishName(currentLanguage)
+            }
+            val locale = remember(langObj) {
+                java.util.Locale.forLanguageTag(langObj.code)
+            }
+            val isRtl = remember(locale) {
+                TextUtilsCompat.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL
+            }
             val layoutDir = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+
+            val localizedContext = remember(currentLanguage, locale) {
+                val config = android.content.res.Configuration(resources.configuration)
+                config.setLocale(locale)
+                config.setLayoutDirection(locale)
+                createConfigurationContext(config)
+            }
+
+            val localizedConfiguration = remember(currentLanguage, locale) {
+                val config = android.content.res.Configuration(resources.configuration)
+                config.setLocale(locale)
+                config.setLayoutDirection(locale)
+                config
+            }
 
             var themePreference by remember {
                 mutableStateOf(SettingsManager.getTheme(this@MainActivity))
@@ -244,12 +267,20 @@ class MainActivity : ComponentActivity() {
             }
 
             CompositionLocalProvider(
+                LocalContext provides localizedContext,
+                LocalConfiguration provides localizedConfiguration,
                 LocalLayoutDirection provides layoutDir
             ) {
                 Eli5Theme(darkTheme = isDark, dynamicColor = false) {
                     Eli5App(
                         themePref = themePreference,
                         isDark = isDark,
+                        currentLanguage = currentLanguage,
+                        onLanguageChange = { newLang ->
+                            currentLanguage = newLang
+                            SettingsManager.setLanguage(this@MainActivity, newLang)
+                            AnalyticsManager.logLanguageChanged(this@MainActivity, newLang, "app_picker_dialog")
+                        },
                         onThemeChange = {
                             SettingsManager.setTheme(this@MainActivity, it)
                             themePreference = it
@@ -339,6 +370,8 @@ class MainActivity : ComponentActivity() {
 fun Eli5App(
     themePref: String,
     isDark: Boolean,
+    currentLanguage: String,
+    onLanguageChange: (String) -> Unit,
     onThemeChange: (String) -> Unit,
     onCheckUpdates: () -> Unit,
     onShowTutorial: () -> Unit
@@ -349,7 +382,6 @@ fun Eli5App(
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: History, 2: More
     var activeExplanationItem by remember { mutableStateOf<HistoryItem?>(null) }
-    var currentLanguage by remember { mutableStateOf(SettingsManager.getLanguage(context)) }
     var showLanguagePicker by remember { mutableStateOf(false) }
     var history by remember { mutableStateOf<List<HistoryItem>>(emptyList()) }
     var lastBackPressTime by remember { mutableLongStateOf(0L) }
@@ -420,11 +452,8 @@ fun Eli5App(
         }
     }
 
-    CompositionLocalProvider(
-        LocalLayoutDirection provides layoutDir
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Scaffold(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Transparent,
         bottomBar = {
@@ -594,17 +623,13 @@ fun Eli5App(
             }
         )
     }
-    }
 
     if (showLanguagePicker) {
         LanguagePickerDialog(
             currentLanguage = currentLanguage,
             onSelectLanguage = { selected ->
-                currentLanguage = selected
-                SettingsManager.setLanguage(context, selected)
-                AnalyticsManager.logLanguageChanged(context, selected, "app_picker_dialog")
+                onLanguageChange(selected)
                 showLanguagePicker = false
-                (context as? ComponentActivity)?.recreate()
             },
             onDismiss = { showLanguagePicker = false },
             isDark = isDark,
