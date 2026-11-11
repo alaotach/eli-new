@@ -89,12 +89,6 @@ object LanguageManager {
         } catch (_: Exception) {}
         context?.let { ctx ->
             try {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                    val lm = ctx.getSystemService(android.app.LocaleManager::class.java)
-                    lm?.applicationLocales = android.os.LocaleList(locale)
-                }
-            } catch (_: Exception) {}
-            try {
                 val res = ctx.resources
                 val config = res.configuration
                 config.setLocale(locale)

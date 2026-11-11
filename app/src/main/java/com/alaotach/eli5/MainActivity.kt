@@ -186,6 +186,18 @@ class MainActivity : ComponentActivity() {
         super.attachBaseContext(localizedContext)
     }
 
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val lang = SettingsManager.getLanguage(this)
+        val langObj = LanguageManager.getLanguageByEnglishName(lang)
+        val locale = java.util.Locale.forLanguageTag(langObj.code)
+        newConfig.setLocale(locale)
+        newConfig.setLayoutDirection(locale)
+        try {
+            resources.updateConfiguration(newConfig, resources.displayMetrics)
+        } catch (_: Exception) {}
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -526,8 +538,6 @@ fun Eli5App(
             onSelectLanguage = { selected ->
                 currentLanguage = selected
                 SettingsManager.setLanguage(context, selected)
-                val langObj = LanguageManager.getLanguageByEnglishName(selected)
-                LanguageManager.applyAppLocale(context, langObj.code)
                 AnalyticsManager.logLanguageChanged(context, selected, "app_picker_dialog")
                 showLanguagePicker = false
                 (context as? ComponentActivity)?.recreate()
