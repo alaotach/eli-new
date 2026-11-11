@@ -188,4 +188,26 @@
     <string name="status_inactive_label">നിഷ്ക്രിയം</string>
     <string name="deleted_from_history">ഹിസ്റ്ററിയിൽ നിന്ന് നീക്കം ചെയ്തു</string>
     <string name="history_cleared">എല്ലാ ഹിസ്റ്ററിയും മായ്‌ച്ചു</string>
+    <!-- Interactive Walkthrough -->
+    <string name="walkthrough_skip">ഒഴിവാക്കുക</string>
+    <string name="walkthrough_next">അടുത്തത് →</string>
+    <string name="walkthrough_finish">പൂർത്തിയാക്കുക ✓</string>
+    <string name="walkthrough_try_demo">ഡെമോ പരീക്ഷിക്കുക</string>
+    <string name="walkthrough_open_settings">ക്രമീകരണങ്ങൾ തുറക്കുക</string>
+    <string name="walkthrough_step_counter">ഘട്ടം %1$d / %2$d</string>
+    <string name="walkthrough_step1_title">Circle to Explain &amp; Gesture</string>
+    <string name="walkthrough_step1_desc">ഏതൊരു ആപ്പിൽ നിന്നും പുറത്തുപോകാതെ സ്ക്രീനിലുള്ള ഏത് വാചകത്തിനും ചുറ്റും വട്ടമിട്ട് ഉടനടി വിശദീകരണം നേടുക.</string>
+    <string name="walkthrough_step2_title">ELI5 ഡിഫോൾട്ട് അസിസ്റ്റന്റാക്കുക</string>
+    <string name="walkthrough_step2_desc">സ്ക്രീൻ സർക്കിൾ ജെസ്റ്റർ എളുപ്പത്തിൽ ഉപയോഗിക്കാൻ ആൻഡ്രോയിഡ് സെറ്റിങ്സിൽ ELI5 ഡിഫോൾട്ട് അസിസ്റ്റന്റാക്കി മാറ്റുക.</string>
+    <string name="walkthrough_step3_title">വാചകം നൽകി ടോൺ തിരഞ്ഞെടുക്കുക</string>
+    <string name="walkthrough_step3_desc">ഏതൊരു വാചകവും ഇവിടെ നൽകി ശൈലി തിരഞ്ഞെടുക്കാം: ELI5 (ലളിതം), Direct (ചുരുക്കത്തിൽ), അല്ലെങ്കിൽ Detailed (വിശദമായി).</string>
+    <string name="walkthrough_step4_title">ഏതൊരു ആപ്പിലും ടെക്സ്റ്റ് സെലക്ട് ചെയ്യാം</string>
+    <string name="walkthrough_step4_desc">WhatsApp, Chrome തുടങ്ങിയ ഏത് ആപ്പിലും ടെക്സ്റ്റ് സെലക്ട് ചെയ്ത് More (⋮) ടാപ്പ് ചെയ്ത് ‘Explain with ELI5’ തിരഞ്ഞെടുക്കാം.</string>
+    <string name="walkthrough_complete_title">നിങ്ങൾ തയ്യറായിക്കഴിഞ്ഞു! 🎉</string>
+    <string name="walkthrough_complete_subtitle">ELI5 ഉപയോഗിച്ച് ഏത് സങ്കീർണ്ണമായ കാര്യവും ലളിതമാക്കാൻ നിങ്ങൾ പഠിച്ചുകഴിഞ്ഞു. ഇനി എന്താണ് ചെയ്യാൻ ആഗ്രഹിക്കുന്നത്?</string>
+    <string name="walkthrough_action_start">ELI5 ഉപയോഗിക്കാൻ തുടങ്ങുക</string>
+    <string name="walkthrough_action_replay">ടൂർ വീണ്ടും കാണുക</string>
+    <string name="walkthrough_action_video">വീഡിയോ ട്യൂട്ടോറിയൽ കാണുക</string>
+    <string name="more_replay_walkthrough">ടൂർ വീണ്ടും കാണുക</string>
+    <string name="more_replay_walkthrough_desc">ആപ്പിന്റെ ഫീച്ചർ ടൂർ</string>
 </resources>

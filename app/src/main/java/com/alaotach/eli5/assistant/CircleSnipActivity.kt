@@ -117,15 +117,16 @@ class CircleSnipActivity : ComponentActivity() {
         val demoBitmap = createDemoScreenBitmap()
         selectionView.setScreenshot(demoBitmap)
 
-        // Show tutorial video overlay automatically on first open only
+        // Show tutorial video overlay automatically on first open or if explicitly requested
         val prefs = getSharedPreferences("eli5_prefs", Context.MODE_PRIVATE)
-        if (!prefs.getBoolean("try_gesture_tutorial_video_shown", false)) {
+        val forceShowVideo = intent.getBooleanExtra("SHOW_TUTORIAL_VIDEO", false)
+        if (forceShowVideo || !prefs.getBoolean("try_gesture_tutorial_video_shown", false)) {
             prefs.edit().putBoolean("try_gesture_tutorial_video_shown", true).apply()
             root.postDelayed({
                 if (!isFinishing && !isDestroyed) {
                     showTutorialVideoDialog()
                 }
-            }, 350)
+            }, if (forceShowVideo) 150 else 350)
         }
     }
 

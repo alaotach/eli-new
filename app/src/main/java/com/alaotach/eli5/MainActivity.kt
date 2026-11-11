@@ -143,6 +143,10 @@ import com.alaotach.eli5.assistant.CircleSnipActivity
 import com.alaotach.eli5.assistant.Eli5AssistantManager
 import com.alaotach.eli5.ui.Eli5OrganicBackground
 import com.alaotach.eli5.ui.MarkdownTextFormatter
+import com.alaotach.eli5.ui.WalkthroughOverlay
+import com.alaotach.eli5.ui.WalkthroughState
+import com.alaotach.eli5.ui.rememberWalkthroughState
+import com.alaotach.eli5.ui.walkthroughTarget
 import com.alaotach.eli5.ui.theme.AccentOrange
 import com.alaotach.eli5.ui.theme.CardBorderDark
 import com.alaotach.eli5.ui.theme.CardBorderLight
@@ -350,6 +354,16 @@ fun Eli5App(
     var history by remember { mutableStateOf<List<HistoryItem>>(emptyList()) }
     var lastBackPressTime by remember { mutableLongStateOf(0L) }
 
+    val walkthroughState = rememberWalkthroughState()
+    val prefs = remember { context.getSharedPreferences("eli5_prefs", Context.MODE_PRIVATE) }
+
+    LaunchedEffect(Unit) {
+        if (!prefs.getBoolean("has_seen_interactive_walkthrough", false)) {
+            kotlinx.coroutines.delay(400)
+            walkthroughState.startWalkthrough()
+        }
+    }
+
     // Dynamic RTL/LTR support based on current selected language
     val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
     val locale = java.util.Locale.forLanguageTag(langObj.code)
@@ -454,6 +468,7 @@ fun Eli5App(
                             secondaryText = secondaryText,
                             accentPurple = accentPurple,
                             lightLavender = lightLavender,
+                            walkthroughState = walkthroughState,
                             onOpenLanguagePicker = { showLanguagePicker = true },
                             onOpenSettings = { selectedTab = 2 },
                             onOpenHistory = { selectedTab = 1 },
@@ -519,6 +534,13 @@ fun Eli5App(
                             onOpenLanguagePicker = { showLanguagePicker = true },
                             onShowTutorial = onShowTutorial,
                             onCheckUpdates = onCheckUpdates,
+                            onReplayWalkthrough = {
+                                selectedTab = 0
+                                scope.launch {
+                                    kotlinx.coroutines.delay(250)
+                                    walkthroughState.startWalkthrough()
+                                }
+                            },
                             onClearAllData = {
                                 HistoryManager.clearHistory(context)
                                 history = emptyList()
@@ -527,6 +549,29 @@ fun Eli5App(
                         )
                     }
                 }
+
+                // Interactive Feature Walkthrough Spotlight Overlay
+                WalkthroughOverlay(
+                    state = walkthroughState,
+                    isDark = isDark,
+                    onTryGesture = {
+                        val intent = Intent(context, CircleSnipActivity::class.java)
+                        context.startActivity(intent)
+                    },
+                    onOpenAssistantSettings = {
+                        Eli5AssistantManager.openAssistantSettings(context)
+                    },
+                    onWatchVideoTutorial = {
+                        val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                            putExtra("SHOW_TUTORIAL_VIDEO", true)
+                        }
+                        context.startActivity(intent)
+                    },
+                    onFinish = {
+                        walkthroughState.dismiss()
+                        prefs.edit().putBoolean("has_seen_interactive_walkthrough", true).apply()
+                    }
+                )
             }
         }
     }
@@ -568,6 +613,7 @@ fun HomeScreen(
     secondaryText: Color,
     accentPurple: Color,
     lightLavender: Color,
+    walkthroughState: WalkthroughState,
     onOpenLanguagePicker: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenHistory: () -> Unit,
@@ -727,6 +773,7 @@ fun HomeScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .walkthroughTarget("input_box_card", walkthroughState)
                     .shadow(elevation = 2.dp, shape = RoundedCornerShape(18.dp)),
                 shape = RoundedCornerShape(18.dp),
                 color = surfaceColor,
@@ -790,6 +837,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
+                    .walkthroughTarget("explain_button_card", walkthroughState)
                     .shadow(elevation = 4.dp, shape = RoundedCornerShape(18.dp))
                     .clip(RoundedCornerShape(18.dp))
                     .background(
@@ -837,7 +885,9 @@ fun HomeScreen(
                 ActionCard(
                     title = stringResource(R.string.btn_try_gesture),
                     icon = Icons.Rounded.PlayArrow,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .walkthroughTarget("try_gesture_card", walkthroughState),
                     surfaceColor = surfaceColor,
                     borderColor = borderColor,
                     accentPurple = accentPurple,
@@ -853,7 +903,9 @@ fun HomeScreen(
                 ActionCard(
                     title = stringResource(R.string.btn_assistant_settings),
                     icon = Icons.Rounded.Tune,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .walkthroughTarget("assistant_settings_card", walkthroughState),
                     surfaceColor = surfaceColor,
                     borderColor = borderColor,
                     accentPurple = accentPurple,
@@ -2425,6 +2477,7 @@ fun MoreScreen(
     onOpenLanguagePicker: () -> Unit,
     onShowTutorial: () -> Unit,
     onCheckUpdates: () -> Unit,
+    onReplayWalkthrough: () -> Unit,
     onClearAllData: () -> Unit
 ) {
     val context = LocalContext.current
@@ -2550,6 +2603,18 @@ fun MoreScreen(
                     secondaryText = secondaryText,
                     accentPurple = accentPurple,
                     onClick = onShowTutorial
+                )
+
+                HorizontalDivider(color = borderColor, modifier = Modifier.padding(horizontal = 8.dp))
+
+                MoreMenuRow(
+                    icon = Icons.Rounded.TouchApp,
+                    title = stringResource(R.string.more_replay_walkthrough),
+                    value = "Tour",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = onReplayWalkthrough
                 )
             }
         }

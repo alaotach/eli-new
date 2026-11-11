@@ -188,4 +188,26 @@
     <string name="status_inactive_label">Inactive</string>
     <string name="deleted_from_history">Deleted from history</string>
     <string name="history_cleared">History cleared</string>
+    <!-- Interactive Walkthrough -->
+    <string name="walkthrough_skip">Skip</string>
+    <string name="walkthrough_next">Next →</string>
+    <string name="walkthrough_finish">Finish Tour ✓</string>
+    <string name="walkthrough_try_demo">Try Demo</string>
+    <string name="walkthrough_open_settings">Open Settings</string>
+    <string name="walkthrough_step_counter">Step %1$d of %2$d</string>
+    <string name="walkthrough_step1_title">Circle to Explain &amp; Gesture</string>
+    <string name="walkthrough_step1_desc">Circle or tap anything on your screen to explain, simplify, or translate it instantly without leaving your current app.</string>
+    <string name="walkthrough_step2_title">Set ELI5 as Default Assistant</string>
+    <string name="walkthrough_step2_desc">Set ELI5 as your default assistant in Android settings to trigger Circle to Search anytime with a simple swipe or long-press.</string>
+    <string name="walkthrough_step3_title">Explain Any Text &amp; Choose Tone</string>
+    <string name="walkthrough_step3_desc">Paste complex text and choose your style: ELI5 (simple), Direct (concise), or Detailed (in-depth analysis).</string>
+    <string name="walkthrough_step4_title">Highlight Text in Any App</string>
+    <string name="walkthrough_step4_desc">Select text in WhatsApp, Chrome, or any app, tap More (⋮), and choose ‘Explain with ELI5’ for instant floating explanations.</string>
+    <string name="walkthrough_complete_title">You’re All Set! 🎉</string>
+    <string name="walkthrough_complete_subtitle">You now know all the ways to simplify anything with ELI5. What would you like to do next?</string>
+    <string name="walkthrough_action_start">Start Using ELI5</string>
+    <string name="walkthrough_action_replay">Replay Walkthrough</string>
+    <string name="walkthrough_action_video">Watch Video Tutorial</string>
+    <string name="more_replay_walkthrough">Replay Walkthrough</string>
+    <string name="more_replay_walkthrough_desc">Interactive feature tour</string>
 </resources>
