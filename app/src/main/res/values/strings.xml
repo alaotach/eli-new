@@ -122,7 +122,7 @@
     <string name="proofread_choose_target_lang">Select Target Language</string>
     <string name="onboarding_step1_title">Explain anything in 1 tap</string>
     <string name="onboarding_step1_subtitle">Highlight text in any app, tap More (⋮), and choose ELI5.</string>
-    <string name="onboarding_step1_caption1">1. Highlight text &amp;amp; tap ⋮</string>
+    <string name="onboarding_step1_caption1">1. Highlight text &amp;amp;amp; tap ⋮</string>
     <string name="onboarding_step1_caption2">2. Tap ‘Explain with ELI5’</string>
     <string name="onboarding_step1_caption3">3. Floating explanation appears instantly!</string>
     <string name="onboarding_btn_continue">Continue →</string>

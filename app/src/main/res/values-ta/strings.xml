@@ -122,7 +122,7 @@
     <string name="proofread_choose_target_lang">இலக்கு மொழியைத் தேர்ந்தெடுக்கவும்</string>
     <string name="onboarding_step1_title">1 தட்டலில் எதையும் விளக்கவும்</string>
     <string name="onboarding_step1_subtitle">எந்த பயன்பாட்டிலும் உரையைத் தனிப்படுத்தவும், மேலும் (⋮) என்பதைத் தட்டி, ELI5ஐத் தேர்ந்தெடுக்கவும்.</string>
-    <string name="onboarding_step1_caption1">1. உரையைத் தனிப்படுத்தி &amp;amp; தட்டவும் ⋮</string>
+    <string name="onboarding_step1_caption1">1. உரையைத் தனிப்படுத்தி &amp;amp;amp; தட்டவும் ⋮</string>
     <string name="onboarding_step1_caption2">2. ‘ELI5 உடன் விளக்கவும்’ என்பதைத் தட்டவும்</string>
     <string name="onboarding_step1_caption3">3. மிதக்கும் விளக்கம் உடனடியாகத் தோன்றும்!</string>
     <string name="onboarding_btn_continue">தொடரவும் →</string>

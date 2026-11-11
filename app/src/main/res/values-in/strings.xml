@@ -122,7 +122,7 @@
     <string name="proofread_choose_target_lang">Pilih Bahasa Sasaran</string>
     <string name="onboarding_step1_title">Jelaskan apa pun dalam 1 ketukan</string>
     <string name="onboarding_step1_subtitle">Sorot teks di aplikasi apa pun, ketuk Lainnya (⋮), dan pilih ELI5.</string>
-    <string name="onboarding_step1_caption1">1. Sorot teks &amp;amp; ketuk ⋮</string>
+    <string name="onboarding_step1_caption1">1. Sorot teks &amp;amp;amp; ketuk ⋮</string>
     <string name="onboarding_step1_caption2">2. Ketuk ’Jelaskan dengan ELI5’</string>
     <string name="onboarding_step1_caption3">3. Penjelasan mengambang muncul seketika!</string>
     <string name="onboarding_btn_continue">Lanjutkan →</string>

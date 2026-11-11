@@ -138,7 +138,7 @@ class OnboardingStep1Fragment : Fragment() {
             background = GradientDrawable().apply {
                 setColor(getOnboardingCardBg(context))
                 cornerRadius = context.dpToPx(18f).toFloat()
-                setStroke(context.dpToPx(1f), Color.argb(100, 139, 92, 246))
+                setStroke(context.dpToPx(1.5f), Color.argb(120, 139, 92, 246))
             }
             setPadding(context.dpToPx(12f), context.dpToPx(12f), context.dpToPx(12f), context.dpToPx(12f))
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
@@ -147,10 +147,9 @@ class OnboardingStep1Fragment : Fragment() {
         }
 
         val demoImageView = ImageView(context).apply {
-            setImageResource(R.drawable.tutorial_img_6)
+            setImageResource(R.drawable.tutorial_step1_1)
             scaleType = ImageView.ScaleType.FIT_CENTER
             adjustViewBounds = true
-            maxHeight = context.dpToPx(260f)
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         }
         demoCard.addView(demoImageView)
@@ -158,11 +157,11 @@ class OnboardingStep1Fragment : Fragment() {
         // Step caption bar
         val stepCaption = TextView(context).apply {
             text = getString(R.string.onboarding_step1_caption1)
-            setTextColor(Color.WHITE)
-            textSize = 13.5f
+            setTextColor(getOnboardingTextPrimary(context))
+            textSize = 14.5f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            setPadding(0, context.dpToPx(8f), 0, context.dpToPx(8f))
+            setPadding(context.dpToPx(8f), context.dpToPx(10f), context.dpToPx(8f), context.dpToPx(8f))
         }
         demoCard.addView(stepCaption)
 
@@ -191,9 +190,9 @@ class OnboardingStep1Fragment : Fragment() {
 
         // Looping animation steps
         val demoSteps = listOf(
-            Triple(R.drawable.tutorial_img_6, getString(R.string.onboarding_step1_caption1), 0),
-            Triple(R.drawable.tutorial_img_7, getString(R.string.onboarding_step1_caption2), 1),
-            Triple(R.drawable.tutorial_img_4, getString(R.string.onboarding_step1_caption3), 2)
+            Triple(R.drawable.tutorial_step1_1, getString(R.string.onboarding_step1_caption1), 0),
+            Triple(R.drawable.tutorial_step1_2, getString(R.string.onboarding_step1_caption2), 1),
+            Triple(R.drawable.tutorial_step1_3, getString(R.string.onboarding_step1_caption3), 2)
         )
         var currentStep = 0
 
@@ -350,82 +349,49 @@ class OnboardingStep2Fragment : Fragment() {
         }
         content.addView(explanation)
 
-        // Tutorial Screenshots Guide (tutorial_img_1 & tutorial_img_2 side by side)
-        val imagesRow = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                bottomMargin = context.dpToPx(8f)
+        // Tutorial Screenshots Guide (Large full-width stacked cards)
+        fun createStepCard(stepTitle: String, imageRes: Int, isLast: Boolean): View {
+            val card = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER_HORIZONTAL
+                background = GradientDrawable().apply {
+                    setColor(getOnboardingCardBg(context))
+                    cornerRadius = context.dpToPx(18f).toFloat()
+                    setStroke(context.dpToPx(1.5f), Color.argb(120, 139, 92, 246))
+                }
+                setPadding(context.dpToPx(12f), context.dpToPx(12f), context.dpToPx(12f), context.dpToPx(14f))
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    topMargin = context.dpToPx(6f)
+                    if (!isLast) bottomMargin = context.dpToPx(14f)
+                }
             }
+
+            val lbl = TextView(context).apply {
+                text = stepTitle
+                setTextColor(getOnboardingTextPrimary(context))
+                textSize = 15.5f
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                setPadding(0, context.dpToPx(2f), 0, context.dpToPx(10f))
+            }
+            card.addView(lbl)
+
+            val img = ImageView(context).apply {
+                setImageResource(imageRes)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                adjustViewBounds = true
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            }
+            card.addView(img)
+
+            return card
         }
 
-        val cardHeight = context.dpToPx(148f)
+        val card1 = createStepCard(getString(R.string.onboarding_step2_card1), R.drawable.tutorial_step2_1, false)
+        val card2 = createStepCard(getString(R.string.onboarding_step2_card2), R.drawable.tutorial_step2_2, true)
 
-        // Card 1: Find ELI5
-        val card1 = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            background = GradientDrawable().apply {
-                setColor(getOnboardingCardBg(context))
-                cornerRadius = context.dpToPx(14f).toFloat()
-                setStroke(context.dpToPx(1f), Color.argb(80, 139, 92, 246))
-            }
-            setPadding(context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f))
-            layoutParams = LinearLayout.LayoutParams(0, cardHeight, 1f).apply {
-                marginEnd = context.dpToPx(6f)
-            }
-        }
-        val img1 = ImageView(context).apply {
-            setImageResource(R.drawable.tutorial_img_1)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            adjustViewBounds = true
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
-        }
-        val lbl1 = TextView(context).apply {
-            text = getString(R.string.onboarding_step2_card1)
-            setTextColor(Color.WHITE)
-            textSize = 11.5f
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
-            setPadding(0, context.dpToPx(3f), 0, 0)
-        }
-        card1.addView(img1)
-        card1.addView(lbl1)
-
-        // Card 2: Turn ON toggle
-        val card2 = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            background = GradientDrawable().apply {
-                setColor(getOnboardingCardBg(context))
-                cornerRadius = context.dpToPx(14f).toFloat()
-                setStroke(context.dpToPx(1f), Color.argb(80, 139, 92, 246))
-            }
-            setPadding(context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f), context.dpToPx(6f))
-            layoutParams = LinearLayout.LayoutParams(0, cardHeight, 1f).apply {
-                marginStart = context.dpToPx(6f)
-            }
-        }
-        val img2 = ImageView(context).apply {
-            setImageResource(R.drawable.tutorial_img_2)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            adjustViewBounds = true
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
-        }
-        val lbl2 = TextView(context).apply {
-            text = getString(R.string.onboarding_step2_card2)
-            setTextColor(Color.WHITE)
-            textSize = 11.5f
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
-            setPadding(0, context.dpToPx(3f), 0, 0)
-        }
-        card2.addView(img2)
-        card2.addView(lbl2)
-
-        imagesRow.addView(card1)
-        imagesRow.addView(card2)
-        content.addView(imagesRow)
+        content.addView(card1)
+        content.addView(card2)
 
         // Pinned Bottom Button Bar (Guaranteed visible on every screen)
         val bottomBar = LinearLayout(context).apply {
@@ -558,7 +524,7 @@ class OnboardingStep3Fragment : Fragment() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#142E1F"))
+                setColor(Color.parseColor(if (SettingsManager.isDarkTheme(context)) "#142E1F" else "#DCFCE7"))
                 cornerRadius = context.dpToPx(14f).toFloat()
                 setStroke(context.dpToPx(1.5f), Color.parseColor("#22C55E"))
             }
@@ -571,14 +537,14 @@ class OnboardingStep3Fragment : Fragment() {
         }
         val checkIcon = TextView(context).apply {
             text = "✓"
-            setTextColor(Color.parseColor("#22C55E"))
+            setTextColor(Color.parseColor(if (SettingsManager.isDarkTheme(context)) "#22C55E" else "#15803D"))
             textSize = 20f
             typeface = Typeface.DEFAULT_BOLD
             setPadding(0, 0, context.dpToPx(12f), 0)
         }
         val checkText = TextView(context).apply {
             text = getString(R.string.onboarding_step3_success)
-            setTextColor(Color.WHITE)
+            setTextColor(Color.parseColor(if (SettingsManager.isDarkTheme(context)) "#FFFFFF" else "#14532D"))
             textSize = 13.5f
             typeface = Typeface.DEFAULT_BOLD
             setLineSpacing(0f, 1.2f)

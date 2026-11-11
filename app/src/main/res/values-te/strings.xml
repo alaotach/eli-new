@@ -122,7 +122,7 @@
     <string name="proofread_choose_target_lang">లక్ష్య భాషను ఎంచుకోండి</string>
     <string name="onboarding_step1_title">1 ట్యాప్‌లో ఏదైనా వివరించండి</string>
     <string name="onboarding_step1_subtitle">ఏదైనా యాప్‌లో వచనాన్ని హైలైట్ చేయండి, మరిన్ని (⋮) నొక్కండి మరియు ELI5ని ఎంచుకోండి.</string>
-    <string name="onboarding_step1_caption1">1. వచనాన్ని హైలైట్ చేయండి &amp;amp; ⋮ నొక్కండి</string>
+    <string name="onboarding_step1_caption1">1. వచనాన్ని హైలైట్ చేయండి &amp;amp;amp; ⋮ నొక్కండి</string>
     <string name="onboarding_step1_caption2">2. ‘ELI5తో వివరించండి’ నొక్కండి</string>
     <string name="onboarding_step1_caption3">3. ఫ్లోటింగ్ వివరణ తక్షణమే కనిపిస్తుంది!</string>
     <string name="onboarding_btn_continue">కొనసాగించు →</string>
