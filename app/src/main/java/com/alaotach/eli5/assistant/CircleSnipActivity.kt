@@ -27,6 +27,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.datasource.RawResourceDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -106,7 +107,7 @@ class CircleSnipActivity : ComponentActivity() {
                 bottomMargin = (dp * 28).toInt()
             }
             setOnClickListener {
-                showTutorialVideoDialog()
+                showTutorialVideoDialog(fullAppWalkthrough = false)
             }
         }
         root.addView(tutorialBtn)
@@ -166,7 +167,7 @@ class CircleSnipActivity : ComponentActivity() {
         }
     }
 
-    private fun showTutorialVideoDialog() {
+    private fun showTutorialVideoDialog(fullAppWalkthrough: Boolean = intent.getBooleanExtra("SHOW_FULL_APP_WALKTHROUGH", false)) {
         val dialog = Dialog(this, android.R.style.Theme_Translucent_NoTitleBar)
         val dp = resources.displayMetrics.density
         val isDark = SettingsManager.isDarkTheme(this)
@@ -232,20 +233,42 @@ class CircleSnipActivity : ComponentActivity() {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
         }
+        val isFullAppWalkthrough = fullAppWalkthrough
         val titleTv = TextView(this).apply {
-            text = "Circle to ELI5 Tutorial"
+            text = if (isFullAppWalkthrough) "ELI5 App Walkthrough" else "Circle to ELI5 Tutorial"
             textSize = 17f
             setTypeface(typeface, Typeface.BOLD)
             setTextColor(primaryTextColor)
         }
         val subtitleTv = TextView(this).apply {
-            text = "See how it works in under a minute"
+            text = if (isFullAppWalkthrough) "Complete guide to all features" else "See how it works in under a minute"
             textSize = 12.5f
             setTextColor(secondaryTextColor)
         }
         titleCol.addView(titleTv)
         titleCol.addView(subtitleTv)
         header.addView(titleCol)
+
+        // Switch Video Pill Button (Gesture Demo vs Full App Guide)
+        val switchVideoBtn = TextView(this).apply {
+            text = if (isFullAppWalkthrough) "Gesture Demo ↺" else "Full App Guide ▶"
+            textSize = 11.5f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#7C3AED"))
+                cornerRadius = dp * 14f
+            }
+            setPadding((dp * 10).toInt(), (dp * 5).toInt(), (dp * 10).toInt(), (dp * 5).toInt())
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                marginEnd = (dp * 8).toInt()
+            }
+            setOnClickListener {
+                dialog.dismiss()
+                showTutorialVideoDialog(fullAppWalkthrough = !isFullAppWalkthrough)
+            }
+        }
+        header.addView(switchVideoBtn)
 
         // Fullscreen Toggle Button
         val fullscreenBtn = ImageView(this).apply {
@@ -652,8 +675,13 @@ class CircleSnipActivity : ComponentActivity() {
         cardContainer.setOnClickListener { /* prevent dismiss when clicking inside */ }
 
         // Video Setup with ExoPlayer
-        val rawUri = Uri.parse("android.resource://$packageName/${R.raw.eli5_tutorial_voiceover}")
-        val fileFallback = File("/home/aloo/Downloads/eli5_tutorial_voiceover.mp4")
+        val rawResId = if (isFullAppWalkthrough) R.raw.eli5_app_walkthrough else R.raw.eli5_tutorial_voiceover
+        val rawUri = RawResourceDataSource.buildRawResourceUri(rawResId)
+        val fileFallback = if (isFullAppWalkthrough) {
+            File("/home/aloo/Downloads/eli5_app_walkthrough.mp4")
+        } else {
+            File("/home/aloo/Downloads/eli5_gesture_tutorial.mp4")
+        }
         val videoUri = if (fileFallback.exists()) Uri.fromFile(fileFallback) else rawUri
 
         // Asynchronously extract and blur video frame for the ambient background layer

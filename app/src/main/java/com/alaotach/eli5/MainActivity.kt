@@ -399,11 +399,18 @@ fun Eli5App(
     val accentPurple = if (isDark) PurpleSecondary else PurplePrimary
     val lightLavender = if (isDark) Color(0xFF2E2245) else LavenderLight
 
+    var isAssistantEnabled by remember { mutableStateOf(Eli5AssistantManager.isDefaultAssistant(context)) }
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 history = HistoryManager.getHistory(context)
+                val isNowAssistant = Eli5AssistantManager.isDefaultAssistant(context)
+                isAssistantEnabled = isNowAssistant
+                if (walkthroughState.isVisible && walkthroughState.currentStepIndex == 0 && isNowAssistant) {
+                    walkthroughState.nextStep(4)
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -416,7 +423,8 @@ fun Eli5App(
     CompositionLocalProvider(
         LocalLayoutDirection provides layoutDir
     ) {
-        Scaffold(
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Transparent,
         bottomBar = {
@@ -533,6 +541,13 @@ fun Eli5App(
                             onThemeChange = onThemeChange,
                             onOpenLanguagePicker = { showLanguagePicker = true },
                             onShowTutorial = onShowTutorial,
+                            onWatchVideoTutorial = {
+                                val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                                    putExtra("SHOW_TUTORIAL_VIDEO", true)
+                                    putExtra("SHOW_FULL_APP_WALKTHROUGH", true)
+                                }
+                                context.startActivity(intent)
+                            },
                             onCheckUpdates = onCheckUpdates,
                             onReplayWalkthrough = {
                                 selectedTab = 0
@@ -549,31 +564,35 @@ fun Eli5App(
                         )
                     }
                 }
-
-                // Interactive Feature Walkthrough Spotlight Overlay
-                WalkthroughOverlay(
-                    state = walkthroughState,
-                    isDark = isDark,
-                    onTryGesture = {
-                        val intent = Intent(context, CircleSnipActivity::class.java)
-                        context.startActivity(intent)
-                    },
-                    onOpenAssistantSettings = {
-                        Eli5AssistantManager.openAssistantSettings(context)
-                    },
-                    onWatchVideoTutorial = {
-                        val intent = Intent(context, CircleSnipActivity::class.java).apply {
-                            putExtra("SHOW_TUTORIAL_VIDEO", true)
-                        }
-                        context.startActivity(intent)
-                    },
-                    onFinish = {
-                        walkthroughState.dismiss()
-                        prefs.edit().putBoolean("has_seen_interactive_walkthrough", true).apply()
-                    }
-                )
             }
         }
+    }
+
+    // Interactive Feature Walkthrough Spotlight Overlay (Full Screen Overlay)
+        WalkthroughOverlay(
+            state = walkthroughState,
+            isDark = isDark,
+            isAssistantEnabled = isAssistantEnabled,
+            onTryGesture = {
+                walkthroughState.nextStep(4)
+                val intent = Intent(context, CircleSnipActivity::class.java)
+                context.startActivity(intent)
+            },
+            onOpenAssistantSettings = {
+                Eli5AssistantManager.openAssistantSettings(context)
+            },
+            onWatchVideoTutorial = {
+                val intent = Intent(context, CircleSnipActivity::class.java).apply {
+                    putExtra("SHOW_TUTORIAL_VIDEO", true)
+                    putExtra("SHOW_FULL_APP_WALKTHROUGH", true)
+                }
+                context.startActivity(intent)
+            },
+            onFinish = {
+                walkthroughState.dismiss()
+                prefs.edit().putBoolean("has_seen_interactive_walkthrough", true).apply()
+            }
+        )
     }
     }
 
@@ -765,7 +784,8 @@ fun HomeScreen(
             primaryText = primaryText,
             secondaryText = secondaryText,
             accentPurple = accentPurple,
-            lightLavender = lightLavender
+            lightLavender = lightLavender,
+            modifier = Modifier.walkthroughTarget("circle_to_eli5_card", walkthroughState)
         )
 
         // 4. Direct Explanation: Input + Explain button
@@ -1107,7 +1127,8 @@ fun CircleToEli5Card(
     primaryText: Color,
     secondaryText: Color,
     accentPurple: Color,
-    lightLavender: Color
+    lightLavender: Color,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     var isAssistant by remember { mutableStateOf(Eli5AssistantManager.isDefaultAssistant(context)) }
@@ -1126,7 +1147,7 @@ fun CircleToEli5Card(
     }
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(22.dp))
             .clickable {
@@ -2476,6 +2497,7 @@ fun MoreScreen(
     onThemeChange: (String) -> Unit,
     onOpenLanguagePicker: () -> Unit,
     onShowTutorial: () -> Unit,
+    onWatchVideoTutorial: () -> Unit,
     onCheckUpdates: () -> Unit,
     onReplayWalkthrough: () -> Unit,
     onClearAllData: () -> Unit
@@ -2603,6 +2625,18 @@ fun MoreScreen(
                     secondaryText = secondaryText,
                     accentPurple = accentPurple,
                     onClick = onShowTutorial
+                )
+
+                HorizontalDivider(color = borderColor, modifier = Modifier.padding(horizontal = 8.dp))
+
+                MoreMenuRow(
+                    icon = Icons.Rounded.PlayArrow,
+                    title = stringResource(R.string.walkthrough_action_video),
+                    value = "Video",
+                    primaryText = primaryText,
+                    secondaryText = secondaryText,
+                    accentPurple = accentPurple,
+                    onClick = onWatchVideoTutorial
                 )
 
                 HorizontalDivider(color = borderColor, modifier = Modifier.padding(horizontal = 8.dp))

@@ -38,3 +38,4 @@ google-services.json
 *firebase*.json
 **/*firebase*.json
 *.json.key
+*.idsig

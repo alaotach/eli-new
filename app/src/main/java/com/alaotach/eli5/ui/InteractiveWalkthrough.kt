@@ -28,20 +28,21 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alaotach.eli5.R
+import kotlin.math.roundToInt
 
 class WalkthroughStep(
     val id: String,
@@ -57,10 +58,10 @@ class WalkthroughState {
     var isVisible by mutableStateOf(false)
     var currentStepIndex by mutableIntStateOf(0)
     var isCompletionVisible by mutableStateOf(false)
-    val targets = mutableStateMapOf<String, Rect>()
+    val targetCoordinates = mutableStateMapOf<String, LayoutCoordinates>()
 
-    fun registerTarget(key: String, bounds: Rect) {
-        targets[key] = bounds
+    fun registerTarget(key: String, coordinates: LayoutCoordinates) {
+        targetCoordinates[key] = coordinates
     }
 
     fun startWalkthrough() {
@@ -91,8 +92,7 @@ fun rememberWalkthroughState(): WalkthroughState {
 fun Modifier.walkthroughTarget(key: String, state: WalkthroughState): Modifier = this.then(
     Modifier.onGloballyPositioned { coordinates ->
         if (coordinates.isAttached) {
-            val bounds = coordinates.boundsInRoot()
-            state.registerTarget(key, bounds)
+            state.registerTarget(key, coordinates)
         }
     }
 )
@@ -101,6 +101,7 @@ fun Modifier.walkthroughTarget(key: String, state: WalkthroughState): Modifier =
 fun WalkthroughOverlay(
     state: WalkthroughState,
     isDark: Boolean,
+    isAssistantEnabled: Boolean,
     onTryGesture: () -> Unit,
     onOpenAssistantSettings: () -> Unit,
     onWatchVideoTutorial: () -> Unit,
@@ -110,33 +111,39 @@ fun WalkthroughOverlay(
 
     val density = LocalDensity.current
     val config = LocalConfiguration.current
-    val screenWidthPx = with(density) { config.screenWidthDp.dp.toPx() }
-    val screenHeightPx = with(density) { config.screenHeightDp.dp.toPx() }
+    val screenHeightDp = config.screenHeightDp.dp
+    val screenHeightPx = with(density) { screenHeightDp.toPx() }
 
-    val steps = remember(onTryGesture, onOpenAssistantSettings) {
+    var overlayCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    val steps = remember(onTryGesture, onOpenAssistantSettings, isAssistantEnabled) {
         listOf(
+            // Step 1: Circle to ELI5 Assistant Setup
+            WalkthroughStep(
+                id = "circle_to_eli5",
+                targetKey = "circle_to_eli5_card",
+                titleRes = if (isAssistantEnabled) R.string.walkthrough_step1_enabled_title else R.string.walkthrough_step1_title,
+                descRes = if (isAssistantEnabled) R.string.walkthrough_step1_enabled_desc else R.string.walkthrough_step1_desc,
+                actionTextRes = if (isAssistantEnabled) R.string.walkthrough_next else R.string.walkthrough_open_settings,
+                onAction = if (isAssistantEnabled) null else onOpenAssistantSettings
+            ),
+            // Step 2: Try Gesture
             WalkthroughStep(
                 id = "try_gesture",
                 targetKey = "try_gesture_card",
-                titleRes = R.string.walkthrough_step1_title,
-                descRes = R.string.walkthrough_step1_desc,
+                titleRes = R.string.walkthrough_step2_title,
+                descRes = R.string.walkthrough_step2_desc,
                 actionTextRes = R.string.walkthrough_try_demo,
                 onAction = onTryGesture
             ),
-            WalkthroughStep(
-                id = "assistant_settings",
-                targetKey = "assistant_settings_card",
-                titleRes = R.string.walkthrough_step2_title,
-                descRes = R.string.walkthrough_step2_desc,
-                actionTextRes = R.string.walkthrough_open_settings,
-                onAction = onOpenAssistantSettings
-            ),
+            // Step 3: Direct text & tone mode
             WalkthroughStep(
                 id = "input_box",
                 targetKey = "input_box_card",
                 titleRes = R.string.walkthrough_step3_title,
                 descRes = R.string.walkthrough_step3_desc
             ),
+            // Step 4: Highlight text everywhere
             WalkthroughStep(
                 id = "explain_button",
                 targetKey = "explain_button_card",
@@ -147,9 +154,24 @@ fun WalkthroughOverlay(
     }
 
     val currentStep = steps.getOrNull(state.currentStepIndex) ?: steps[0]
-    val currentTargetRect = state.targets[currentStep.targetKey]
+    val currentTargetCoords = state.targetCoordinates[currentStep.targetKey]
 
-    // Animated dash stroke phase for moving dashed border around spotlight
+    // Calculate exact pixel position of the target relative to this overlay
+    val targetRect: Rect? = if (overlayCoordinates != null && currentTargetCoords != null &&
+        overlayCoordinates!!.isAttached && currentTargetCoords.isAttached
+    ) {
+        try {
+            val topLeft = overlayCoordinates!!.localPositionOf(currentTargetCoords, Offset.Zero)
+            val size = currentTargetCoords.size
+            Rect(topLeft, Size(size.width.toFloat(), size.height.toFloat()))
+        } catch (_: Exception) {
+            null
+        }
+    } else {
+        null
+    }
+
+    // Animated dash stroke phase
     val infiniteTransition = rememberInfiniteTransition(label = "dash")
     val dashPhase by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -174,12 +196,7 @@ fun WalkthroughOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                // Clicking outside: advance or ignore
-            }
+            .onGloballyPositioned { overlayCoordinates = it }
     ) {
         // Spotlight Scrim Canvas
         Canvas(
@@ -193,15 +210,15 @@ fun WalkthroughOverlay(
                 size = size
             )
 
-            // 2. Cutout spotlight hole over target element
-            if (!state.isCompletionVisible && currentTargetRect != null) {
-                val padding = with(density) { 8.dp.toPx() }
-                val cornerRadiusPx = with(density) { 18.dp.toPx() }
+            // 2. Cutout spotlight hole with pixel-perfect local positioning
+            if (!state.isCompletionVisible && targetRect != null) {
+                val pad = with(density) { 5.dp.toPx() }
+                val cornerRadiusPx = with(density) { 20.dp.toPx() }
 
-                val cutoutLeft = (currentTargetRect.left - padding).coerceAtLeast(0f)
-                val cutoutTop = (currentTargetRect.top - padding).coerceAtLeast(0f)
-                val cutoutRight = (currentTargetRect.right + padding).coerceAtMost(size.width)
-                val cutoutBottom = (currentTargetRect.bottom + padding).coerceAtMost(size.height)
+                val cutoutLeft = (targetRect.left - pad).coerceAtLeast(0f)
+                val cutoutTop = (targetRect.top - pad).coerceAtLeast(0f)
+                val cutoutRight = (targetRect.right + pad).coerceAtMost(size.width)
+                val cutoutBottom = (targetRect.bottom + pad).coerceAtMost(size.height)
                 val cutoutSize = Size(cutoutRight - cutoutLeft, cutoutBottom - cutoutTop)
 
                 // Punch clear hole
@@ -213,7 +230,7 @@ fun WalkthroughOverlay(
                     blendMode = BlendMode.Clear
                 )
 
-                // Draw glowing dashed focus border around hole
+                // Draw glowing dashed focus border around cutout
                 drawRoundRect(
                     color = Color(0xFFC084FC),
                     topLeft = Offset(cutoutLeft, cutoutTop),
@@ -225,6 +242,29 @@ fun WalkthroughOverlay(
                     )
                 )
             }
+        }
+
+        // Click-through interception on spotlight cutout:
+        // Tapping the spotlighted card directly triggers the step's primary action!
+        if (!state.isCompletionVisible && targetRect != null && currentStep.onAction != null) {
+            val pad = with(density) { 5.dp.toPx() }
+            Box(
+                modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            (targetRect.left - pad).roundToInt(),
+                            (targetRect.top - pad).roundToInt()
+                        )
+                    }
+                    .size(
+                        with(density) { (targetRect.width + pad * 2).toDp() },
+                        with(density) { (targetRect.height + pad * 2).toDp() }
+                    )
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable {
+                        currentStep.onAction.invoke()
+                    }
+            )
         }
 
         // Top Header: Skip Button (visible when not in completion screen)
@@ -284,9 +324,21 @@ fun WalkthroughOverlay(
                 }
             )
         } else {
-            // Position tooltip dynamically either above or below the target
-            val targetRect = currentTargetRect
-            val placeBelow = targetRect == null || (targetRect.center.y < screenHeightPx * 0.52f)
+            // Position tooltip dynamically either above or below the target with zero overlap
+            val overlayHeightPx = overlayCoordinates?.size?.height?.toFloat() ?: screenHeightPx
+            val tooltipEstimatedHeightPx = with(density) { 220.dp.toPx() }
+            val spaceBelowPx = if (targetRect != null) overlayHeightPx - targetRect.bottom else overlayHeightPx * 0.5f
+            val spaceAbovePx = if (targetRect != null) targetRect.top else overlayHeightPx * 0.5f
+
+            val placeBelow = if (targetRect == null) {
+                true
+            } else if (spaceBelowPx >= tooltipEstimatedHeightPx) {
+                true
+            } else if (spaceAbovePx >= tooltipEstimatedHeightPx) {
+                false
+            } else {
+                spaceBelowPx >= spaceAbovePx
+            }
 
             Box(
                 modifier = Modifier
@@ -296,14 +348,12 @@ fun WalkthroughOverlay(
             ) {
                 val verticalOffset = if (targetRect != null) {
                     if (placeBelow) {
-                        val topDp = with(density) { (targetRect.bottom + 16.dp.toPx()).toDp() }
-                        topDp.coerceIn(100.dp, (config.screenHeightDp - 360).dp)
+                        with(density) { (targetRect.bottom + 14.dp.toPx()).toDp() }.coerceAtLeast(16.dp)
                     } else {
-                        val bottomDistanceDp = with(density) { (screenHeightPx - targetRect.top + 16.dp.toPx()).toDp() }
-                        bottomDistanceDp.coerceIn(80.dp, (config.screenHeightDp - 360).dp)
+                        with(density) { (overlayHeightPx - targetRect.top + 14.dp.toPx()).toDp() }.coerceAtLeast(16.dp)
                     }
                 } else {
-                    160.dp
+                    140.dp
                 }
 
                 Box(
@@ -322,7 +372,6 @@ fun WalkthroughOverlay(
                         onAction = currentStep.onAction,
                         isLastStep = state.currentStepIndex == steps.size - 1,
                         isDark = isDark,
-                        pointingUp = placeBelow,
                         onNext = {
                             state.nextStep(steps.size)
                         },
@@ -346,7 +395,6 @@ fun WalkthroughTooltipCard(
     onAction: (() -> Unit)?,
     isLastStep: Boolean,
     isDark: Boolean,
-    pointingUp: Boolean,
     onNext: () -> Unit,
     onSkip: () -> Unit
 ) {
@@ -362,7 +410,7 @@ fun WalkthroughTooltipCard(
             .clip(RoundedCornerShape(22.dp))
             .background(cardBg)
             .border(BorderStroke(1.5.dp, cardBorder), RoundedCornerShape(22.dp))
-            .padding(20.dp)
+            .padding(18.dp)
     ) {
         // Step Badge & Counter Row
         Row(
@@ -395,29 +443,29 @@ fun WalkthroughTooltipCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Title
         Text(
             text = title,
             color = textPrimary,
-            fontSize = 18.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold,
-            lineHeight = 24.sp
+            lineHeight = 23.sp
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         // Description
         Text(
             text = description,
             color = textSecondary,
-            fontSize = 13.5.sp,
-            lineHeight = 20.sp,
+            fontSize = 13.sp,
+            lineHeight = 19.sp,
             fontWeight = FontWeight.Normal
         )
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Actions Row
         Row(
@@ -426,10 +474,29 @@ fun WalkthroughTooltipCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (actionText != null && onAction != null) {
-                OutlinedButton(
+                Button(
                     onClick = onAction,
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, Color(0xFF8B5CF6)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF7C3AED)
+                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .height(42.dp)
+                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
+                ) {
+                    Text(
+                        text = actionText,
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                OutlinedButton(
+                    onClick = onNext,
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Color(0xFF8B5CF6).copy(alpha = 0.6f)),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Color(0xFF8B5CF6)
                     ),
@@ -437,31 +504,11 @@ fun WalkthroughTooltipCard(
                     modifier = Modifier.height(42.dp)
                 ) {
                     Text(
-                        text = actionText,
+                        text = if (isLastStep) stringResource(R.string.walkthrough_finish) else stringResource(R.string.walkthrough_next),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Spacer(modifier = Modifier.width(10.dp))
-            }
-
-            Button(
-                onClick = onNext,
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF7C3AED)
-                ),
-                contentPadding = PaddingValues(horizontal = 18.dp, vertical = 8.dp),
-                modifier = Modifier
-                    .height(42.dp)
-                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
-            ) {
-                Text(
-                    text = if (isLastStep) stringResource(R.string.walkthrough_finish) else stringResource(R.string.walkthrough_next),
-                    color = Color.White,
-                    fontSize = 13.5.sp,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
@@ -568,7 +615,7 @@ fun WalkthroughCompletionCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Option 2: Watch Video Tutorial
+            // Option 2: Watch Full App Tutorial Video
             OutlinedButton(
                 onClick = onWatchVideo,
                 shape = RoundedCornerShape(18.dp),
@@ -581,7 +628,7 @@ fun WalkthroughCompletionCard(
                     .height(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.PlayCircle,
+                    imageVector = Icons.Rounded.PlayArrow,
                     contentDescription = null,
                     tint = Color(0xFF8B5CF6),
                     modifier = Modifier.size(20.dp)
