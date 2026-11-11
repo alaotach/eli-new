@@ -74,18 +74,21 @@ class CircleSnipActivity : ComponentActivity() {
         val isDark = SettingsManager.isDarkTheme(this)
         val tutorialBtn = TextView(this).apply {
             text = "Watch Tutorial"
-            textSize = 13f
+            textSize = 13.5f
             setTypeface(typeface, Typeface.BOLD)
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
-            setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_play_tutorial, 0, 0, 0)
+            val playIcon = androidx.core.content.ContextCompat.getDrawable(this@CircleSnipActivity, R.drawable.ic_play_tutorial)?.mutate()?.apply {
+                setTint(Color.WHITE)
+            }
+            setCompoundDrawablesWithIntrinsicBounds(playIcon, null, null, null)
             compoundDrawablePadding = (dp * 8).toInt()
             background = GradientDrawable().apply {
                 setColor(Color.parseColor("#6A0DAD"))
                 cornerRadius = dp * 22f
                 setStroke((dp * 1.2f).toInt(), Color.parseColor("#A855F7"))
             }
-            setPadding((dp * 16).toInt(), (dp * 9).toInt(), (dp * 18).toInt(), (dp * 9).toInt())
+            setPadding((dp * 18).toInt(), (dp * 10).toInt(), (dp * 20).toInt(), (dp * 10).toInt())
             elevation = dp * 6f
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -159,53 +162,107 @@ class CircleSnipActivity : ComponentActivity() {
         val dp = resources.displayMetrics.density
         val isDark = SettingsManager.isDarkTheme(this)
         var isFullscreen = false
+        var currentStep = 0
+        var mediaPlayer: android.media.MediaPlayer? = null
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        var updateProgressRunnable: Runnable? = null
+
+        val primaryTextColor = if (isDark) Color.WHITE else Color.parseColor("#21112F")
+        val secondaryTextColor = if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782")
+        val cardBgColor = if (isDark) Color.parseColor("#1C172B") else Color.WHITE
+        val cardBorderColor = if (isDark) Color.parseColor("#32254C") else Color.parseColor("#E9D5FF")
+        val circleBtnBg = if (isDark) Color.parseColor("#2B1F42") else Color.parseColor("#F3E8FF")
+        val circleBtnTint = if (isDark) Color.parseColor("#D8B4FE") else Color.parseColor("#6A0DAD")
+        val pillBgColor = if (isDark) Color.parseColor("#261C39") else Color.parseColor("#F5EEFF")
+        val pillBorderColor = if (isDark) Color.parseColor("#3C2A58") else Color.parseColor("#E9D5FF")
+
+        val steps = listOf(
+            "Circle any content on your screen to get an instant explanation.",
+            "Translate foreign languages into your preferred language instantly.",
+            "Share branded cards, copy explanations, or listen with natural voice."
+        )
 
         val dialogRoot = FrameLayout(this).apply {
-            setBackgroundColor(Color.parseColor("#B3000000"))
+            setBackgroundColor(Color.parseColor("#B8000000"))
         }
 
         val cardContainer = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             background = GradientDrawable().apply {
-                setColor(if (isDark) Color.parseColor("#1C1826") else Color.WHITE)
-                cornerRadius = dp * 20f
-                setStroke((dp * 1f).toInt(), if (isDark) Color.parseColor("#35234E") else Color.parseColor("#E9D5FF"))
+                setColor(cardBgColor)
+                cornerRadius = dp * 28f
+                setStroke((dp * 1.2f).toInt(), cardBorderColor)
             }
-            elevation = dp * 12f
+            elevation = dp * 16f
+            setPadding((dp * 16).toInt(), (dp * 16).toInt(), (dp * 16).toInt(), (dp * 14).toInt())
         }
 
-        // Header
+        // 1. Header
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding((dp * 16).toInt(), (dp * 12).toInt(), (dp * 16).toInt(), (dp * 10).toInt())
+            setPadding(0, 0, 0, (dp * 14).toInt())
         }
 
-        val titleTv = TextView(this).apply {
-            text = "Circle to ELI5 Tutorial"
-            textSize = 15.5f
-            setTypeface(typeface, Typeface.BOLD)
-            setTextColor(if (isDark) Color.WHITE else Color.parseColor("#21112F"))
+        // App Icon
+        val appIconView = ImageView(this).apply {
+            setImageResource(R.mipmap.ic_launcher)
+            background = GradientDrawable().apply {
+                setColor(circleBtnBg)
+                cornerRadius = dp * 12f
+            }
+            clipToOutline = true
+            layoutParams = LinearLayout.LayoutParams((dp * 44).toInt(), (dp * 44).toInt()).apply {
+                marginEnd = (dp * 12).toInt()
+            }
+        }
+        header.addView(appIconView)
+
+        // Title & Subtitle
+        val titleCol = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
         }
-        header.addView(titleTv)
+        val titleTv = TextView(this).apply {
+            text = "Circle to ELI5 Tutorial"
+            textSize = 17f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(primaryTextColor)
+        }
+        val subtitleTv = TextView(this).apply {
+            text = "See how it works in under a minute"
+            textSize = 12.5f
+            setTextColor(secondaryTextColor)
+        }
+        titleCol.addView(titleTv)
+        titleCol.addView(subtitleTv)
+        header.addView(titleCol)
 
+        // Fullscreen Toggle Button
         val fullscreenBtn = ImageView(this).apply {
             setImageResource(R.drawable.ic_fullscreen)
-            imageTintList = ColorStateList.valueOf(if (isDark) Color.parseColor("#C4B5FD") else Color.parseColor("#6A0DAD"))
-            layoutParams = LinearLayout.LayoutParams((dp * 32).toInt(), (dp * 32).toInt()).apply {
+            imageTintList = ColorStateList.valueOf(circleBtnTint)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(circleBtnBg)
+            }
+            layoutParams = LinearLayout.LayoutParams((dp * 36).toInt(), (dp * 36).toInt()).apply {
                 marginEnd = (dp * 8).toInt()
             }
-            setPadding((dp * 4).toInt(), (dp * 4).toInt(), (dp * 4).toInt(), (dp * 4).toInt())
+            setPadding((dp * 8).toInt(), (dp * 8).toInt(), (dp * 8).toInt(), (dp * 8).toInt())
         }
         header.addView(fullscreenBtn)
 
-        val closeBtn = TextView(this).apply {
-            text = "✕"
-            textSize = 18f
-            setTypeface(typeface, Typeface.BOLD)
-            setTextColor(if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782"))
-            setPadding((dp * 6).toInt(), 0, (dp * 6).toInt(), 0)
+        // Close Button
+        val closeBtn = ImageView(this).apply {
+            setImageResource(R.drawable.ic_close_rounded)
+            imageTintList = ColorStateList.valueOf(circleBtnTint)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(circleBtnBg)
+            }
+            layoutParams = LinearLayout.LayoutParams((dp * 36).toInt(), (dp * 36).toInt())
+            setPadding((dp * 8).toInt(), (dp * 8).toInt(), (dp * 8).toInt(), (dp * 8).toInt())
             setOnClickListener {
                 dialog.dismiss()
             }
@@ -213,13 +270,17 @@ class CircleSnipActivity : ComponentActivity() {
         header.addView(closeBtn)
         cardContainer.addView(header)
 
-        // Video View Frame
-        val videoFrame = FrameLayout(this).apply {
+        // 2. Video Player Container with Custom Controls
+        val videoContainer = FrameLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                (dp * 240).toInt()
+                (dp * 230).toInt()
             )
-            setBackgroundColor(Color.BLACK)
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#160B29"))
+                cornerRadius = dp * 18f
+            }
+            clipToOutline = true
         }
 
         val videoView = VideoView(this).apply {
@@ -230,21 +291,230 @@ class CircleSnipActivity : ComponentActivity() {
                 gravity = Gravity.CENTER
             }
         }
-        videoFrame.addView(videoView)
-        cardContainer.addView(videoFrame)
+        videoContainer.addView(videoView)
 
-        // Subtitle hint at bottom
-        val hintTv = TextView(this).apply {
-            text = "Circle any content on your screen to get an instant explanation"
-            textSize = 12f
-            setTextColor(if (isDark) Color.parseColor("#9E9AA8") else Color.parseColor("#766782"))
-            gravity = Gravity.CENTER
-            setPadding((dp * 16).toInt(), (dp * 10).toInt(), (dp * 16).toInt(), (dp * 12).toInt())
+        // Custom Video Controller Overlay Bar at Bottom
+        val controllerBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#D9120924"))
+            }
+            setPadding((dp * 10).toInt(), (dp * 6).toInt(), (dp * 10).toInt(), (dp * 6).toInt())
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.BOTTOM
+            }
         }
-        cardContainer.addView(hintTv)
+
+        // Play/Pause button
+        val playPauseBtn = ImageView(this).apply {
+            setImageResource(R.drawable.ic_pause_rounded)
+            imageTintList = ColorStateList.valueOf(Color.WHITE)
+            layoutParams = LinearLayout.LayoutParams((dp * 26).toInt(), (dp * 26).toInt()).apply {
+                marginEnd = (dp * 6).toInt()
+            }
+        }
+        controllerBar.addView(playPauseBtn)
+
+        // Time label
+        val timeTv = TextView(this).apply {
+            text = "0:00 / 0:36"
+            textSize = 10.5f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.MONOSPACE
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                marginEnd = (dp * 8).toInt()
+            }
+        }
+        controllerBar.addView(timeTv)
+
+        // Custom Seekbar
+        val seekBar = android.widget.SeekBar(this).apply {
+            max = 1000
+            progressTintList = ColorStateList.valueOf(Color.parseColor("#A855F7"))
+            thumbTintList = ColorStateList.valueOf(Color.parseColor("#C084FC"))
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
+        }
+        controllerBar.addView(seekBar)
+
+        // Playback Speed Toggle
+        var currentSpeedIndex = 0
+        val speeds = floatArrayOf(1.0f, 1.25f, 1.5f, 2.0f)
+        val speedTv = TextView(this).apply {
+            text = "1x"
+            textSize = 11f
+            setTextColor(Color.WHITE)
+            setTypeface(typeface, Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setPadding((dp * 6).toInt(), (dp * 2).toInt(), (dp * 6).toInt(), (dp * 2).toInt())
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#33FFFFFF"))
+                cornerRadius = dp * 6f
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                marginStart = (dp * 6).toInt()
+                marginEnd = (dp * 4).toInt()
+            }
+        }
+        controllerBar.addView(speedTv)
+
+        // Subtitles CC badge
+        val ccView = TextView(this).apply {
+            text = "CC"
+            textSize = 10f
+            setTextColor(Color.WHITE)
+            setTypeface(typeface, Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setPadding((dp * 5).toInt(), (dp * 2).toInt(), (dp * 5).toInt(), (dp * 2).toInt())
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#33FFFFFF"))
+                cornerRadius = dp * 6f
+            }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                marginEnd = (dp * 6).toInt()
+            }
+        }
+        controllerBar.addView(ccView)
+
+        videoContainer.addView(controllerBar)
+        cardContainer.addView(videoContainer)
+
+        // 3. Info Pill Card beneath Video
+        val pillCard = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = GradientDrawable().apply {
+                setColor(pillBgColor)
+                cornerRadius = dp * 16f
+                setStroke((dp * 1f).toInt(), pillBorderColor)
+            }
+            setPadding((dp * 12).toInt(), (dp * 10).toInt(), (dp * 12).toInt(), (dp * 10).toInt())
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = (dp * 14).toInt()
+            }
+        }
+
+        // Gesture Icon container
+        val iconBox = FrameLayout(this).apply {
+            background = GradientDrawable().apply {
+                setColor(circleBtnBg)
+                cornerRadius = dp * 10f
+            }
+            layoutParams = LinearLayout.LayoutParams((dp * 34).toInt(), (dp * 34).toInt()).apply {
+                marginEnd = (dp * 10).toInt()
+            }
+        }
+        val handIcon = ImageView(this).apply {
+            setImageResource(R.drawable.ic_gesture_hand)
+            imageTintList = ColorStateList.valueOf(Color.parseColor("#6A0DAD"))
+            layoutParams = FrameLayout.LayoutParams((dp * 20).toInt(), (dp * 20).toInt(), Gravity.CENTER)
+        }
+        iconBox.addView(handIcon)
+        pillCard.addView(iconBox)
+
+        // Divider
+        val divider = View(this).apply {
+            background = GradientDrawable().apply {
+                setColor(pillBorderColor)
+            }
+            layoutParams = LinearLayout.LayoutParams((dp * 1.5f).toInt(), (dp * 22).toInt()).apply {
+                marginEnd = (dp * 10).toInt()
+            }
+        }
+        pillCard.addView(divider)
+
+        // Caption Text
+        val captionTv = TextView(this).apply {
+            text = steps[0]
+            textSize = 12.5f
+            setTextColor(primaryTextColor)
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
+        }
+        pillCard.addView(captionTv)
+        cardContainer.addView(pillCard)
+
+        // 4. Footer Row: Dot Indicators + Next Button
+        val footer = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding((dp * 4).toInt(), (dp * 14).toInt(), (dp * 4).toInt(), (dp * 2).toInt())
+        }
+
+        // Dot indicators
+        val dotsContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
+        }
+        val dots = Array(3) { View(this) }
+        for (i in 0 until 3) {
+            val dot = dots[i].apply {
+                background = GradientDrawable().apply {
+                    setColor(if (i == 0) Color.parseColor("#6A0DAD") else (if (isDark) Color.parseColor("#43315B") else Color.parseColor("#D8B4FE")))
+                    cornerRadius = dp * 4f
+                }
+                layoutParams = LinearLayout.LayoutParams(
+                    (dp * (if (i == 0) 18 else 7)).toInt(),
+                    (dp * 7).toInt()
+                ).apply {
+                    marginEnd = (dp * 6).toInt()
+                }
+            }
+            dotsContainer.addView(dot)
+        }
+        footer.addView(dotsContainer)
+
+        // Next Button
+        val nextBtn = TextView(this).apply {
+            text = "Next ›"
+            textSize = 13.5f
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#6A0DAD"))
+                cornerRadius = dp * 20f
+            }
+            setPadding((dp * 22).toInt(), (dp * 9).toInt(), (dp * 22).toInt(), (dp * 9).toInt())
+        }
+        footer.addView(nextBtn)
+        cardContainer.addView(footer)
+
+        fun updateStep(stepIndex: Int) {
+            currentStep = stepIndex
+            captionTv.text = steps[currentStep]
+            for (i in 0 until 3) {
+                val isActive = i == currentStep
+                dots[i].background = GradientDrawable().apply {
+                    setColor(if (isActive) Color.parseColor("#6A0DAD") else (if (isDark) Color.parseColor("#43315B") else Color.parseColor("#D8B4FE")))
+                    cornerRadius = dp * 4f
+                }
+                dots[i].layoutParams = LinearLayout.LayoutParams(
+                    (dp * (if (isActive) 18 else 7)).toInt(),
+                    (dp * 7).toInt()
+                ).apply {
+                    marginEnd = (dp * 6).toInt()
+                }
+            }
+            nextBtn.text = if (currentStep == 2) "Got it ✓" else "Next ›"
+        }
+
+        nextBtn.setOnClickListener {
+            if (currentStep < 2) {
+                updateStep(currentStep + 1)
+            } else {
+                dialog.dismiss()
+            }
+        }
 
         val cardLayoutParams = FrameLayout.LayoutParams(
-            (resources.displayMetrics.widthPixels * 0.92f).toInt(),
+            (resources.displayMetrics.widthPixels * 0.94f).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply {
             gravity = Gravity.CENTER
@@ -257,25 +527,31 @@ class CircleSnipActivity : ComponentActivity() {
             if (isFullscreen) {
                 fullscreenBtn.setImageResource(R.drawable.ic_fullscreen_exit)
                 header.visibility = View.GONE
-                hintTv.visibility = View.GONE
+                pillCard.visibility = View.GONE
+                footer.visibility = View.GONE
+                cardContainer.setPadding(0, 0, 0, 0)
                 (cardContainer.background as? GradientDrawable)?.cornerRadius = 0f
                 cardLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
                 cardLayoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-                videoFrame.layoutParams = LinearLayout.LayoutParams(
+                videoContainer.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
+                (videoContainer.background as? GradientDrawable)?.cornerRadius = 0f
             } else {
                 fullscreenBtn.setImageResource(R.drawable.ic_fullscreen)
                 header.visibility = View.VISIBLE
-                hintTv.visibility = View.VISIBLE
-                (cardContainer.background as? GradientDrawable)?.cornerRadius = dp * 20f
-                cardLayoutParams.width = (resources.displayMetrics.widthPixels * 0.92f).toInt()
+                pillCard.visibility = View.VISIBLE
+                footer.visibility = View.VISIBLE
+                cardContainer.setPadding((dp * 16).toInt(), (dp * 16).toInt(), (dp * 16).toInt(), (dp * 14).toInt())
+                (cardContainer.background as? GradientDrawable)?.cornerRadius = dp * 28f
+                cardLayoutParams.width = (resources.displayMetrics.widthPixels * 0.94f).toInt()
                 cardLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                videoFrame.layoutParams = LinearLayout.LayoutParams(
+                videoContainer.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    (dp * 240).toInt()
+                    (dp * 230).toInt()
                 )
+                (videoContainer.background as? GradientDrawable)?.cornerRadius = dp * 18f
             }
             cardContainer.layoutParams = cardLayoutParams
         }
@@ -286,24 +562,81 @@ class CircleSnipActivity : ComponentActivity() {
                 dialog.dismiss()
             }
         }
-        cardContainer.setOnClickListener { /* prevent dismiss when tapping container */ }
+        cardContainer.setOnClickListener { /* prevent dismiss when clicking inside */ }
 
         // Video Setup
         val rawUri = Uri.parse("android.resource://$packageName/${R.raw.eli5_tutorial_voiceover}")
         val fileFallback = File("/home/aloo/Downloads/eli5_tutorial_voiceover.mp4")
         val videoUri = if (fileFallback.exists()) Uri.fromFile(fileFallback) else rawUri
 
-        val mediaController = MediaController(this)
-        mediaController.setAnchorView(videoView)
-        videoView.setMediaController(mediaController)
         videoView.setVideoURI(videoUri)
 
-        videoView.setOnPreparedListener { mp ->
-            mp.isLooping = true
-            videoView.start()
+        fun formatTime(ms: Int): String {
+            val totalSeconds = ms / 1000
+            val minutes = totalSeconds / 60
+            val seconds = totalSeconds % 60
+            return String.format(java.util.Locale.US, "%d:%02d", minutes, seconds)
         }
 
+        videoView.setOnPreparedListener { mp ->
+            mediaPlayer = mp
+            mp.isLooping = true
+            videoView.start()
+            playPauseBtn.setImageResource(R.drawable.ic_pause_rounded)
+
+            updateProgressRunnable = object : Runnable {
+                override fun run() {
+                    try {
+                        if (videoView.isPlaying) {
+                            val cur = videoView.currentPosition
+                            val dur = maxOf(1, videoView.duration)
+                            timeTv.text = "${formatTime(cur)} / ${formatTime(dur)}"
+                            seekBar.progress = (cur * 1000L / dur).toInt()
+                        }
+                    } catch (_: Exception) {}
+                    handler.postDelayed(this, 250)
+                }
+            }
+            handler.post(updateProgressRunnable!!)
+        }
+
+        playPauseBtn.setOnClickListener {
+            if (videoView.isPlaying) {
+                videoView.pause()
+                playPauseBtn.setImageResource(R.drawable.ic_play_arrow_rounded)
+            } else {
+                videoView.start()
+                playPauseBtn.setImageResource(R.drawable.ic_pause_rounded)
+            }
+        }
+
+        speedTv.setOnClickListener {
+            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.size
+            val chosenSpeed = speeds[currentSpeedIndex]
+            speedTv.text = if (chosenSpeed == 1.0f) "1x" else "${chosenSpeed}x"
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && mediaPlayer != null) {
+                    val params = mediaPlayer!!.playbackParams
+                    params.speed = chosenSpeed
+                    mediaPlayer!!.playbackParams = params
+                }
+            } catch (_: Exception) {}
+        }
+
+        seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser && videoView.duration > 0) {
+                    val targetMs = (progress * videoView.duration.toLong() / 1000L).toInt()
+                    videoView.seekTo(targetMs)
+                    timeTv.text = "${formatTime(targetMs)} / ${formatTime(videoView.duration)}"
+                }
+            }
+            override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {}
+            override fun onStopTrackingTouch(sb: android.widget.SeekBar?) {}
+        })
+
         dialog.setOnDismissListener {
+            updateProgressRunnable?.let { handler.removeCallbacks(it) }
             try {
                 videoView.stopPlayback()
             } catch (_: Exception) {}

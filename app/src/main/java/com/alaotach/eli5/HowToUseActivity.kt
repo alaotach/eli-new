@@ -37,6 +37,7 @@ class DotsView(context: Context) : View(context) {
     private val spacing = dpToPx(12.0f)
     private val activeRadius = dpToPx(4.0f)
     private val inactiveRadius = dpToPx(2.5f)
+    var isDark: Boolean = true
 
     fun updateActive(index: Int) {
         activeIndex = index
@@ -52,7 +53,7 @@ class DotsView(context: Context) : View(context) {
 
         for (i in 0 until dotCount) {
             val r = if (i == activeIndex) activeRadius else inactiveRadius
-            paint.color = Color.parseColor(if (i == activeIndex) "#7C3AED" else "#2A2A2A")
+            paint.color = Color.parseColor(if (i == activeIndex) "#6A0DAD" else (if (isDark) "#332A44" else "#E9D5FF"))
             canvas.drawCircle(startX + r, centerY, r, paint)
             startX += (r * f) + spacing
         }
@@ -64,15 +65,16 @@ class DotsView(context: Context) : View(context) {
 }
 
 class HowToUseActivity : AppCompatActivity() {
-    private val colorBg = Color.parseColor("#120F1D")
-    private val colorCard = Color.parseColor("#1C172B")
-    private val colorCard2 = Color.parseColor("#251F38")
-    private val colorBlue = Color.parseColor("#6A0DAD")
-    private val colorBlueL = Color.parseColor("#A855F7")
-    private val colorWhite = Color.parseColor("#FFFFFF")
-    private val colorMuted = Color.parseColor("#9E9AA8")
-    private val colorBorder = Color.parseColor("#2C243B")
-    private val colorRed = Color.parseColor("#FF5555")
+    private var isDark = false
+    private var colorBg = Color.parseColor("#F8F5FF")
+    private var colorCard = Color.parseColor("#FFFFFF")
+    private var colorCard2 = Color.parseColor("#F3E8FF")
+    private var colorBlue = Color.parseColor("#6A0DAD")
+    private var colorBlueL = Color.parseColor("#A855F7")
+    private var colorWhite = Color.parseColor("#21112F")
+    private var colorMuted = Color.parseColor("#766782")
+    private var colorBorder = Color.parseColor("#E9D5FF")
+    private var colorRed = Color.parseColor("#FF5555")
 
     private lateinit var viewFlipper: ViewFlipper
     private lateinit var dotsView: DotsView
@@ -93,9 +95,30 @@ class HowToUseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        isDark = SettingsManager.isDarkTheme(this)
+        if (isDark) {
+            colorBg = Color.parseColor("#120F1D")
+            colorCard = Color.parseColor("#1C172B")
+            colorCard2 = Color.parseColor("#251F38")
+            colorWhite = Color.parseColor("#FFFFFF")
+            colorMuted = Color.parseColor("#9E9AA8")
+            colorBorder = Color.parseColor("#2C243B")
+        } else {
+            colorBg = Color.parseColor("#F8F5FF")
+            colorCard = Color.parseColor("#FFFFFF")
+            colorCard2 = Color.parseColor("#F3E8FF")
+            colorWhite = Color.parseColor("#21112F")
+            colorMuted = Color.parseColor("#766782")
+            colorBorder = Color.parseColor("#E9D5FF")
+        }
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
+        androidx.core.view.WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !isDark
+            isAppearanceLightNavigationBars = !isDark
+        }
 
         val root = ConstraintLayout(this).apply {
             setBackgroundColor(colorBg)
@@ -104,6 +127,7 @@ class HowToUseActivity : AppCompatActivity() {
 
         dotsView = DotsView(this).apply {
             id = View.generateViewId()
+            this.isDark = this@HowToUseActivity.isDark
         }
         val dotsParams = ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(24)).apply {
             topToTop = 0
@@ -120,11 +144,11 @@ class HowToUseActivity : AppCompatActivity() {
         backBtn = TextView(this).apply {
             text = "Back"
             textSize = 16.0f
-            setTextColor(colorWhite)
+            setTextColor(if (isDark) Color.WHITE else Color.parseColor("#6A0DAD"))
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             background = GradientDrawable().apply {
-                setColor(Color.TRANSPARENT)
+                setColor(if (isDark) Color.TRANSPARENT else Color.WHITE)
                 setStroke(dp(1.5f), colorBorder)
                 cornerRadius = dp(12.0f).toFloat()
             }
@@ -135,7 +159,7 @@ class HowToUseActivity : AppCompatActivity() {
         nextBtn = TextView(this).apply {
             text = "Next →"
             textSize = 16.0f
-            setTextColor(colorWhite)
+            setTextColor(Color.WHITE)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             background = GradientDrawable().apply {
@@ -718,7 +742,7 @@ class HowToUseActivity : AppCompatActivity() {
         val badge = TextView(this).apply {
             text = num
             textSize = 12.0f
-            setTextColor(colorWhite)
+            setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
             typeface = Typeface.DEFAULT_BOLD
             background = GradientDrawable().apply {

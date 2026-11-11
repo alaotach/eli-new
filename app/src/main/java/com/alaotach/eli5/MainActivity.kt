@@ -19,7 +19,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,12 +39,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
@@ -63,6 +70,12 @@ import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.EditNote
+import androidx.compose.material.icons.rounded.WorkOutline
+import androidx.compose.material.icons.rounded.Compress
+import androidx.compose.material.icons.rounded.SentimentSatisfied
+import androidx.compose.material.icons.rounded.Spellcheck
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Settings
@@ -411,7 +424,10 @@ fun Eli5App(
                         accentPurple = accentPurple,
                         lightLavender = lightLavender,
                         ttsHelper = ttsHelper,
-                        onBack = { activeExplanationItem = null }
+                        onBack = {
+                            activeExplanationItem = null
+                            history = HistoryManager.getHistory(context)
+                        }
                     )
                 } else {
                     when (selectedTab) {
@@ -429,13 +445,7 @@ fun Eli5App(
                             onOpenSettings = { selectedTab = 2 },
                             onOpenHistory = { selectedTab = 1 },
                             onSelectHistoryItem = { item ->
-                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
-                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, item.originalText)
-                                    putExtra(ExplainOverlayActivity.EXTRA_RESULT, item.resultText)
-                                    putExtra(ExplainOverlayActivity.EXTRA_MODE, item.mode)
-                                    putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, false)
-                                }
-                                context.startActivity(intent)
+                                activeExplanationItem = item
                             },
                             onClearHistory = {
                                 HistoryManager.clearHistory(context)
@@ -466,13 +476,7 @@ fun Eli5App(
                                 history = emptyList()
                             },
                             onSelectHistoryItem = { item ->
-                                val intent = Intent(context, ExplainOverlayActivity::class.java).apply {
-                                    putExtra(ExplainOverlayActivity.EXTRA_TEXT, item.originalText)
-                                    putExtra(ExplainOverlayActivity.EXTRA_RESULT, item.resultText)
-                                    putExtra(ExplainOverlayActivity.EXTRA_MODE, item.mode)
-                                    putExtra(ExplainOverlayActivity.EXTRA_IS_SNIP, false)
-                                }
-                                context.startActivity(intent)
+                                activeExplanationItem = item
                             },
                             onDeleteItem = { item ->
                                 HistoryManager.deleteItem(context, item)
@@ -816,6 +820,7 @@ fun HomeScreen(
                     borderColor = borderColor,
                     accentPurple = accentPurple,
                     primaryText = primaryText,
+                    isDark = isDark,
                     onClick = {
                         val intent = Intent(context, CircleSnipActivity::class.java)
                         context.startActivity(intent)
@@ -831,6 +836,7 @@ fun HomeScreen(
                     borderColor = borderColor,
                     accentPurple = accentPurple,
                     primaryText = primaryText,
+                    isDark = isDark,
                     onClick = {
                         Eli5AssistantManager.openAssistantSettings(context)
                     }
@@ -853,6 +859,7 @@ fun HomeScreen(
                     accentPurple = accentPurple,
                     primaryText = primaryText,
                     secondaryText = secondaryText,
+                    isDark = isDark,
                     onClick = onOpenLanguagePicker
                 )
 
@@ -865,6 +872,7 @@ fun HomeScreen(
                     borderColor = borderColor,
                     accentPurple = accentPurple,
                     primaryText = primaryText,
+                    isDark = isDark,
                     onClick = onOpenHistory
                 )
             }
@@ -944,6 +952,7 @@ fun ActionCard(
     accentPurple: Color,
     primaryText: Color,
     secondaryText: Color = primaryText,
+    isDark: Boolean = false,
     onClick: () -> Unit
 ) {
     Surface(
@@ -963,15 +972,16 @@ fun ActionCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(38.dp)
                     .clip(CircleShape)
-                    .background(LavenderLight.copy(alpha = 0.5f)),
+                    .background(if (isDark) Color(0xFF382654) else LavenderLight.copy(alpha = 0.65f))
+                    .border(1.dp, if (isDark) Color(0xFF7C3AED).copy(alpha = 0.45f) else Color.Transparent, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = accentPurple,
+                    tint = if (isDark) Color(0xFFE9D5FF) else accentPurple,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1070,13 +1080,14 @@ fun CircleToEli5Card(
                     modifier = Modifier
                         .size(46.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(lightLavender.copy(alpha = if (isDark) 0.5f else 0.85f)),
+                        .background(if (isDark) Color(0xFF382654) else lightLavender.copy(alpha = 0.85f))
+                        .border(1.dp, if (isDark) Color(0xFF7C3AED).copy(alpha = 0.45f) else Color.Transparent, RoundedCornerShape(14.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.TouchApp,
                         contentDescription = "Gesture",
-                        tint = accentPurple,
+                        tint = if (isDark) Color(0xFFE9D5FF) else accentPurple,
                         modifier = Modifier.size(26.dp)
                     )
                 }
@@ -1154,6 +1165,7 @@ fun ExplanationScreen(
     var deeperSectionTitle by remember { mutableStateOf<String?>(null) }
     var showMenu by remember { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
+    val isProofread = remember(item.mode) { item.mode.startsWith("Proofread", ignoreCase = true) }
 
     DisposableEffect(ttsHelper) {
         ttsHelper.setStateListener { speaking ->
@@ -1342,21 +1354,40 @@ fun ExplanationScreen(
                     .padding(18.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Header with Sparkle and "ELI5 Explanation"
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.AutoAwesome,
-                        contentDescription = null,
-                        tint = accentPurple,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "ELI5 Explanation",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = accentPurple
-                    )
+                // Header with Sparkle/Edit and Title + Badge
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = if (isProofread) Icons.Rounded.EditNote else Icons.Rounded.AutoAwesome,
+                            contentDescription = null,
+                            tint = accentPurple,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isProofread) "Proofread Text" else "ELI5 Explanation",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = accentPurple
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = lightLavender.copy(alpha = if (isDark) 0.35f else 0.7f)
+                    ) {
+                        Text(
+                            text = item.mode,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = accentPurple,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
                 }
 
                 if (isLoading && fullExplanation.isBlank()) {
@@ -1374,7 +1405,7 @@ fun ExplanationScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Simplifying for you...",
+                            text = if (isProofread) "Polishing text..." else "Simplifying for you...",
                             fontSize = 14.sp,
                             color = secondaryText
                         )
@@ -1391,7 +1422,7 @@ fun ExplanationScreen(
                     )
                 }
 
-                // Action Row at bottom: Like, Dislike, Copy, Audio/TTS
+                // Action Row at bottom: Like, Dislike, Copy, Audio/TTS, Regenerate
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1433,8 +1464,8 @@ fun ExplanationScreen(
                     IconButton(
                         onClick = {
                             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            cm.setPrimaryClip(ClipData.newPlainText("ELI5 Explanation", fullExplanation))
-                            Toast.makeText(context, "Explanation copied", Toast.LENGTH_SHORT).show()
+                            cm.setPrimaryClip(ClipData.newPlainText("ELI5 Result", fullExplanation))
+                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.size(36.dp)
                     ) {
@@ -1472,11 +1503,44 @@ fun ExplanationScreen(
                             modifier = Modifier.size(22.dp)
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Regenerate Button
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                fullExplanation = ""
+                                val regenerated = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = item.mode,
+                                    language = language,
+                                    onChunk = { chunk ->
+                                        fullExplanation = chunk
+                                    }
+                                )
+                                fullExplanation = regenerated
+                                isLoading = false
+                                val updated = item.copy(resultText = regenerated, timestamp = System.currentTimeMillis())
+                                HistoryManager.saveItem(context, updated)
+                                Toast.makeText(context, if (isProofread) "Proofread regenerated" else "Explanation regenerated", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "Regenerate",
+                            tint = accentPurple,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 }
             }
         }
 
-        // 3. "Go Deeper" Section
+        // 3. Deeper Insights or Proofreading Tweaks Section
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1488,14 +1552,14 @@ fun ExplanationScreen(
             Column(modifier = Modifier.padding(18.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Rounded.Layers,
+                        imageVector = if (isProofread) Icons.Rounded.Tune else Icons.Rounded.Layers,
                         contentDescription = null,
                         tint = primaryText,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Go Deeper",
+                        text = if (isProofread) "Refine & Tweak" else "Go Deeper",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = primaryText
@@ -1504,81 +1568,186 @@ fun ExplanationScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Row 1: A simpler analogy
-                GoDeeperRow(
-                    icon = Icons.Rounded.Science,
-                    title = "A simpler analogy",
-                    primaryText = primaryText,
-                    secondaryText = secondaryText,
-                    onClick = {
-                        deeperSectionTitle = "A Simpler Analogy"
-                        deeperLoading = true
-                        scope.launch {
-                            val res = ExplainRepository.fetchExplanation(
-                                text = item.originalText,
-                                mode = "ELI5",
-                                language = language,
-                                extraModifier = "Explain this using a super clear, everyday analogy that a child would immediately understand."
-                            )
-                            deeperText = res
-                            deeperLoading = false
+                if (isProofread) {
+                    // Tweak 1: Professional Tone
+                    GoDeeperRow(
+                        icon = Icons.Rounded.WorkOutline,
+                        title = "More professional tone",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        onClick = {
+                            deeperSectionTitle = "Professional Tone"
+                            deeperLoading = true
+                            scope.launch {
+                                val res = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = "Proofread",
+                                    language = language,
+                                    extraModifier = "Rewrite this draft to be professional, polished, and executive in tone."
+                                )
+                                deeperText = res
+                                deeperLoading = false
+                            }
                         }
-                    }
-                )
+                    )
 
-                HorizontalDivider(
-                    color = borderColor,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                    HorizontalDivider(
+                        color = borderColor,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
 
-                // Row 2: Real world applications
-                GoDeeperRow(
-                    icon = Icons.Rounded.Layers,
-                    title = "Real world applications",
-                    primaryText = primaryText,
-                    secondaryText = secondaryText,
-                    onClick = {
-                        deeperSectionTitle = "Real World Applications"
-                        deeperLoading = true
-                        scope.launch {
-                            val res = ExplainRepository.fetchExplanation(
-                                text = item.originalText,
-                                mode = "Detailed",
-                                language = language,
-                                extraModifier = "Provide 3 concrete real-world applications or practical industry examples where this concept is actively used today."
-                            )
-                            deeperText = res
-                            deeperLoading = false
+                    // Tweak 2: Concise & Punchy
+                    GoDeeperRow(
+                        icon = Icons.Rounded.Compress,
+                        title = "Concise & punchy",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        onClick = {
+                            deeperSectionTitle = "Concise & Punchy"
+                            deeperLoading = true
+                            scope.launch {
+                                val res = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = "Proofread",
+                                    language = language,
+                                    extraModifier = "Make this draft concise, punchy, and eliminate any filler words while preserving key facts."
+                                )
+                                deeperText = res
+                                deeperLoading = false
+                            }
                         }
-                    }
-                )
+                    )
 
-                HorizontalDivider(
-                    color = borderColor,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                    HorizontalDivider(
+                        color = borderColor,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
 
-                // Row 3: Key terms
-                GoDeeperRow(
-                    icon = Icons.AutoMirrored.Rounded.MenuBook,
-                    title = "Key terms",
-                    primaryText = primaryText,
-                    secondaryText = secondaryText,
-                    onClick = {
-                        deeperSectionTitle = "Key Terms Breakdown"
-                        deeperLoading = true
-                        scope.launch {
-                            val res = ExplainRepository.fetchExplanation(
-                                text = item.originalText,
-                                mode = "Direct",
-                                language = language,
-                                extraModifier = "Break down and define the 3-4 most important technical keywords or jargon mentioned here in 1 sentence each."
-                            )
-                            deeperText = res
-                            deeperLoading = false
+                    // Tweak 3: Friendly & Casual
+                    GoDeeperRow(
+                        icon = Icons.Rounded.SentimentSatisfied,
+                        title = "Friendly & casual",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        onClick = {
+                            deeperSectionTitle = "Friendly & Casual"
+                            deeperLoading = true
+                            scope.launch {
+                                val res = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = "Proofread",
+                                    language = language,
+                                    extraModifier = "Rewrite this with a warm, casual, approachable, and friendly tone."
+                                )
+                                deeperText = res
+                                deeperLoading = false
+                            }
                         }
-                    }
-                )
+                    )
+
+                    HorizontalDivider(
+                        color = borderColor,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    // Tweak 4: Fix grammar only
+                    GoDeeperRow(
+                        icon = Icons.Rounded.Spellcheck,
+                        title = "Fix only grammar & spelling",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        onClick = {
+                            deeperSectionTitle = "Grammar & Spelling Fix"
+                            deeperLoading = true
+                            scope.launch {
+                                val res = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = "Proofread",
+                                    language = language,
+                                    extraModifier = "Fix only typos, punctuation, and grammar without altering vocabulary or tone."
+                                )
+                                deeperText = res
+                                deeperLoading = false
+                            }
+                        }
+                    )
+                } else {
+                    // Row 1: A simpler analogy
+                    GoDeeperRow(
+                        icon = Icons.Rounded.Science,
+                        title = "A simpler analogy",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        onClick = {
+                            deeperSectionTitle = "A Simpler Analogy"
+                            deeperLoading = true
+                            scope.launch {
+                                val res = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = "ELI5",
+                                    language = language,
+                                    extraModifier = "Explain this using a super clear, everyday analogy that a child would immediately understand."
+                                )
+                                deeperText = res
+                                deeperLoading = false
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(
+                        color = borderColor,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    // Row 2: Real world applications
+                    GoDeeperRow(
+                        icon = Icons.Rounded.Layers,
+                        title = "Real world applications",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        onClick = {
+                            deeperSectionTitle = "Real World Applications"
+                            deeperLoading = true
+                            scope.launch {
+                                val res = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = "Detailed",
+                                    language = language,
+                                    extraModifier = "Provide 3 concrete real-world applications or practical industry examples where this concept is actively used today."
+                                )
+                                deeperText = res
+                                deeperLoading = false
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(
+                        color = borderColor,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    // Row 3: Key terms
+                    GoDeeperRow(
+                        icon = Icons.AutoMirrored.Rounded.MenuBook,
+                        title = "Key terms",
+                        primaryText = primaryText,
+                        secondaryText = secondaryText,
+                        onClick = {
+                            deeperSectionTitle = "Key Terms Breakdown"
+                            deeperLoading = true
+                            scope.launch {
+                                val res = ExplainRepository.fetchExplanation(
+                                    text = item.originalText,
+                                    mode = "Direct",
+                                    language = language,
+                                    extraModifier = "Break down and define the 3-4 most important technical keywords or jargon mentioned here in 1 sentence each."
+                                )
+                                deeperText = res
+                                deeperLoading = false
+                            }
+                        }
+                    )
+                }
 
                 // Deeper expansion view if clicked
                 if (deeperLoading) {
@@ -1610,13 +1779,31 @@ fun ExplanationScreen(
                             .background(lightLavender.copy(alpha = 0.4f))
                             .padding(14.dp)
                     ) {
-                        Text(
-                            text = deeperSectionTitle ?: "Deep Dive",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = accentPurple
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = deeperSectionTitle ?: "Deep Dive",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = accentPurple
+                            )
+                            if (isProofread) {
+                                TextButton(
+                                    onClick = {
+                                        fullExplanation = deeperText!!
+                                        val updated = item.copy(resultText = deeperText!!, timestamp = System.currentTimeMillis())
+                                        HistoryManager.saveItem(context, updated)
+                                        Toast.makeText(context, "Applied to text", Toast.LENGTH_SHORT).show()
+                                    }
+                                ) {
+                                    Text("Apply", color = accentPurple, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
                         val formattedDeeper = remember(deeperText, primaryText, accentPurple) {
                             deeperText?.let { MarkdownTextFormatter.formatMarkdown(it, primaryText, accentPurple) }
                         }
@@ -2242,7 +2429,7 @@ fun MoreScreen(
             color = surfaceColor,
             border = BorderStroke(1.dp, borderColor)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)) {
                 // Language
                 val langObj = LanguageManager.getLanguageByEnglishName(currentLanguage)
                 MoreMenuRow(
@@ -2255,7 +2442,7 @@ fun MoreScreen(
                     onClick = onOpenLanguagePicker
                 )
 
-                HorizontalDivider(color = borderColor)
+                HorizontalDivider(color = borderColor, modifier = Modifier.padding(horizontal = 8.dp))
 
                 // Theme
                 val themeLabel = when (themePref) {
@@ -2292,7 +2479,7 @@ fun MoreScreen(
             color = surfaceColor,
             border = BorderStroke(1.dp, borderColor)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)) {
                 MoreMenuRow(
                     icon = Icons.Rounded.TouchApp,
                     title = "Try Gesture Demo",
@@ -2306,7 +2493,7 @@ fun MoreScreen(
                     }
                 )
 
-                HorizontalDivider(color = borderColor)
+                HorizontalDivider(color = borderColor, modifier = Modifier.padding(horizontal = 8.dp))
 
                 MoreMenuRow(
                     icon = Icons.Rounded.Tune,
@@ -2320,7 +2507,7 @@ fun MoreScreen(
                     }
                 )
 
-                HorizontalDivider(color = borderColor)
+                HorizontalDivider(color = borderColor, modifier = Modifier.padding(horizontal = 8.dp))
 
                 MoreMenuRow(
                     icon = Icons.AutoMirrored.Rounded.MenuBook,
@@ -2351,7 +2538,7 @@ fun MoreScreen(
             color = surfaceColor,
             border = BorderStroke(1.dp, borderColor)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)) {
                 MoreMenuRow(
                     icon = Icons.Rounded.AutoAwesome,
                     title = "Check for Updates",
@@ -2362,7 +2549,7 @@ fun MoreScreen(
                     onClick = onCheckUpdates
                 )
 
-                HorizontalDivider(color = borderColor)
+                HorizontalDivider(color = borderColor, modifier = Modifier.padding(horizontal = 8.dp))
 
                 MoreMenuRow(
                     icon = Icons.Rounded.Delete,
@@ -2437,8 +2624,9 @@ fun MoreMenuRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() }
-            .padding(vertical = 12.dp),
+            .padding(horizontal = 10.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -2514,46 +2702,29 @@ fun Eli5BottomNavigationBar(
         ) {
             items.forEach { (index, label, icon) ->
                 val isSelected = selectedTab == index
+                val itemInteraction = remember { MutableInteractionSource() }
 
                 Column(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .clickable { onTabSelected(index) }
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    if (isSelected) {
-                        // Wide capsule pill indicator from reference image
-                        Box(
-                            modifier = Modifier
-                                .width(68.dp)
-                                .height(32.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(lightLavender),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = label,
-                                tint = accentPurple,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .width(68.dp)
-                                .height(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = label,
-                                tint = if (isDark) TextSecondaryDark else TextSecondary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .width(68.dp)
+                            .height(32.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (isSelected) lightLavender else Color.Transparent)
+                            .clickable { onTabSelected(index) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = if (isSelected) accentPurple else (if (isDark) TextSecondaryDark else TextSecondary),
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(3.dp))
@@ -2562,7 +2733,11 @@ fun Eli5BottomNavigationBar(
                         text = label,
                         fontSize = 11.5.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) accentPurple else (if (isDark) TextSecondaryDark else TextSecondary)
+                        color = if (isSelected) accentPurple else (if (isDark) TextSecondaryDark else TextSecondary),
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onTabSelected(index) }
                     )
                 }
             }
@@ -2591,19 +2766,22 @@ fun LanguagePickerDialog(
         LanguageManager.searchLanguages(searchQuery)
     }
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 560.dp),
-            shape = RoundedCornerShape(24.dp),
+                .fillMaxWidth(0.92f)
+                .height(440.dp),
+            shape = RoundedCornerShape(26.dp),
             color = cardBg,
             border = BorderStroke(1.dp, cardBorder)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
+                    .fillMaxSize()
+                    .padding(horizontal = 18.dp, vertical = 16.dp)
             ) {
                 // Header
                 Row(
@@ -2614,33 +2792,34 @@ fun LanguagePickerDialog(
                     Column {
                         Text(
                             text = "Select Language",
-                            fontSize = 18.sp,
+                            fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = primaryTextColor
                         )
                         Text(
-                            text = "Explanations will be translated to this",
-                            fontSize = 12.sp,
+                            text = "Translate explanations to this language",
+                            fontSize = 11.5.sp,
                             color = secondaryTextColor
                         )
                     }
-                    IconButton(onClick = onDismiss) {
+                    IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = secondaryTextColor
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     placeholder = {
-                        Text("Search 35+ languages...", fontSize = 13.sp, color = secondaryTextColor)
+                        Text("Search 35+ languages...", fontSize = 12.5.sp, color = secondaryTextColor)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = {
@@ -2674,30 +2853,33 @@ fun LanguagePickerDialog(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Language List
-                LazyColumn(
+                // Balanced 2-Column Grid
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 6.dp)
                 ) {
                     items(filteredLanguages) { lang ->
                         val isSelected = currentLanguage.equals(lang.englishName, ignoreCase = true)
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
                                 .clickable { onSelectLanguage(lang.englishName) },
                             shape = RoundedCornerShape(12.dp),
-                            color = if (isSelected) (if (isDark) Color(0xFF2E1065) else Color(0xFFEDE9FE)) else Color.Transparent,
-                            border = if (isSelected) BorderStroke(1.5.dp, accent) else null
+                            color = if (isSelected) (if (isDark) Color(0xFF2E1065) else Color(0xFFEDE9FE)) else (if (isDark) Color(0xFF231B32) else Color(0xFFFAF7FF)),
+                            border = BorderStroke(if (isSelected) 1.5.dp else 1.dp, if (isSelected) accent else cardBorder)
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    .padding(horizontal = 9.dp, vertical = 9.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -2705,19 +2887,23 @@ fun LanguagePickerDialog(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(text = lang.flag, fontSize = 22.sp)
-                                    Spacer(modifier = Modifier.width(14.dp))
-                                    Column {
+                                    Text(text = lang.flag, fontSize = 18.sp)
+                                    Spacer(modifier = Modifier.width(7.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = lang.nativeName,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                                            fontSize = 15.sp,
-                                            color = if (isSelected) accent else primaryTextColor
+                                            fontSize = 12.5.sp,
+                                            color = if (isSelected) accent else primaryTextColor,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
                                             text = lang.englishName,
-                                            fontSize = 12.sp,
-                                            color = secondaryTextColor
+                                            fontSize = 10.5.sp,
+                                            color = secondaryTextColor,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
                                 }
@@ -2727,7 +2913,7 @@ fun LanguagePickerDialog(
                                         Icons.Default.Check,
                                         contentDescription = "Selected",
                                         tint = accent,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }

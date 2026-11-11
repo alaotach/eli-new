@@ -21,7 +21,12 @@ object ExplainRepository {
         onChunk: suspend (String) -> Unit = {}
     ): String = withContext(Dispatchers.IO) {
         try {
-            val endpoint = "${BuildConfig.BACKEND_URL}/api/explain"
+            val isProofread = mode.startsWith("Proofread", ignoreCase = true)
+            val endpoint = if (isProofread) {
+                "${BuildConfig.BACKEND_URL}/api/proofread"
+            } else {
+                "${BuildConfig.BACKEND_URL}/api/explain"
+            }
             val url = URL(endpoint)
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "POST"
@@ -31,34 +36,49 @@ object ExplainRepository {
             conn.readTimeout = 30000
             conn.doOutput = true
 
-            val resolvedMode = when (mode) {
-                "Direct" -> "Straightforward"
-                "Detailed" -> "Detailed"
-                else -> "ELI5"
-            }
+            val payload = if (isProofread) {
+                val instruction = extraModifier ?: if (mode.contains("(") && mode.contains(")")) {
+                    mode.substringAfter("(").substringBefore(")").trim()
+                } else {
+                    "Fix grammar, improve clarity, make it sound professional while keeping original meaning"
+                }
+                JSONObject().apply {
+                    put("text", text)
+                    put("instructions", instruction)
+                    if (!language.equals("English", ignoreCase = true) && !language.equals("Auto", ignoreCase = true)) {
+                        put("language", language)
+                    }
+                }
+            } else {
+                val resolvedMode = when (mode) {
+                    "Direct" -> "Straightforward"
+                    "Detailed" -> "Detailed"
+                    else -> "ELI5"
+                }
 
-            var promptText = text
-            if (isFromSnip) {
-                promptText = """
-                    [Context: The user selected this text by circling/snipping on their mobile screen.]
-                    [Instruction: Focus exclusively on explaining the central entity, concept, punchline, jargon, or question the user circled. Disregard any peripheral timestamps, battery/status text, buttons, or accidental edge clippings. Give a clear, direct, and insightful explanation.]
+                var promptText = text
+                if (isFromSnip) {
+                    promptText = """
+                        [Context: The user selected this text by circling/snipping on their mobile screen.]
+                        [Instruction: Focus exclusively on explaining the central entity, concept, punchline, jargon, or question the user circled. Disregard any peripheral timestamps, battery/status text, buttons, or accidental edge clippings. Give a clear, direct, and insightful explanation.]
 
-                    $text
-                """.trimIndent()
-            }
-            if (!extraModifier.isNullOrEmpty()) {
-                promptText = "$promptText\n\n[$extraModifier]"
-            }
-            if (language.equals("Hinglish", ignoreCase = true)) {
-                promptText = "$promptText\n\n[Please explain in natural, casual Hinglish (Hindi written using the English/Latin alphabet, mixing everyday conversational Hindi and English words naturally, e.g. 'Yeh concept bohot simple hai, basically...'). Do NOT use Devanagari script; write entirely in Latin/English letters.]"
-            } else if (!language.equals("English", ignoreCase = true)) {
-                promptText = "$promptText\n\n[Please explain in clear, natural $language]"
-            }
+                        $text
+                    """.trimIndent()
+                }
+                if (!extraModifier.isNullOrEmpty()) {
+                    promptText = "$promptText\n\n[$extraModifier]"
+                }
+                if (language.equals("Hinglish", ignoreCase = true)) {
+                    promptText = "$promptText\n\n[Please explain in natural, casual Hinglish (Hindi written using the English/Latin alphabet, mixing everyday conversational Hindi and English words naturally, e.g. 'Yeh concept bohot simple hai, basically...'). Do NOT use Devanagari script; write entirely in Latin/English letters.]"
+                } else if (!language.equals("English", ignoreCase = true)) {
+                    promptText = "$promptText\n\n[Please explain in clear, natural $language]"
+                }
 
-            val payload = JSONObject().apply {
-                put("text", promptText)
-                put("mode", resolvedMode)
-                put("language", language)
+                JSONObject().apply {
+                    put("text", promptText)
+                    put("mode", resolvedMode)
+                    put("language", language)
+                }
             }
 
             OutputStreamWriter(conn.outputStream).use { writer ->
