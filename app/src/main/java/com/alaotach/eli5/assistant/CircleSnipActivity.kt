@@ -24,6 +24,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -33,6 +34,10 @@ import com.alaotach.eli5.AnalyticsManager
 import com.alaotach.eli5.ExplainOverlayActivity
 import com.alaotach.eli5.R
 import com.alaotach.eli5.SettingsManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class CircleSnipActivity : ComponentActivity() {
@@ -273,84 +278,148 @@ class CircleSnipActivity : ComponentActivity() {
         header.addView(closeBtn)
         cardContainer.addView(header)
 
-        // 2. Video Player Container with Custom Controls
+        // 2. Video Player Container with Ambient Purple Background & Compact Modern Controls
+        val defaultVideoHeight = minOf((resources.displayMetrics.heightPixels * 0.46f).toInt(), (dp * 390).toInt())
         val videoContainer = FrameLayout(this).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                (dp * 230).toInt()
+                defaultVideoHeight
             )
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#160B29"))
+                setColor(Color.parseColor("#120722"))
                 cornerRadius = dp * 18f
             }
             clipToOutline = true
         }
 
-        val playerView = PlayerView(this).apply {
+        // Layer A: Ambient Blurred Video Thumbnail Layer
+        val ambientImageView = ImageView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
-            ).apply {
-                gravity = Gravity.CENTER
-            }
+            )
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }
+        videoContainer.addView(ambientImageView)
+
+        // Layer B: Deep Rich Purple Ambient Overlay
+        val ambientOverlay = View(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(
+                    Color.parseColor("#E6200A38"),
+                    Color.parseColor("#803C156B"),
+                    Color.parseColor("#F2140624")
+                )
+            )
+        }
+        videoContainer.addView(ambientOverlay)
+
+        // Layer C: Sharp 9:16 Foreground Portrait PlayerView (RESIZE_MODE_FIT, never stretched or cropped)
+        val playerView = PlayerView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER
+            )
             useController = false
             resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
         }
         videoContainer.addView(playerView)
 
-        // Custom Video Controller Overlay Bar at Bottom
-        val controllerBar = LinearLayout(this).apply {
+        // Layer D: Compact Controls Overlay with Auto-Hide & Tap-to-Reveal
+        val controlsOverlay = FrameLayout(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+
+        // Center Circular Play/Pause Glass Button
+        val centerPlayPauseBtn = ImageView(this).apply {
+            setImageResource(R.drawable.ic_pause_rounded)
+            imageTintList = ColorStateList.valueOf(Color.WHITE)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(Color.parseColor("#731B0936"))
+                setStroke((dp * 1.5f).toInt(), Color.parseColor("#4DFFFFFF"))
+            }
+            setPadding((dp * 11).toInt(), (dp * 11).toInt(), (dp * 11).toInt(), (dp * 11).toInt())
+            layoutParams = FrameLayout.LayoutParams((dp * 48).toInt(), (dp * 48).toInt(), Gravity.CENTER)
+        }
+        controlsOverlay.addView(centerPlayPauseBtn)
+
+        // Bottom Compact Controller Bar with Gradient Scrim
+        val bottomBar = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(
+                    Color.TRANSPARENT,
+                    Color.parseColor("#990E051C"),
+                    Color.parseColor("#E60E051C")
+                )
+            )
+            setPadding((dp * 12).toInt(), (dp * 6).toInt(), (dp * 12).toInt(), (dp * 8).toInt())
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM
+            )
+        }
+
+        // Thin Purple Progress Track Seekbar
+        val seekBar = android.widget.SeekBar(this).apply {
+            max = 1000
+            progressDrawable = ContextCompat.getDrawable(this@CircleSnipActivity, R.drawable.video_seekbar_progress)
+            thumb = ContextCompat.getDrawable(this@CircleSnipActivity, R.drawable.video_seekbar_thumb)
+            setPadding((dp * 4).toInt(), 0, (dp * 4).toInt(), 0)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                (dp * 16).toInt()
+            )
+        }
+        bottomBar.addView(seekBar)
+
+        // Clean Control Row: Play/Pause, Timestamp, Speed, CC, Fullscreen
+        val controlRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            background = GradientDrawable().apply {
-                setColor(Color.parseColor("#D9120924"))
-            }
-            setPadding((dp * 10).toInt(), (dp * 6).toInt(), (dp * 10).toInt(), (dp * 6).toInt())
-            layoutParams = FrameLayout.LayoutParams(
+            layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply {
-                gravity = Gravity.BOTTOM
+                topMargin = (dp * 2).toInt()
             }
         }
 
-        // Play/Pause button
-        val playPauseBtn = ImageView(this).apply {
+        val playPauseMiniBtn = ImageView(this).apply {
             setImageResource(R.drawable.ic_pause_rounded)
             imageTintList = ColorStateList.valueOf(Color.WHITE)
-            layoutParams = LinearLayout.LayoutParams((dp * 26).toInt(), (dp * 26).toInt()).apply {
-                marginEnd = (dp * 6).toInt()
-            }
-        }
-        controllerBar.addView(playPauseBtn)
-
-        // Time label
-        val timeTv = TextView(this).apply {
-            text = "0:00 / 0:36"
-            textSize = 10.5f
-            setTextColor(Color.WHITE)
-            typeface = Typeface.MONOSPACE
-            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            layoutParams = LinearLayout.LayoutParams((dp * 22).toInt(), (dp * 22).toInt()).apply {
                 marginEnd = (dp * 8).toInt()
             }
         }
-        controllerBar.addView(timeTv)
+        controlRow.addView(playPauseMiniBtn)
 
-        // Custom Seekbar
-        val seekBar = android.widget.SeekBar(this).apply {
-            max = 1000
-            progressTintList = ColorStateList.valueOf(Color.parseColor("#A855F7"))
-            thumbTintList = ColorStateList.valueOf(Color.parseColor("#C084FC"))
+        val timeTv = TextView(this).apply {
+            text = "00:00 / 00:36"
+            textSize = 10.5f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.MONOSPACE
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f)
         }
-        controllerBar.addView(seekBar)
+        controlRow.addView(timeTv)
 
-        // Playback Speed Toggle
         var currentSpeedIndex = 0
         val speeds = floatArrayOf(1.0f, 1.25f, 1.5f, 2.0f)
         val speedTv = TextView(this).apply {
             text = "1x"
-            textSize = 11f
+            textSize = 10.5f
             setTextColor(Color.WHITE)
             setTypeface(typeface, Typeface.BOLD)
             gravity = Gravity.CENTER
@@ -360,31 +429,39 @@ class CircleSnipActivity : ComponentActivity() {
                 cornerRadius = dp * 6f
             }
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                marginStart = (dp * 6).toInt()
-                marginEnd = (dp * 4).toInt()
+                marginEnd = (dp * 8).toInt()
             }
         }
-        controllerBar.addView(speedTv)
+        controlRow.addView(speedTv)
 
-        // Subtitles CC badge
-        val ccView = TextView(this).apply {
+        var ccEnabled = true
+        val ccBtn = TextView(this).apply {
             text = "CC"
             textSize = 10f
             setTextColor(Color.WHITE)
             setTypeface(typeface, Typeface.BOLD)
             gravity = Gravity.CENTER
-            setPadding((dp * 5).toInt(), (dp * 2).toInt(), (dp * 5).toInt(), (dp * 2).toInt())
+            setPadding((dp * 6).toInt(), (dp * 2).toInt(), (dp * 6).toInt(), (dp * 2).toInt())
             background = GradientDrawable().apply {
-                setColor(Color.parseColor("#33FFFFFF"))
+                setColor(Color.parseColor("#6A0DAD"))
                 cornerRadius = dp * 6f
             }
             layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                marginEnd = (dp * 6).toInt()
+                marginEnd = (dp * 8).toInt()
             }
         }
-        controllerBar.addView(ccView)
+        controlRow.addView(ccBtn)
 
-        videoContainer.addView(controllerBar)
+        val fullscreenInPlayerBtn = ImageView(this).apply {
+            setImageResource(R.drawable.ic_fullscreen)
+            imageTintList = ColorStateList.valueOf(Color.WHITE)
+            layoutParams = LinearLayout.LayoutParams((dp * 22).toInt(), (dp * 22).toInt())
+        }
+        controlRow.addView(fullscreenInPlayerBtn)
+
+        bottomBar.addView(controlRow)
+        controlsOverlay.addView(bottomBar)
+        videoContainer.addView(controlsOverlay)
         cardContainer.addView(videoContainer)
 
         // 3. Info Pill Card beneath Video
@@ -526,11 +603,13 @@ class CircleSnipActivity : ComponentActivity() {
         }
         dialogRoot.addView(cardContainer, cardLayoutParams)
 
-        // Toggle Fullscreen action
-        fullscreenBtn.setOnClickListener {
+        // Toggle Fullscreen action (both in header and inside player controls)
+        val toggleFullscreenAction = {
             isFullscreen = !isFullscreen
+            val fullscreenIcon = if (isFullscreen) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen
+            fullscreenBtn.setImageResource(fullscreenIcon)
+            fullscreenInPlayerBtn.setImageResource(fullscreenIcon)
             if (isFullscreen) {
-                fullscreenBtn.setImageResource(R.drawable.ic_fullscreen_exit)
                 header.visibility = View.GONE
                 pillCard.visibility = View.GONE
                 footer.visibility = View.GONE
@@ -544,7 +623,6 @@ class CircleSnipActivity : ComponentActivity() {
                 )
                 (videoContainer.background as? GradientDrawable)?.cornerRadius = 0f
             } else {
-                fullscreenBtn.setImageResource(R.drawable.ic_fullscreen)
                 header.visibility = View.VISIBLE
                 pillCard.visibility = View.VISIBLE
                 footer.visibility = View.VISIBLE
@@ -554,12 +632,15 @@ class CircleSnipActivity : ComponentActivity() {
                 cardLayoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
                 videoContainer.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    (dp * 230).toInt()
+                    defaultVideoHeight
                 )
                 (videoContainer.background as? GradientDrawable)?.cornerRadius = dp * 18f
             }
             cardContainer.layoutParams = cardLayoutParams
         }
+
+        fullscreenBtn.setOnClickListener { toggleFullscreenAction() }
+        fullscreenInPlayerBtn.setOnClickListener { toggleFullscreenAction() }
 
         // Tap background outside to dismiss (when not fullscreen)
         dialogRoot.setOnClickListener {
@@ -574,11 +655,31 @@ class CircleSnipActivity : ComponentActivity() {
         val fileFallback = File("/home/aloo/Downloads/eli5_tutorial_voiceover.mp4")
         val videoUri = if (fileFallback.exists()) Uri.fromFile(fileFallback) else rawUri
 
+        // Asynchronously extract and blur video frame for the ambient background layer
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val retriever = android.media.MediaMetadataRetriever()
+                if (fileFallback.exists()) {
+                    retriever.setDataSource(fileFallback.absolutePath)
+                } else {
+                    retriever.setDataSource(this@CircleSnipActivity, rawUri)
+                }
+                val frame = retriever.getFrameAtTime(1000000, android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                retriever.release()
+                if (frame != null) {
+                    val small = Bitmap.createScaledBitmap(frame, 60, 106, true)
+                    withContext(Dispatchers.Main) {
+                        ambientImageView.setImageBitmap(small)
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
         fun formatTime(ms: Long): String {
             val totalSeconds = ms / 1000
             val minutes = totalSeconds / 60
             val seconds = totalSeconds % 60
-            return String.format(java.util.Locale.US, "%d:%02d", minutes, seconds)
+            return String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds)
         }
 
         val player = ExoPlayer.Builder(this).build().apply {
@@ -591,12 +692,85 @@ class CircleSnipActivity : ComponentActivity() {
         exoPlayer = player
         playerView.player = player
 
+        // Auto-Hide Controls & Tap-to-Reveal Logic
+        var controlsVisible = true
+        val hideControlsRunnable = Runnable {
+            if (controlsVisible && player.isPlaying) {
+                controlsOverlay.animate()
+                    .alpha(0f)
+                    .setDuration(220)
+                    .withEndAction {
+                        controlsOverlay.visibility = View.GONE
+                        controlsVisible = false
+                    }
+                    .start()
+            }
+        }
+
+        fun resetHideTimer() {
+            handler.removeCallbacks(hideControlsRunnable)
+            if (player.isPlaying) {
+                handler.postDelayed(hideControlsRunnable, 2500)
+            }
+        }
+
+        fun showControls() {
+            handler.removeCallbacks(hideControlsRunnable)
+            controlsOverlay.visibility = View.VISIBLE
+            controlsOverlay.animate().alpha(1f).setDuration(180).start()
+            controlsVisible = true
+            resetHideTimer()
+        }
+
+        fun toggleControls() {
+            if (controlsVisible) {
+                handler.removeCallbacks(hideControlsRunnable)
+                controlsOverlay.animate()
+                    .alpha(0f)
+                    .setDuration(180)
+                    .withEndAction {
+                        controlsOverlay.visibility = View.GONE
+                        controlsVisible = false
+                    }
+                    .start()
+            } else {
+                showControls()
+            }
+        }
+
+        // Tap on player or background to toggle controls
+        playerView.setOnClickListener { toggleControls() }
+        videoContainer.setOnClickListener { toggleControls() }
+
+        val togglePlayPause = {
+            if (player.isPlaying) {
+                player.pause()
+                showControls()
+                handler.removeCallbacks(hideControlsRunnable)
+            } else {
+                player.play()
+                resetHideTimer()
+            }
+        }
+
+        centerPlayPauseBtn.setOnClickListener {
+            centerPlayPauseBtn.animate().scaleX(1.15f).scaleY(1.15f).setDuration(100).withEndAction {
+                centerPlayPauseBtn.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start()
+            }.start()
+            togglePlayPause()
+        }
+        playPauseMiniBtn.setOnClickListener { togglePlayPause() }
+
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                val icon = if (isPlaying) R.drawable.ic_pause_rounded else R.drawable.ic_play_arrow_rounded
+                centerPlayPauseBtn.setImageResource(icon)
+                playPauseMiniBtn.setImageResource(icon)
                 if (isPlaying) {
-                    playPauseBtn.setImageResource(R.drawable.ic_pause_rounded)
+                    resetHideTimer()
                 } else {
-                    playPauseBtn.setImageResource(R.drawable.ic_play_arrow_rounded)
+                    showControls()
+                    handler.removeCallbacks(hideControlsRunnable)
                 }
             }
 
@@ -608,6 +782,7 @@ class CircleSnipActivity : ComponentActivity() {
                     if (!seekBar.isPressed) {
                         seekBar.progress = (cur * 1000L / dur).toInt()
                     }
+                    resetHideTimer()
                 }
             }
         })
@@ -629,14 +804,6 @@ class CircleSnipActivity : ComponentActivity() {
         }
         handler.post(updateProgressRunnable!!)
 
-        playPauseBtn.setOnClickListener {
-            if (player.isPlaying) {
-                player.pause()
-            } else {
-                player.play()
-            }
-        }
-
         speedTv.setOnClickListener {
             currentSpeedIndex = (currentSpeedIndex + 1) % speeds.size
             val chosenSpeed = speeds[currentSpeedIndex]
@@ -644,6 +811,19 @@ class CircleSnipActivity : ComponentActivity() {
             try {
                 player.setPlaybackSpeed(chosenSpeed)
             } catch (_: Exception) {}
+            resetHideTimer()
+        }
+
+        ccBtn.setOnClickListener {
+            ccEnabled = !ccEnabled
+            if (ccEnabled) {
+                (ccBtn.background as? GradientDrawable)?.setColor(Color.parseColor("#6A0DAD"))
+                Toast.makeText(this@CircleSnipActivity, "Captions enabled", Toast.LENGTH_SHORT).show()
+            } else {
+                (ccBtn.background as? GradientDrawable)?.setColor(Color.parseColor("#33FFFFFF"))
+                Toast.makeText(this@CircleSnipActivity, "Captions disabled", Toast.LENGTH_SHORT).show()
+            }
+            resetHideTimer()
         }
 
         seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
@@ -652,13 +832,19 @@ class CircleSnipActivity : ComponentActivity() {
                     val targetMs = progress * player.duration / 1000L
                     player.seekTo(targetMs)
                     timeTv.text = "${formatTime(targetMs)} / ${formatTime(player.duration)}"
+                    resetHideTimer()
                 }
             }
-            override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {}
-            override fun onStopTrackingTouch(sb: android.widget.SeekBar?) {}
+            override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {
+                handler.removeCallbacks(hideControlsRunnable)
+            }
+            override fun onStopTrackingTouch(sb: android.widget.SeekBar?) {
+                resetHideTimer()
+            }
         })
 
         dialog.setOnDismissListener {
+            handler.removeCallbacks(hideControlsRunnable)
             updateProgressRunnable?.let { handler.removeCallbacks(it) }
             try {
                 player.stop()
