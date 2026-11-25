@@ -4,15 +4,16 @@
  */
 
 const DEFAULT_MODEL = "google/gemini-3-flash-preview";
+const FALLBACK_MODEL = "openrouter/free";
 const TARGET_API_URL = "https://ai.hackclub.com/proxy/v1/chat/completions";
 
 const PROMPTS = {
   explain: {
-    Detailed: "Give a very detailed, thorough analysis with deep context about this.",
-    Straightforward: "Give a direct, clear, no-fluff summary of this.",
+    Detailed: "Give a thorough but organized explanation in this format: 1. One-sentence summary. 2.In detail: 3 to 5 short points covering context, why it matters and any catches. 3.Example: one concrete real-world example. Define jargon on first use. Max about 500 words.",
+    Straightforward: "Give a direct, clear, no-fluff explaination of what the user is asking it could be a word or a sentence explain that. use as simple words as possible explain all the tough words that are not common enough and explain it in plain english to the user..",
     Direct: "Give a direct, clear, no-fluff summary of this.",
-    ELI5: "Explain this like I am 5 years old. Use simple words and fun analogies.",
-    default: "Explain this casually."
+    ELI5: "Explain it in plain, simple English, the way a smart friend would to someone outside the field. Everyday words, short sentences, define any hard term in a few words. Use an analogy only if it genuinely makes the idea clearer, and draw it from ordinary adult life (money, work, cooking, traffic). Never use toys, cartoons or kid references, never talk down, and never mention being five. and use as simple words as possible explain all the tough words that are not common enough and explain it in plain english to the user.",
+    default: "Give a direct, clear, no-fluff explaination of what the user is asking it could be a word or a sentence explain that. use as simple words as possible explain all the tough words that are not common enough and explain it in plain english to the user.."
   },
   proofread: {
     base: "Proofread and correct the following text. Do not use any em dashes (—). Keep the tone natural and human-like. Just provide the corrected text without any preamble or explanation:\n\n",
@@ -44,6 +45,7 @@ export default {
     }
 
     const model = env.MODEL || DEFAULT_MODEL;
+    const fallbackModel = env.FALLBACK_MODEL || FALLBACK_MODEL;
     const apiUrl = env.API_BASE_URL || TARGET_API_URL;
 
     try {
@@ -81,14 +83,13 @@ export default {
       }
       // 3. Fallback: transparent pass-through for custom requests
       else {
-        return fetch(apiUrl, {
-          method: "POST",
+        const aiResponse = await fetchWithFallback(apiUrl, apiKey, body, fallbackModel);
+        return new Response(aiResponse.body, {
+          status: aiResponse.status,
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
-            "Host": new URL(apiUrl).host
-          },
-          body: JSON.stringify(body)
+            ...Object.fromEntries(aiResponse.headers),
+            ...corsHeaders()
+          }
         });
       }
 
@@ -99,15 +100,7 @@ export default {
         messages: [{ role: "user", content: prompt }]
       };
 
-      const aiResponse = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`,
-          "Host": new URL(apiUrl).host
-        },
-        body: JSON.stringify(aiPayload)
-      });
+      const aiResponse = await fetchWithFallback(apiUrl, apiKey, aiPayload, fallbackModel);
 
       return new Response(aiResponse.body, {
         status: aiResponse.status,
@@ -125,6 +118,39 @@ export default {
     }
   }
 };
+
+/**
+ * Sends a request to the AI provider and automatically falls back to fallbackModel
+ * if the primary model responds with HTTP 402 (Payment Required).
+ */
+async function fetchWithFallback(apiUrl, apiKey, payload, fallbackModel) {
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${apiKey}`,
+    "Host": new URL(apiUrl).host
+  };
+
+  let aiResponse = await fetch(apiUrl, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload)
+  });
+
+  if (aiResponse.status === 402 && payload.model !== fallbackModel) {
+    try {
+      await aiResponse.body?.cancel();
+    } catch (_) {}
+
+    const fallbackPayload = { ...payload, model: fallbackModel };
+    aiResponse = await fetch(apiUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(fallbackPayload)
+    });
+  }
+
+  return aiResponse;
+}
 
 function corsHeaders() {
   return {
