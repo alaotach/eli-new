@@ -6,6 +6,9 @@
 const DEFAULT_MODEL = "google/gemini-3-flash-preview";
 const FALLBACK_MODEL = "openrouter/free";
 const TARGET_API_URL = "https://ai.hackclub.com/proxy/v1/chat/completions";
+const ERYZA_API_URL = "https://llm.eryzalabs.cloud/v1/chat/completions";
+const ERYZA_TEXT_MODEL = "app-default";
+const ERYZA_VISION_MODEL = "nvidia/nemotron-3.5-super-vl-120b-a12b";
 
 const PROMPTS = {
   explain: {
@@ -47,6 +50,9 @@ export default {
     const model = env.MODEL || DEFAULT_MODEL;
     const fallbackModel = env.FALLBACK_MODEL || FALLBACK_MODEL;
     const apiUrl = env.API_BASE_URL || TARGET_API_URL;
+    const eryzaUrl = env.ERYZA_API_URL || ERYZA_API_URL;
+    const eryzaApiKey = env.G4F_API_KEY || env.ERYZA_API_KEY || "";
+    const fallbackOptions = { fallbackModel, eryzaUrl, eryzaApiKey };
 
     try {
       const body = await request.json();
@@ -83,7 +89,7 @@ export default {
       }
       // 3. Fallback: transparent pass-through for custom requests
       else {
-        const aiResponse = await fetchWithFallback(apiUrl, apiKey, body, fallbackModel);
+        const aiResponse = await fetchWithFallback(apiUrl, apiKey, body, fallbackOptions);
         return new Response(aiResponse.body, {
           status: aiResponse.status,
           headers: {
@@ -100,7 +106,7 @@ export default {
         messages: [{ role: "user", content: prompt }]
       };
 
-      const aiResponse = await fetchWithFallback(apiUrl, apiKey, aiPayload, fallbackModel);
+      const aiResponse = await fetchWithFallback(apiUrl, apiKey, aiPayload, fallbackOptions);
 
       return new Response(aiResponse.body, {
         status: aiResponse.status,
@@ -119,11 +125,21 @@ export default {
   }
 };
 
+function hasImageContent(payload) {
+  if (!Array.isArray(payload?.messages)) return false;
+  return payload.messages.some(
+    msg =>
+      Array.isArray(msg?.content) &&
+      msg.content.some(part => part?.type === "image_url" || Boolean(part?.image_url))
+  );
+}
+
 /**
- * Sends a request to the AI provider and automatically falls back to fallbackModel
- * if the primary model responds with HTTP 402 (Payment Required).
+ * Sends a request to the primary AI provider with automatic fallbacks:
+ * - HTTP 402 (Payment Required): retries on the same endpoint with fallbackModel (openrouter/free).
+ * - HTTP 429 (Too Many Requests): retries on EryzaLabs using vision or text model.
  */
-async function fetchWithFallback(apiUrl, apiKey, payload, fallbackModel) {
+async function fetchWithFallback(apiUrl, apiKey, payload, { fallbackModel, eryzaUrl, eryzaApiKey }) {
   const headers = {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${apiKey}`,
@@ -146,6 +162,24 @@ async function fetchWithFallback(apiUrl, apiKey, payload, fallbackModel) {
       method: "POST",
       headers,
       body: JSON.stringify(fallbackPayload)
+    });
+  }
+
+  if (aiResponse.status === 429 && eryzaApiKey) {
+    try {
+      await aiResponse.body?.cancel();
+    } catch (_) {}
+
+    const eryzaModel = hasImageContent(payload) ? ERYZA_VISION_MODEL : ERYZA_TEXT_MODEL;
+    const eryzaPayload = { ...payload, model: eryzaModel };
+    aiResponse = await fetch(eryzaUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${eryzaApiKey}`,
+        "Host": new URL(eryzaUrl).host
+      },
+      body: JSON.stringify(eryzaPayload)
     });
   }
 
